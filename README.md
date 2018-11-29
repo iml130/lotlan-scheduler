@@ -1,2 +1,2 @@
 # sola-task
-A simple Task Language how to add a new Task
+A simple Task Language how to describe a new task for intra-logistics...
