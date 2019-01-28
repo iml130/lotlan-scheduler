@@ -1,0 +1,110 @@
+##############################
+#This is just a Template to show available options
+##############################
+
+# Basic Template structure
+template Sensor_A
+	type
+	value # readonly
+end
+
+
+
+# Basic Instance structure
+Sensor_A sensor1
+	type  =	LightSensor
+	value = "boolean"
+end
+
+
+
+# Basic Task structure
+task Transport_Task
+    # Transport something from A to B
+	Transport 
+    from 		palette_1, palette_2, palette_3 
+    to 			container
+    
+	TriggeredBy	palette_1Full
+	TriggeredBy	palette_2Full
+	TriggeredBy	palette_3Full
+    
+	OnDone		Reset_Task
+end
+
+
+
+###########################################
+# This section below shows what is currently parsable 
+###########################################
+
+# Spaces and Tabs can be used to format nicely
+# Also Empty Lines are allowed
+task Nice_Formatted_Task#Comment everywhere
+	Transport       # A Comment can also be expanded via Spaces and Tabs
+    from			this_palette
+	to				that_palette
+    
+	TriggeredBy		someOtherInstance
+	
+    
+	#Afterwards 
+	OnDone 			GoBack_this_palette
+end####### End of Task
+
+
+
+
+Position thisPos
+	# ExampleDescription of an Instance
+	type = "pallet"
+    
+	position = "thisPos" # Values can also be set inside "
+    
+    
+    
+end
+
+
+
+
+Position emptyPallet   # Another Comment
+	type = "pallet"
+	position =   "warehouse_empty_pallet"
+	#Again empty Lines
+    
+    #type = "SomethingDebugged"
+	#position = "OnRoof"
+    
+	#Test
+end    # Another Comement
+
+
+
+#Outside of Task Instance and Template Comments can be
+														# set freely
+      # Even with Spaces
+
+
+template Sensor_B#Another Comment
+	sensorId   
+    
+    
+	# Empty Lines are allowed
+	# Also Comment Lines
+	type 
+	value #readonly
+    value_2 #writeonly
+	#CommentLine
+    
+end#END
+
+
+
+task Transport_Palette_Task
+	Transport 
+    from p1, p2, p3 # All Pallets!
+	to warehouse_pos1
+	TriggeredBy button1Value # Currently no Expressions
+	OnDone Refill
+end
