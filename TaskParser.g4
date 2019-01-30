@@ -5,8 +5,9 @@ options {
 }
 
 
-program: 
+program : 
     (template | instance | task)*;
+
 
 // Template Layout
 template: 

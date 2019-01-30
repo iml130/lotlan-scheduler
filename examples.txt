@@ -3,19 +3,63 @@
 ##############################
 
 # Basic Template structure
-template Sensor_A
+template Palette
 	type
 	value # readonly
+end
+
+template PaletteSensor # A Sensor which sets the Value to true if full
+	value # readonly
+end
+
+template Container
+    type
+end
+
+Container container
+    type = "Container"
+end
+
+Container room
+    type = "Supply_Room"
 end
 
 
 
 # Basic Instance structure
-Sensor_A sensor1
+Palette palette_1
 	type  =	LightSensor
 	value = "boolean"
 end
 
+Palette palette_2
+	type  =	LightSensor
+	value = "boolean"
+end
+
+Palette palette_3
+	type  =	LightSensor
+	value = "boolean"
+end
+
+PaletteSensor palette_1Full
+	value = "Boolean"
+end
+
+PaletteSensor palette_2Full
+	value = "Boolean"
+end
+
+PaletteSensor palette_3Full
+	value = "Boolean"
+end
+
+
+task Reset_Task
+	Transport 
+    from 		palette_1, palette_2, palette_3 
+    to 			room
+end 
 
 
 # Basic Task structure
@@ -38,21 +82,24 @@ end
 # This section below shows what is currently parsable 
 ###########################################
 
-# Spaces and Tabs can be used to format nicely
-# Also Empty Lines are allowed
-task Nice_Formatted_Task#Comment everywhere
-	Transport       # A Comment can also be expanded via Spaces and Tabs
-    from			this_palette
-	to				that_palette
-    
-	TriggeredBy		someOtherInstance
-	
-    
-	#Afterwards 
-	OnDone 			GoBack_this_palette
-end####### End of Task
 
 
+Palette this_palette
+	type  =	LightSensor
+	value = "boolean"
+end
+
+Palette that_palette
+	type  =	LightSensor
+	value = "boolean"
+end
+
+
+
+template Position # Required for correct Parsing of thisPos and emptyPAllet
+	type
+	position
+end
 
 
 Position thisPos
@@ -64,6 +111,27 @@ Position thisPos
     
     
 end
+
+
+
+
+# Spaces and Tabs can be used to format nicely
+# Also Empty Lines are allowed
+task Nice_Formatted_Task#Comment everywhere
+	Transport       # A Comment can also be expanded via Spaces and Tabs
+    from			this_palette
+	to				that_palette
+    
+	TriggeredBy		thisPos
+	
+    
+	#Afterwards 
+	OnDone 			Reset_Task
+end####### End of Task
+
+
+
+
 
 
 
@@ -100,11 +168,20 @@ template Sensor_B#Another Comment
 end#END
 
 
+Container warehouse_pos1
+	type = "WareHouse"
+end
+
+task Refill
+    Transport 
+	from palette_1, palette_2, palette_3
+	to container
+end
 
 task Transport_Palette_Task
 	Transport 
-    from p1, p2, p3 # All Pallets!
+    from palette_1, palette_2, palette_3 # All Pallets!
 	to warehouse_pos1
-	TriggeredBy button1Value # Currently no Expressions
+	TriggeredBy warehouse_pos1 # Currently no Expressions
 	OnDone Refill
 end
