@@ -55,9 +55,9 @@ class PythonListener(TaskParserListener):
         self.tasks.append(ctx.TaskStart().getText()[5:])
 
     def enterInnerTask(self, ctx):
-        for ele in ctx.NewInstance():
-            if ele.getText() not in self.instances:
-                raise Exception("Instance: " + ele.getText() + " was not previosuly defined!")
+        # for ele in ctx.NewInstance():
+        #     if ele.getText() not in self.instances:
+        #         raise Exception("Instance: " + ele.getText() + " was not previosuly defined!")
 
         for ele in ctx.NewTask():
             if ele.getText() not in self.tasks:

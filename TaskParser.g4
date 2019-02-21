@@ -35,11 +35,39 @@ task:
  
 innerTask:
     (transportOrder 
-    | IndentationInTask TriggeredBy NewInstance NLInTask 
+    | IndentationInTask TriggeredBy expression E_NLInTask
     | IndentationInTask OnDone NewTask NLInTask)+;
 
 transportOrder:
     IndentationInTask Transport NLInTask
     IndentationInTask From NewInstance (Comma NewInstance)* NLInTask
-    IndentationInTask To NewInstance NLInTask;
+    IndentationInTask To dest = NewInstance NLInTask;
+
+
+expression:
+    attr = E_Attribute
+   | E_LeftParenthesis expression E_RightParenthesis
+   | expression binOperation expression
+   | unOperation expression
+   | con;
+
+binOperation:
+    op = (E_LessThan
+        | E_LessThanOrEqual
+        | E_GreaterThan
+        | E_GreaterThanOrEqual
+        | E_Equal
+        | E_NotEqual
+        | E_BooleanAnd
+        | E_BooleanOr);
+
+unOperation:
+    op = E_Not;
+
+con:
+    c = (E_True 
+        | E_False
+        | E_Integer
+        | E_Float);
+
 

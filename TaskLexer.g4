@@ -50,7 +50,7 @@ From: 'from' WS_TA;
 To: 'to' WS_TA;
 
 
-TriggeredBy: 'TriggeredBy' WS_TA ;
+TriggeredBy: 'TriggeredBy' WS_TA ->  pushMode(EXPRESSION);
 OnDone: 'OnDone' WS_TA;
 Comma: ',' WS_TA;
 
@@ -58,3 +58,25 @@ IndentationInTask: ('    '|'\t');
 NewInstance: [a-z][a-zA-Z0-9_]*; 
 NewTask: [A-Z][a-zA-Z0-9_]*;
 fragment WS_TA: [ \t]*;
+
+
+mode EXPRESSION;
+E_LeftParenthesis: '(';
+E_RightParenthesis: ')';
+E_LessThan: '<';
+E_LessThanOrEqual: '<=';
+E_GreaterThan: '>';
+E_GreaterThanOrEqual: '>=';
+E_Equal: '==' | '=';
+E_NotEqual: '!=';
+E_BooleanAnd:	'&&';
+E_BooleanOr: '||';
+E_Not: '!';
+E_Attribute: [a-z][a-zA-Z0-9_]* '.' [a-z][a-zA-Z0-9_]*;
+E_True: 'True' | 'TRUE';
+E_False: 'False' | 'FALSE';
+E_Integer: [0-9]+;
+E_Float: [0-9]+( '.' [0-9]+);
+E_WS: [ \r\t]  -> skip;
+E_Comment: '#' ~[\n]+ -> skip;
+E_NLInTask: [\n] -> popMode;
