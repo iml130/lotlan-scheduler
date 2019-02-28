@@ -71,7 +71,7 @@ task Transport_Task
     
 	TriggeredBy	palette_1Full.value == TRUE
 	TriggeredBy	palette_2Full.value == FALSE
-	TriggeredBy	palette_3Full.value == 12 || 42.42 <= 42.31
+	TriggeredBy	palette_3Full.value == !12 || 42.42 <= 42.31
     
 	OnDone		Reset_Task
 end

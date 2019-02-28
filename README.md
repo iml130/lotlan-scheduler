@@ -87,6 +87,10 @@ To Test the Text-File `examples.txt` you need to do the following:
 First: generate Python-Files via:
 > java -jar antlr-4.7.2-complete.jar -Dlanguage=Python2 TaskLexer.g4 TaskParser.g4 
 
+Or via (to also have the visitor available)
+> java -jar antlr-4.7.2-complete.jar -Dlanguage=Python2 -visitor TaskLexer.g4 TaskParser.g4 
+
+
 Then just simply execute:
 > python checkGrammar.py
 

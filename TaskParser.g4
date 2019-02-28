@@ -47,8 +47,8 @@ transportOrder:
 expression:
     attr = E_Attribute
    | E_LeftParenthesis expression E_RightParenthesis
-   | expression binOperation expression
-   | unOperation expression
+   | bleft = expression binOperation bright = expression
+   | unOperation unAttr = expression
    | con;
 
 binOperation:
