@@ -26,6 +26,7 @@ end
 
 
 
+
 # Basic Instance structure
 Palette palette_1
 	type  =	LightSensor
@@ -66,7 +67,7 @@ end
 task Transport_Task
     # Transport something from A to B
 	Transport 
-    from 		palette_1, palette_2, palette_3 
+    from 		palette_1, palette_2, palette_3
     to 			container
     
 	TriggeredBy	palette_1Full.value == TRUE

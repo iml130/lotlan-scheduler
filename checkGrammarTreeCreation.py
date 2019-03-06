@@ -4,6 +4,8 @@ from TaskLexer import TaskLexer
 from TaskParserListener import TaskParserListener
 from TaskParser import TaskParser
 from CreateTreeTaskParserVisitor import CreateTreeTaskParserVisitor
+import taskValidator
+
 import sys
 
 class ThrowErrorListener(ErrorListener):
@@ -32,6 +34,8 @@ def main():
     t = visitor.visit(tree)
 
     print t.taskInfos["Transport_Task"].triggers[2]
+    print taskValidator.isValid(t)
+
 
 if __name__ == '__main__':
     main() 
