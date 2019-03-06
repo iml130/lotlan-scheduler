@@ -1,0 +1,42 @@
+Postion and Sensor are primtives --> They are always available and no need to have a definition
+
+template Position
+    type
+end
+
+template Sensor
+    value
+end
+
+
+
+# CSV list of sensorNames (=Instances) OR!! individual
+Position moldingArea_palletPlace, pos2, pos3
+    type = "pallet" 
+end 
+<=>
+Position moldingArea_palletPlace
+    type = "pallet"
+end 
+Position pos2
+    type = "pallet"
+end 
+Position pos3
+    type = "pallet"
+end 
+
+
+# as above with postion, sensor could be the same
+# CSV list of sensorNames (=Instances) OR!! individual
+Sensor buttonMoldingArea,2,3,4
+    value = boolean
+end
+
+ATTENTION: what happens, if the position can have two or more different types? e.g. pallet, box, container, ... -->?!
+
+task Transport_moldingPallet
+    Transport
+    from moldingPallet
+    to warehouse_pos1
+    TriggeredBy buttonPalletIsReady.value == TRUE 
+end
