@@ -18,7 +18,7 @@ class TaskInfo(object):
 
 class TransportOrder(object):
     def __init__(self):
-        self.formm = [] # From many Instances
+        self.fromm = [] # From many Instances
         self.to = None # Target Instance
 
 class Template(object):
