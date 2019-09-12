@@ -1,83 +1,223 @@
-# sola-task
+# Logistic Task Language
 It is a simple Task-Language to describe Intra-logistic processes. The language contains templates, instances of templates and tasks, which orchestrate those instances and trigger other tasks. 
 
 
 # SolaTask-File
 The `SolaTask`-File is composed by 3 different parts: Templates, Instances and Tasks. Each of them can be used and described arbitary complex. Also Comments can be annotated via `#`
 
-## Templates
-In each `SolaTask`-File at least one template needs to be specified, if you want to create instances or a task. They are the basis of the `SolaTask`-File and describe a collection of same instances. This can be the case for multiple palettes/storage places, mutliple conveyer belts, or like a fleet of robots with same capabilities. Therefor, a template summarizes and specifies a set of instances.
+# Logistic Task Language
 
-You can specify a template like this:
+The Logistic Task Language *(LoTLan)* is a simple, but powerful approach to describe intralogistic materialflow logic. A materialflow processes is mainly a transportation task like the pickup *- go to position and get item -* and the delivery *- got to position and unload item*.
+
+## Table of contents
+
+- [Logistic Task Language](#logistic-task-language)
+  - [Introduction](#introduction)
+    - [Use of Example](#use-of-example)
+  - [Primitives](#primitives)
+  - [Instances](#instances)
+  - [Tasks](#tasks)
+    - [Example simple Task](#example-simple-task)
+    - [Example Trigger Task](#example-trigger-task)
+    - [Example OnDone Task](#example-ondone-task)
+  - [Comments](#comments)
+  - [Others](#others)
+
+___
+
+## Introduction
+
+The *LoTLan* consists of 3 different building blocks, that combined with each other describes such a process:
+
+- Primitives
+- Instances
+- Tasks
+
+A *Primitive* is an abstract model for a series of similar objects. It is the blueprint for the representation of real objects in software objects and describes attributes (properties) of the objects. Through the instantiation of such a *Primitive* a *Instance* of a concrete object is created. A *Task* then combines these *Instances* to a logical process flow.
+
+### Use of Example
+
+The following documentation of *LoTLan* utilizes the example of a production hall that has an area for storing goods *- the Warehouse -* and an area for the manufacturing *- the Production*. To reduce the complexity only one AGV out of a possible lager fleet is used.
+
+<div style="text-align:center">
+
+![Example introduction](./doc/pics/1-introduction_new.png =500x)
+
+*Figure 1: Example floor plan with AGV and production & warehouse area*
+</div>
+
+This example shown in the figure above will be expanded in the course of time to explain the individual building blocks of the *LoTLan*.
+
+## Primitives
+
+A *Primitive* can contain multiple member variables, like palettes/storage places, multiple conveyer belts, or like sensors with the same capabilities. Therefore, a *Primitive* summarizes and specifies a set of *Instances*.
+
+In the domain of logistics such a *Primitive* could be a position. Defining such a position is done via the *__template syntax__*:
 
 ```text
-template MyTemplate
+template Position
     type
-    value # readonly
-    myValue # displays a number
-    ...  # other values    
+    value
 end
 ```
-It is important that the attributes inside an template begin with a lowercase character. The name has to start with an uppercase character. Each value also needs to be prefixed with four spaces (or an `\t`). 
+
+The *Primitive* *Position* has two member variables, a *type* and a *value*. These attributes can be later on accessed inside the instances.
+
+**Syntax**: It is important that the attributes inside an *template - end* definition begin with a lowercase character. The name has to start with an uppercase character. Each value also needs to be prefixed with four spaces (or a `\t`).
 
 ## Instances
-An instance is the actual object of a Template. Each Instance with the same Template does not have to be identical as others. The actual values behind multiple instances also do not have to be from the same type. For example: Given a fleet of robots, which can transport something from A to B. Each robot could transport it differently. A vehicle could drive it to its destination whereby a drone can fly it. As long as they have the same capabilities, they can be categorized into the same template. 
 
-Here are two example Instances of `MyTemplate`
+An *Instance* is the concrete object of a previously declared *Primitive*. Such set of *Instances* do not share any data other than the definition of their attributes.
+
+As an example, two *Instances* of positions could be initiated out of the previously made *Primitive* (see [Primitives section](#Primitives)):
 
 ```text
-MyTemplate myTemplateCreator
-    type = TemplateCreator
-    value = "boolean" # displays whether it is ready to create a new one
-    myValue = "integer"
-    ...  # Other specified attributes as in MyTemplate 
+Position goodsPallet
+    type = "pallet"
+    value = "productionArea_palletPlace"
 end
 
-MyTemplate myTemplateDestroyer
-    type = TemplateDestoryer
-    value = "boolean" # displays whether it is ready to destroy one
-    myValue = "float"
-    ...  # Other specified attributes as in MyTemplate 
+Position warehousePos1
+    type = "pallet"
+    value = "warehouseArea_pos1"
 end
 ```
 
-As in template, each value also have to be prefixed with four spaces (or an `\t`). In addition to that, each value which was previously specified by a template needs to be set to an actual value. This value can be enclosed by `"`. Also the Instance-Name has to start with a lowercase character. 
+The *Instance* *goodsPallet* has two member variables, a *type* and a *value*. The *type* attribute states *what item is located there* and the *value* the *logical name of this location*.
+
+**Syntax**: The syntax of *Primitives* introduced before here is complemented by assigning values to the attributes. These values must be enclosed by `"`. Also, the name has to start with a lowercase character.
+
+Speaking of the example introduced in the [introduction](#Logistic-Task-Language), those *Instances* each define a specific position inside the two areas.
+
+<div style="text-align:center">
+
+![Example instance](./doc/pics/2-instances_new.png =500x)
+
+*Figure 2: Floor plan with Positions **goodsPallet** and **warehousePos1***
+</div>
+
+The figure shows those positions inside the two areas *Warehouse* and *Production*.
 
 ## Tasks
-The task orchestrates different instances via operations. It describes tasks which multiple instance have to do, triggers other tasks or can be triggered by an event. Their inner commands also need to be prefixed with four spaces (or an `\t`). Currently following operations are parsable: `Transport->From->To`, `TriggeredBy`, `OnDone`.
 
-Here is anexample of a Task-chain:
+A *Task* orchestrates different *Instances* via operations to result in a logical process flow. Such a *Task* does not need to describe who is going to transport an item - it is important that the item will be transported.
+
+Generally speaking a *Task* in *LoTLan* describes that a amount of items should be picked up at some positions and be delivered to another position. The *Task* can optionally be triggered by an event or by time and it can optionally issue a follow up *Task*:
 
 ```text
-task CreationTask
-    # Transport components to TemplateCreator
+Task {name}
     Transport
-    from components_palette1, components_palette2, components_palette3
-    to myTemplateCreator
-
-    TriggeredBy myTemplateCreator.value == True
-
-    OnDone TransportTask
-end
-
-task TransportTask
-    Transport 
-    from myTemplateCreator
-    to temporary_palette
-end
-
-task DestroyingTask
-    # Transport freshly created Template to Destroyer
-    Transport 
-    from temporary_palette
-    to myTemplateDestroyer
-
-    TriggeredBy myTemplateDestroyer.value == True
-
-    OnDone CreationTask
+    From        {Position_1; , Position_2 ... Position_N}
+    To          {Position_D}
+    TriggeredBy {none|event}
+    OnDone      {none|followUpTask}
 end
 ```
-The operation `Transport->From->To` allows to move from multiple instances to one destination. The operation `TriggeredBy` even allows expressions.
+
+To simplify this down in the following the simplest structure of a *Task* is build and later on extended with optional functionality.
+
+### Example simple Task
+
+In the simplest form a *Task* in *LoTLan* just describes that an item should be picked up at some position and be delivered to another position:
+
+```text
+Task TransportGoodsPallet
+    Transport
+    From        goodsPallet
+    To          warehousePos1
+end
+```
+
+In terms of the introduced example production hall this *Task* looks like depicted in the following figure.
+
+<div style="text-align:center">
+
+![Example task](./doc/pics/3-tasks_new.png =500x)
+
+*Figure 3: Floor plan with Task **TransportGoodsPallet***
+</div>
+
+This *Task* *TransportGoodsPallet* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area.
+
+### Example Trigger Task
+
+A *Task* can be extended with a *TriggeredBy* statement that activates that *Task* if the case occurs. This statement can be an event like a button press or be something simple as a specific time:
+
+```text
+Task TransportGoodsPallet_2
+    Transport
+    From        goodsPallet
+    To          warehousePos1
+    TriggeredBy buttonPallet.value == True
+end
+```
+
+In this example, the *Task* *TransportGoodsPallet_2* will be triggered by a sensor event, when a button has been pushed and the value is equal (*== True*).
+
+In terms of the introduced example production hall this *Task* looks like depicted in the following figure.
+
+<div style="text-align:center">
+
+![Example trigger task](./doc/pics/4-tasks_new.png =500x)
+
+*Figure 3: Floor plan with Task **TransportGoodsPallet_2***
+</div>
+
+This *Task* *TransportGoodsPallet_2* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area, when the button *buttonPallet* is pressed.
+
+### Example OnDone Task
+
+A *Task* can be extended with a *OnDone* statement that activates another *Task* when the original one has ended:
+
+```text
+Task Refill
+    Transport
+    From        warehousePos1
+    To          goodsPallet
+end
+
+Task TransportGoodsPallet_3
+    Transport
+    From        goodsPallet
+    To          warehousePos1
+    TriggeredBy buttonPallet.value == True
+    OnDone      Refill
+end
+```
+
+In this example another *Task* is introduced. This *Task* *Refill* is the same transport as the formerly introduced *TransportGoodsPallet*, just the other way around. On the other hand, *TransportGoodsPallet_3* here shows now the *OnDone* statement that points to *Refill* an runs that *Task* if done. That means a concatenation of *Tasks* is allowed. Exploiting this behaviour infinite *Tasks* can be managed by pointing to each other. So *Refill* could also point to *TransportGoodsPallet_3* in a *OnDone* statement.
+
+In terms of the introduced example production hall this *Task* looks like depicted in the following figure.
+
+<div style="text-align:center">
+
+![Example on done task](./doc/pics/5-tasks_new.png =500x)
+
+*Figure 3: Floor plan with Task **TransportGoodsPallet_3** & **Refill***
+</div>
+
+This *Task* *TransportGoodsPallet_3* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area, when the button *buttonPallet* is pressed. After that the AGV executes the *Task* *Refill* and so, it picks up **from** the *warehousePos1* and delivers it **to** the *goodsPallet* position.
+
+## Comments
+
+A comment starts with a hash character (`#`) that is not part of a string literal, and ends at the end of the physical line. That means a comment can appear on its own or at the end of a statement. In-line comments are not supported.
+
+```text
+###
+# This task shows the usage of comments in LoTLan
+###
+Task TransportPalettTask
+    Transport
+    From        palett1, palett2, palett3  # All Pallets!
+    To          warehousePos1
+    TriggeredBy warehousePos1.value == True  # More comments
+    OnDone      Refill
+end
+```
+
+This example shows a mimicked multi-line comment that consists of three `#` that are joined together.
+
+
 
 
 # Execution
