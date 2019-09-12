@@ -57,6 +57,15 @@ end
 
 The *Primitive* *Position* has two member variables, a *type* and a *value*. These attributes can be later on accessed inside the instances.
 
+The primitive *Sensor* can be defined as following:
+
+```
+template Sensor
+    sensorId
+    type
+end
+```
+
 **Syntax**: It is important that the attributes inside an *template - end* definition begin with a lowercase character. The name has to start with an uppercase character. Each value also needs to be prefixed with four spaces (or a `\t`).
 
 ## Instances
@@ -74,6 +83,11 @@ end
 Position warehousePos1
     type = "pallet"
     value = "warehouseArea_pos1"
+end
+
+Sensor buttonPallet
+    sensorId = "A_Unique_Name_for_a_Button"
+    type = "Boolean"
 end
 ```
 
@@ -110,7 +124,7 @@ end
 
 To simplify this down in the following the simplest structure of a *Task* is build and later on extended with optional functionality.
 
-### Example simple Task
+### Example Simple Task
 
 In the simplest form a *Task* in *LoTLan* just describes that an item should be picked up at some position and be delivered to another position:
 
@@ -138,6 +152,12 @@ This *Task* *TransportGoodsPallet* could be done by an AGV, that picks up a pall
 A *Task* can be extended with a *TriggeredBy* statement that activates that *Task* if the case occurs. This statement can be an event like a button press or be something simple as a specific time:
 
 ```text
+
+Sensor buttonPallet
+    sensorId = "A_Unique_Name_for_a_Button"
+    type = "Boolean"
+end
+
 Task TransportGoodsPallet_2
     Transport
     From        goodsPallet
@@ -270,16 +290,6 @@ Task TransportGoodsPallet_3
     To          warehousePos1
     TriggeredBy buttonPallet.value == True
     OnDone      Refill  # If this Task is done, call Refill
-end
-
-###
-# A infinite loop described by two Tasks that point on each other
-###
-Task Refill
-    Transport
-    From        warehousePos1
-    To          goodsPallet
-    OnDone      TransportGoodsPallet_3
 end
 
 ```
