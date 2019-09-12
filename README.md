@@ -243,8 +243,14 @@ template Position
     value
 end
 
+template Sensor
+    sensorId 
+    type 
+end
+
+
 ###
-# Initiation of the two Positions goodsPallet and warehousePos1
+# Initiation of the two Positions goodsPallet and warehousePos1 and one sensor buttonPallet
 ###
 Position goodsPallet  # Using the Primitive Position
     type = "pallet"
@@ -254,6 +260,11 @@ end
 Position warehousePos1
     type = "pallet"
     value = "warehouseArea_pos1"
+end
+
+Sensor buttonPallet
+    sensorId = "A_Unique_Name_for_a_Button"
+    type = "Boolean"
 end
 
 ###
