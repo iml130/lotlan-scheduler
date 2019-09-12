@@ -1,11 +1,4 @@
 # Logistic Task Language
-It is a simple Task-Language to describe Intra-logistic processes. The language contains templates, instances of templates and tasks, which orchestrate those instances and trigger other tasks. 
-
-
-# SolaTask-File
-The `SolaTask`-File is composed by 3 different parts: Templates, Instances and Tasks. Each of them can be used and described arbitary complex. Also Comments can be annotated via `#`
-
-# Logistic Task Language
 
 The Logistic Task Language *(LoTLan)* is a simple, but powerful approach to describe intralogistic materialflow logic. A materialflow processes is mainly a transportation task like the pickup *- go to position and get item -* and the delivery *- got to position and unload item*.
 
@@ -17,11 +10,12 @@ The Logistic Task Language *(LoTLan)* is a simple, but powerful approach to desc
   - [Primitives](#primitives)
   - [Instances](#instances)
   - [Tasks](#tasks)
-    - [Example simple Task](#example-simple-task)
-    - [Example Trigger Task](#example-trigger-task)
+    - [Example Simple Task](#example-simple-task)
+    - [Example TriggerBy Task](#example-trigger-task)
     - [Example OnDone Task](#example-ondone-task)
-  - [Comments](#comments)
-  - [Others](#others)
+  - [Comments](#comments) 
+  - [Full Example](#full-example)
+  - [Execution](#execution)
 
 ___
 
@@ -41,7 +35,7 @@ The following documentation of *LoTLan* utilizes the example of a production hal
 
 <div style="text-align:center">
 
-![Example introduction](./doc/pics/1-introduction_new.png =500x)
+![Example introduction](/doc/pics/1-introduction_new.png)
 
 *Figure 1: Example floor plan with AGV and production & warehouse area*
 </div>
@@ -91,7 +85,7 @@ Speaking of the example introduced in the [introduction](#Logistic-Task-Language
 
 <div style="text-align:center">
 
-![Example instance](./doc/pics/2-instances_new.png =500x)
+![Example instance](./doc/pics/2-instances_new.png)
 
 *Figure 2: Floor plan with Positions **goodsPallet** and **warehousePos1***
 </div>
@@ -132,14 +126,14 @@ In terms of the introduced example production hall this *Task* looks like depict
 
 <div style="text-align:center">
 
-![Example task](./doc/pics/3-tasks_new.png =500x)
+![Example task](./doc/pics/3-tasks_new.png)
 
 *Figure 3: Floor plan with Task **TransportGoodsPallet***
 </div>
 
 This *Task* *TransportGoodsPallet* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area.
 
-### Example Trigger Task
+### Example TriggerBy Task
 
 A *Task* can be extended with a *TriggeredBy* statement that activates that *Task* if the case occurs. This statement can be an event like a button press or be something simple as a specific time:
 
@@ -158,7 +152,7 @@ In terms of the introduced example production hall this *Task* looks like depict
 
 <div style="text-align:center">
 
-![Example trigger task](./doc/pics/4-tasks_new.png =500x)
+![Example trigger task](./doc/pics/4-tasks_new.png)
 
 *Figure 3: Floor plan with Task **TransportGoodsPallet_2***
 </div>
@@ -191,7 +185,7 @@ In terms of the introduced example production hall this *Task* looks like depict
 
 <div style="text-align:center">
 
-![Example on done task](./doc/pics/5-tasks_new.png =500x)
+![Example on done task](./doc/pics/5-tasks_new.png)
 
 *Figure 3: Floor plan with Task **TransportGoodsPallet_3** & **Refill***
 </div>
@@ -217,7 +211,78 @@ end
 
 This example shows a mimicked multi-line comment that consists of three `#` that are joined together.
 
+## Full Example
 
+```text
+
+###
+# Defining a Primitive Position with the two attributes type and value
+###
+template Position
+    type
+    value
+end
+
+###
+# Initiation of the two Positions goodsPallet and warehousePos1
+###
+Position goodsPallet  # Using the Primitive Position
+    type = "pallet"
+    value = "productionArea_palletPlace"
+end
+
+Position warehousePos1
+    type = "pallet"
+    value = "warehouseArea_pos1"
+end
+
+###
+# Creation of a Task that transports from goodsPallet to warehousePos1
+###
+Task TransportGoodsPallet
+    Transport
+    From        goodsPallet
+    To          warehousePos1
+end
+
+###
+# Creation of a Task that is triggered if buttonPallet is pressed
+###
+Task TransportGoodsPallet_2
+    Transport
+    From        goodsPallet
+    To          warehousePos1
+    TriggeredBy buttonPallet.value == True  # buttonPallet is a Sensor
+end
+
+###
+# Creation of a Task that will call Refill when done
+###
+Task Refill
+    Transport
+    From        warehousePos1
+    To          goodsPallet
+end
+
+Task TransportGoodsPallet_3
+    Transport
+    From        goodsPallet
+    To          warehousePos1
+    TriggeredBy buttonPallet.value == True
+    OnDone      Refill  # If this Task is done, call Refill
+end
+
+###
+# A infinite loop described by two Tasks that point on each other
+###
+Task Refill
+    Transport
+    From        warehousePos1
+    To          goodsPallet
+    OnDone      TransportGoodsPallet_3
+end
+
+```
 
 
 # Execution
