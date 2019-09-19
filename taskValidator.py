@@ -24,9 +24,9 @@ def _validate(givenTree, retreivedInfo):
         # Check if Attrs are set.
         # NOTE Instance can set more like specified in template here
         t = givenTree.templates[instance.templateName]
-        for i in range(len(t.attributes)):
-            if t.attributes[i] not in instance.keyval:
-                raise Exception("Instace: {} does not set the Attribute: {}".format(instance.templateName, t.attributes[i]))
+        for i in t.keyval:
+            if i not in instance.keyval:
+                raise Exception("Instace: {} does not set the Attribute: {}".format(instance.templateName, i))
 
 
     for taskName, task in givenTree.taskInfos.iteritems():

@@ -33,8 +33,11 @@ def main():
     # printer = TaskParserListener()
     t = visitor.visit(tree)
 
-    print t.taskInfos["Transport_Task"].triggers[2]
-    print taskValidator.isValid(t)
+    print(t.taskInfos["Transport_Palette_Task"].triggeredBy)
+    print(t.taskInfos["Transport_Palette_Task"].finishedBy)
+    print(t.taskInfos["Transport_Palette_Task"].repeat)
+    print(t.taskInfos["Transport_Palette_Task"].location)
+    print(taskValidator.isValid(t))
 
 
 if __name__ == '__main__':

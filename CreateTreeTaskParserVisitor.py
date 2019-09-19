@@ -12,9 +12,12 @@ class CompleteProgram(object):
 class TaskInfo(object):
     def __init__(self):
         self.name = None # String Name of Task
-        self.triggers = [] # List of Triggers
+        self.triggeredBy = [] # List of Triggers
         self.transportOrders = [] # List of Transport Order (from|to)
         self.onDone = [] # Reference to the next Tasks
+        self.repeat = -1 # uninitialized
+        self.finishedBy = []
+        self.location = None
 
 class TransportOrder(object):
     def __init__(self):
@@ -24,7 +27,7 @@ class TransportOrder(object):
 class Template(object):
     def __init__(self):
         self.name = None # String of the Template Name
-        self.attributes = [] # A List of Attributes
+        self.keyval = [] # A List of Attributes
 
 class Instance(object):
     def __init__(self):
@@ -63,17 +66,26 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         # Iterate until we found an innerTemplate
         for child in ctx.children:
             if isinstance(child, TaskParser.InnerTemplateContext):
-                t.attributes = self.visitInnerTemplate(child)
+                t.keyval = self.visitInnerTemplate(child)
                 break
-        return t
+            
+        # Check if we have name/type or only timing in Template
+        if "timing" in t.keyval:
+            # Case here we have a Time Template
+            return t
+        elif "type" in t.keyval and "name" in t.keyval:
+            # Here we have type and name in template -> So an Object
+            return t
+        else:
+            raise Exception("Template {} does not contain name/type or timing. Line: {} ".format(t.name, ctx.start.line))
 
 
     # Visit a parse tree produced by TaskParser#innerTemplate.
     def visitInnerTemplate(self, ctx):
-        l = []
+        l = {}
         # Create a List of all Attributes inside a Template
-        for ele in ctx.AttributeInTemplate():
-            l.append(ele.getText())
+        for key, val in zip(ctx.AttributeInTemplate(), ctx.ValueInTemplate()):
+            l[key.getText()] = val.getText()
         return l
 
 
@@ -123,11 +135,36 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
             taskInfo.onDone.append(trigger.getText())
 
         # For each Expression Or Trigger we call the functions and append
-        for child in ctx.children:
-            if isinstance(child, TaskParser.ExpressionContext):
-                taskInfo.triggers.append(self.visitExpression(child))
-            if isinstance(child, TaskParser.TransportOrderContext):
-                taskInfo.transportOrders.append(self.visitTransportOrder(child))
+        for i  in range(len(ctx.children)):
+            childs = ctx.children
+
+            # Check here for each possible input we can get in Task
+            if isinstance(childs[i], TaskParser.ExpressionContext):
+                # Case we retrieve a TriggeredBy or FinishedBy -> Distinguish them here!
+                if "TriggeredBy" in childs[i-1].getText():
+                    taskInfo.triggeredBy.append(self.visitExpression(childs[i]))
+                elif "FinishedBy" in childs[i-1].getText():
+                    taskInfo.finishedBy.append(self.visitExpression(childs[i]))
+
+            # We have a Repeat, this can only be set once!
+            if "Repeat" in childs[i].getText():
+                if taskInfo.repeat != -1:
+                    raise Exception("The Task on Line: {} defines Repeat multiple Times ".format(ctx.start.line))
+                taskInfo.repeat = int(childs[i+1].getText())
+
+            # We have a Location, this can only be set once!
+            if "Location" in childs[i].getText():
+                if taskInfo.location is not None:
+                    raise Exception("The Task on Line: {} defines Location multiple Times ".format(ctx.start.line))
+                taskInfo.location = childs[i+1].getText()
+
+            # We received a Transport Order
+            if isinstance(childs[i], TaskParser.TransportOrderContext):
+                taskInfo.transportOrders.append(self.visitTransportOrder(childs[i]))
+
+        # Specifically check iff Location is set
+        if taskInfo.location is None:
+            raise Exception("The Task on Line: {} does not contatin a Location".format(ctx.start.line))
             
 
         

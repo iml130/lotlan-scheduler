@@ -50,8 +50,8 @@ In the domain of logistics such a *Primitive* could be a position. Defining such
 
 ```text
 template Position
-    type
-    value
+    type = ""
+    name = ""
 end
 ```
 
@@ -61,12 +61,12 @@ The primitive *Sensor* can be defined as following:
 
 ```
 template Sensor
-    sensorId
-    type
+    name = ""
+    type = ""
 end
 ```
 
-**Syntax**: It is important that the attributes inside an *template - end* definition begin with a lowercase character. The name has to start with an uppercase character. Each value also needs to be prefixed with four spaces (or a `\t`).
+**Syntax**: It is important that the attributes inside an *template - end* definition begin with a lowercase character. The name has to start with an uppercase character. Each value also needs to be prefixed with four spaces (or a `\t`). Currently only the following 3 attributes are allowed: `name` `type` `timing`
 
 ## Instances
 
@@ -114,8 +114,9 @@ Generally speaking a *Task* in *LoTLan* describes that a amount of items should 
 
 ```text
 Task {name}
+    Location {location}
     Transport
-    From        {Position_1; , Position_2 ... Position_N}
+    From        {Position_1}
     To          {Position_D}
     TriggeredBy {none|event}
     OnDone      {none|followUpTask}
@@ -130,6 +131,7 @@ In the simplest form a *Task* in *LoTLan* just describes that an item should be 
 
 ```text
 Task TransportGoodsPallet
+    Location    production_hall
     Transport
     From        goodsPallet
     To          warehousePos1
@@ -154,7 +156,7 @@ A *Task* can be extended with a *TriggeredBy* statement that activates that *Tas
 ```text
 
 Sensor buttonPallet
-    sensorId = "A_Unique_Name_for_a_Button"
+    name = "A_Unique_Name_for_a_Button"
     type = "Boolean"
 end
 
@@ -162,7 +164,7 @@ Task TransportGoodsPallet_2
     Transport
     From        goodsPallet
     To          warehousePos1
-    TriggeredBy buttonPallet.value == True
+    TriggeredBy buttonPallet == True
 end
 ```
 
@@ -185,12 +187,14 @@ A *Task* can be extended with a *OnDone* statement that activates another *Task*
 
 ```text
 Task Refill
+	Location    production_hall
     Transport
     From        warehousePos1
     To          goodsPallet
 end
 
 Task TransportGoodsPallet_3
+	Location    production_hall
     Transport
     From        goodsPallet
     To          warehousePos1
@@ -239,13 +243,18 @@ This example shows a mimicked multi-line comment that consists of three `#` that
 # Defining a Primitive Position with the two attributes type and value
 ###
 template Position
-    type
-    value
+    type = ""
+    name = ""
 end
 
 template Sensor
-    sensorId 
-    type 
+    name = ""
+    type = ""
+end
+
+template Location
+    name = ""
+    type = ""
 end
 
 
@@ -254,23 +263,29 @@ end
 ###
 Position goodsPallet  # Using the Primitive Position
     type = "pallet"
-    value = "productionArea_palletPlace"
+    name = "productionArea_palletPlace"
 end
 
 Position warehousePos1
     type = "pallet"
-    value = "warehouseArea_pos1"
+    name = "warehouseArea_pos1"
 end
 
 Sensor buttonPallet
-    sensorId = "A_Unique_Name_for_a_Button"
+    name = "A_Unique_Name_for_a_Button"
     type = "Boolean"
 end
 
+Location production_hall
+    name = "Hall_1_A-32"
+    type = "building"
+    
+end
 ###
 # Creation of a Task that transports from goodsPallet to warehousePos1
 ###
 Task TransportGoodsPallet
+	Location production_hall
     Transport
     From        goodsPallet
     To          warehousePos1
@@ -280,26 +295,29 @@ end
 # Creation of a Task that is triggered if buttonPallet is pressed
 ###
 Task TransportGoodsPallet_2
+	Location production_hall
     Transport
     From        goodsPallet
     To          warehousePos1
-    TriggeredBy buttonPallet.value == True  # buttonPallet is a Sensor
+    TriggeredBy buttonPallet == True  # buttonPallet is a Sensor
 end
 
 ###
 # Creation of a Task that will call Refill when done
 ###
 Task Refill
+	Location production_hall
     Transport
     From        warehousePos1
     To          goodsPallet
 end
 
 Task TransportGoodsPallet_3
+	Location production_hall
     Transport
     From        goodsPallet
     To          warehousePos1
-    TriggeredBy buttonPallet.value == True
+    TriggeredBy buttonPallet == True
     OnDone      Refill  # If this Task is done, call Refill
 end
 

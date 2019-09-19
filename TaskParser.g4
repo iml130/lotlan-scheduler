@@ -16,7 +16,7 @@ template:
     EndInTemplate;
 
 innerTemplate: 
-    (IndentationInTemplate AttributeInTemplate NLInTemplate)+;
+    (IndentationInTemplate AttributeInTemplate EqualInTemplate ValueInTemplate NLInTemplate)+;
 
 // Instance Layout
 instance: 
@@ -25,7 +25,7 @@ instance:
     EndInInstance;
 
 innerInstance: 
-    (IndentationInInstance AttributeInInstance Equal ValueInInstance NLInInstance)+;
+    (IndentationInInstance AttributeInInstance EqualinInstance ValueInInstance NLInInstance)+;
 
 // Task Layout
 task: 
@@ -36,11 +36,14 @@ task:
 innerTask:
     (transportOrder 
     | IndentationInTask TriggeredBy expression E_NLInTask
+    | IndentationInTask FinishedBy expression E_NLInTask
+    | IndentationInTask Repeat RepeatTimes NLInTask 
+    | IndentationInTask Location NewInstance NLInTask  
     | IndentationInTask OnDone NewTask NLInTask)+;
 
 transportOrder:
     IndentationInTask Transport NLInTask
-    IndentationInTask From NewInstance (Comma NewInstance)* NLInTask
+    IndentationInTask From NewInstance NLInTask
     IndentationInTask To dest = NewInstance NLInTask;
 
 

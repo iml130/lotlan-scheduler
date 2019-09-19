@@ -14,9 +14,12 @@ CommentLineInTemplate : IndentationInTemplate '#' ~[\n]+ '\n'-> skip;
 EmptyLineInTemplate: ('    '| '\t') '\n' -> skip;
 EndInTemplate: 'end' -> popMode;
 
-AttributeInTemplate: [a-z][a-zA-Z0-9_]*;
+
+EqualInTemplate: WS_I '=' WS_I;
 NLInTemplate: WS_T '\n';
 IndentationInTemplate: ('    '|'\t');
+AttributeInTemplate: [a-z][a-zA-Z0-9_]*;
+ValueInTemplate: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;  // Warning is not correct!
 fragment WS_T: [ \t]*;
 
 
@@ -27,11 +30,11 @@ CommentLineInInstance : IndentationInInstance '#' ~[\n]+ '\n'-> skip;
 EmptyLineInInstance: ('    '| '\t') '\n' -> skip;
 EndInInstance: 'end' -> popMode;
 
-Equal: WS_I '=' WS_I;
+EqualinInstance: WS_I '=' WS_I;
 NLInInstance: WS_I '\n';
 IndentationInInstance: ('    '|'\t');
 AttributeInInstance: [a-z][a-zA-Z0-9_]*;
-ValueInInstance: ('"' [a-zA-Z0-9_]* '"' | [a-zA-Z0-9_]+);
+ValueInInstance: ('"' [a-zA-Z0-9_* ]* '"');
 fragment WS_I: [ \t]*;
 
 
@@ -51,6 +54,10 @@ To: 'to' WS_TA;
 
 
 TriggeredBy: 'TriggeredBy' WS_TA ->  pushMode(EXPRESSION);
+FinishedBy: 'FinishedBy' WS_TA ->  pushMode(EXPRESSION);
+Repeat: 'Repeat' WS_TA;
+RepeatTimes: [0-9]+ WS_TA; 
+Location: 'Location' WS_TA;
 OnDone: 'OnDone' WS_TA;
 Comma: ',' WS_TA;
 
@@ -72,7 +79,7 @@ E_NotEqual: '!=';
 E_BooleanAnd:	'&&';
 E_BooleanOr: '||';
 E_Not: '!';
-E_Attribute: [a-z][a-zA-Z0-9_]* '.' [a-z][a-zA-Z0-9_]*;
+E_Attribute: [a-z][a-zA-Z0-9_]+;
 E_True: 'True' | 'TRUE';
 E_False: 'False' | 'FALSE';
 E_Integer: [0-9]+;

@@ -4,23 +4,27 @@
 
 # Basic Template structure
 template Palette
-	type
-	value # readonly
+	name = ""
+	type  = "" # readonly
 end
 
 template PaletteSensor # A Sensor which sets the Value to true if full
-	value # readonly
+	name = ""
+	type = ""# readonly
 end
 
 template Container
-    type
+	name = ""
+    type = ""
 end
 
 Container container
+	name = ""
     type = "Container"
 end
 
 Container room
+	name = ""
     type = "Supply_Room"
 end
 
@@ -29,50 +33,55 @@ end
 
 # Basic Instance structure
 Palette palette_1
-	type  =	LightSensor
-	value = "boolean"
+	name  =	"LightSensor"
+	type = "boolean"
 end
 
 Palette palette_2
-	type  =	LightSensor
-	value = "boolean"
+	name  =	"LightSensor"
+	type = "boolean"
 end
 
 Palette palette_3
-	type  =	LightSensor
-	value = "boolean"
+	name  =	"LightSensor"
+	type = "boolean"
 end
 
 PaletteSensor palette_1Full
-	value = "Boolean"
+	type = "Boolean"
+	name = "my_sensor"
 end
 
 PaletteSensor palette_2Full
-	value = "Boolean"
+	type = "Boolean"
+	name = "your_sensor"
 end
 
 PaletteSensor palette_3Full
-	value = "Boolean"
+	type = "Boolean"
+	name = "some_sensor"
 end
 
 
 task Reset_Task
+	Location room
 	Transport 
-    from 		palette_1, palette_2, palette_3 
+    from 		palette_1
     to 			room
 end 
 
 
 # Basic Task structure
 task Transport_Task
+	Location room
     # Transport something from A to B
 	Transport 
-    from 		palette_1, palette_2, palette_3
+    from 		palette_2
     to 			container
     
-	TriggeredBy	palette_1Full.value == TRUE
-	TriggeredBy	palette_2Full.value == FALSE
-	TriggeredBy	palette_3Full.value == !12 || 42.42 <= 42.31
+	TriggeredBy	palette_1Full == TRUE
+	TriggeredBy	palette_2Full == FALSE
+	TriggeredBy	palette_3Full == !12 || 42.42 <= 42.31
     
 	OnDone		Reset_Task
 end
@@ -86,20 +95,20 @@ end
 
 
 Palette this_palette
-	type  =	LightSensor
-	value = "boolean"
+	name  =	"LightSensor"
+	type = "boolean"
 end
 
 Palette that_palette
-	type  =	LightSensor
-	value = "boolean"
+	name  =	"LightSensor"
+	type = "boolean"
 end
 
 
 
 template Position # Required for correct Parsing of thisPos and emptyPAllet
-	type
-	position
+	name = ""
+	type = ""
 end
 
 
@@ -107,7 +116,7 @@ Position thisPos
 	# ExampleDescription of an Instance
 	type = "pallet"
     
-	position = "thisPos" # Values can also be set inside "
+	name = "thisPos" # Values can also be set inside "
     
     
     
@@ -119,11 +128,12 @@ end
 # Spaces and Tabs can be used to format nicely
 # Also Empty Lines are allowed
 task Nice_Formatted_Task#Comment everywhere
+	Location room
 	Transport       # A Comment can also be expanded via Spaces and Tabs
     from			this_palette
 	to				that_palette
     
-	TriggeredBy		thisPos.position == 42.42 && 3 <= 4
+	TriggeredBy		thisPos == 42.42 && 3 <= 4
 	
     
 	#Afterwards 
@@ -139,7 +149,7 @@ end####### End of Task
 
 Position emptyPallet   # Another Comment
 	type = "pallet"
-	position =   "warehouse_empty_pallet"
+	name =   "warehouse_empty_pallet"
 	#Again empty Lines
     
     #type = "SomethingDebugged"
@@ -156,33 +166,91 @@ end    # Another Comement
 
 
 template Sensor_B#Another Comment
-	sensorId   
+	name   = ""
+	type    =    ""
     
     
 	# Empty Lines are allowed
 	# Also Comment Lines
-	type 
-	value #readonly
-    value_2 #writeonly
+	type = ""
+	value = "" #readonly
+    value_2 = ""  #writeonly
 	#CommentLine
     
 end#END
 
 
 Container warehouse_pos1
+	name = "SomeName"
 	type = "WareHouse"
 end
 
 task Refill
+	Location room
     Transport 
-	from palette_1, palette_2, palette_3
+	from palette_3
 	to container
 end
 
 task Transport_Palette_Task
+	Location room
 	Transport 
-    from palette_1, palette_2, palette_3 # All Pallets!
+    from palette_2 # All Pallets!
 	to warehouse_pos1
-	TriggeredBy warehouse_pos1.type # Suddenly Expressions!
+	TriggeredBy warehouse_pos1 # Suddenly Expressions!
 	OnDone Refill
+end
+
+
+task Transport_Palette_Task
+	Location room
+	Transport 
+    from palette_1 # All Pallets!
+	to warehouse_pos1
+	FinishedBy warehouse_pos1 # Suddenly Expressions!
+	OnDone Refill
+end
+
+task Transport_Palette_Task
+	Location room
+	Transport 
+    from palette_3 # All Pallets!
+	to warehouse_pos1
+	FinishedBy warehouse_pos1 # Suddenly Expressions!
+	OnDone Refill
+	Repeat 12321321321213
+end
+
+
+task Transport_Palette_Task
+	Location test123
+	Transport 
+    from palette_2 # All Pallets!
+	to warehouse_pos1
+	FinishedBy warehouse_pos1 # Suddenly Expressions!
+	TriggeredBy warehouse_pos2 # Suddenly Expressions!
+	OnDone Refill
+	Repeat 123
+end
+
+
+template Time
+    # As in Cron
+    timing = "* * * * *"
+end
+
+
+
+template Time
+    # As in Cron
+    timing = "* * * * */10"
+end
+
+
+
+
+
+template Time
+    # As in Cron
+    timing = "* * *  * */10"
 end
