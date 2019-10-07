@@ -38,11 +38,11 @@ def main():
     print(t.taskInfos["Transport_Palette_Task"].triggeredBy)
     print(t.taskInfos["Transport_Palette_Task"].finishedBy)
     print(t.taskInfos["Transport_Palette_Task"].repeat)
-    print(t.transportOrderSteps["t1"].name)
-    print(t.transportOrderSteps["t1"].location)
-    print(t.transportOrderSteps["t1"].triggeredBy)
-    print(t.transportOrderSteps["t1"].finishedBy)
-    print(t.transportOrderSteps["t1"].onDone)
+    # print(t.transportOrderSteps["t1"].name)
+    # print(t.transportOrderSteps["t1"].location)
+    # print(t.transportOrderSteps["t1"].triggeredBy)
+    # print(t.transportOrderSteps["t1"].finishedBy)
+    # print(t.transportOrderSteps["t1"].onDone)
     print(taskValidator.isValid(t))
 
 

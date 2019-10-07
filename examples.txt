@@ -2,6 +2,24 @@
 #This is just a Template to show available options
 ##############################
 
+# Basic TransportOrderStep-structure
+TransportOrderStep moldingPalette
+    Location moldingPalette_location     # Only one Location can be defined!
+    FinishedBy workerPressedButtonAtMoldingPalette
+end
+
+
+TransportOrderStep warehouse
+    Location warehouse_location
+    FinishedBy workerPressedButtonAtWarehouse
+end
+TransportOrderStep t1#should work
+	Location testitest
+	TriggeredBy mitarbeiterButtonDasErFertigIst
+	FinishedBy abc == bce < 5
+	OnDone MeineTask7
+end
+
 # Basic Template structure
 template Palette
 	name = ""
@@ -190,7 +208,7 @@ end
 
 task Transport_Palette_Task
 	Transport 
-    from palette_2 # All Pallets!
+    from t1 # All Pallets!
 	to warehouse
 	TriggeredBy warehouse_pos1 # Suddenly Expressions!
 	OnDone Refill
@@ -286,16 +304,6 @@ end
 
  # TASKS
 
-TransportOrderStep moldingPalette
-    Location moldingPalette_location     # Only one Location can be defined!
-    FinishedBy workerPressedButtonAtMoldingPalette
-end
-
-
-TransportOrderStep warehouse
-    Location warehouse_location
-    FinishedBy workerPressedButtonAtWarehouse
-end
 
 task Transport_Palette_Task 
 	TriggeredBy mitarbeiterButtonDasErFertigIst
@@ -305,9 +313,4 @@ task Transport_Palette_Task
 	Repeat 3
 end
 
-TransportOrderStep t1#should work
-	Location testitest
-	TriggeredBy mitarbeiterButtonDasErFertigIst
-	FinishedBy abc == bce < 5
-	OnDone MeineTask7
-end
+
