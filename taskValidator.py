@@ -38,14 +38,12 @@ def _validate(givenTree, retreivedInfo):
         # Check TransportOrders
         for i in range(len(task.transportOrders)):
             # Fromm check
-            for j in range(len(task.transportOrders[i].fromm)):
-                print task.transportOrders[i].fromm[j]
-                if _checkIfInstancePresent(givenTree, task.transportOrders[i].fromm[j]) is False:
-                    raise Exception("Task: {} refers to an unknown Instance in TransportOrder: {}".format(task.name, task.transportOrders[i].fromm[j]))
+            if _checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].fromm) is False:
+                raise Exception("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name, task.transportOrders[i].fromm))
             
             # To check
-            if _checkIfInstancePresent(givenTree, task.transportOrders[i].to) is False:
-                    raise Exception("Task: {} refers to an unknown Instance in TransportOrder: {}".format(task.name, task.transportOrders[i].to))
+            if _checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].to) is False:
+                    raise Exception("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name, task.transportOrders[i].to))
 
 
         # TODO Trigger Semantic-Checking
@@ -61,8 +59,8 @@ def _checkIfTaskPresent(givenTree, taskName):
             return True
     return False
 
-def _checkIfInstancePresent(givenTree, instanceName):
-    for _iN, _t in givenTree.instances.iteritems():
+def _checkIfTransportOrderStepsPresent(givenTree, instanceName):
+    for _iN, _t in givenTree.transportOrderSteps.iteritems():
         if instanceName == _iN:
             return True
     return False

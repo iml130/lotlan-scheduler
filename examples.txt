@@ -64,20 +64,18 @@ end
 
 
 task Reset_Task
-	Location room
 	Transport 
-    from 		palette_1
-    to 			room
+    from 		t1
+    to 			moldingPalette
 end 
 
 
 # Basic Task structure
 task Transport_Task
-	Location room
     # Transport something from A to B
 	Transport 
-    from 		palette_2
-    to 			container
+    from 		t1
+    to 			warehouse
     
 	TriggeredBy	palette_1Full == TRUE
 	TriggeredBy	palette_2Full == FALSE
@@ -128,10 +126,9 @@ end
 # Spaces and Tabs can be used to format nicely
 # Also Empty Lines are allowed
 task Nice_Formatted_Task#Comment everywhere
-	Location room
 	Transport       # A Comment can also be expanded via Spaces and Tabs
-    from			this_palette
-	to				that_palette
+    from			moldingPalette
+	to				warehouse
     
 	TriggeredBy		thisPos == 42.42 && 3 <= 4
 	
@@ -186,36 +183,32 @@ Container warehouse_pos1
 end
 
 task Refill
-	Location room
     Transport 
-	from palette_3
-	to container
+	from t1
+	to moldingPalette
 end
 
 task Transport_Palette_Task
-	Location room
 	Transport 
     from palette_2 # All Pallets!
-	to warehouse_pos1
+	to warehouse
 	TriggeredBy warehouse_pos1 # Suddenly Expressions!
 	OnDone Refill
 end
 
 
 task Transport_Palette_Task
-	Location room
 	Transport 
-    from palette_1 # All Pallets!
-	to warehouse_pos1
+    from t1 # All Pallets!
+	to warehouse
 	FinishedBy warehouse_pos1 # Suddenly Expressions!
 	OnDone Refill
 end
 
 task Transport_Palette_Task
-	Location room
 	Transport 
-    from palette_3 # All Pallets!
-	to warehouse_pos1
+    from warehouse # All Pallets!
+	to t1
 	FinishedBy warehouse_pos1 # Suddenly Expressions!
 	OnDone Refill
 	Repeat 12321321321213
@@ -223,10 +216,9 @@ end
 
 
 task Transport_Palette_Task
-	Location test123
 	Transport 
-    from palette_2 # All Pallets!
-	to warehouse_pos1
+    from warehouse # All Pallets!
+	to t1
 	FinishedBy warehouse_pos1 # Suddenly Expressions!
 	TriggeredBy warehouse_pos2 # Suddenly Expressions!
 	OnDone Refill
@@ -253,4 +245,69 @@ end
 template Time
     # As in Cron
     timing = "* * *  * */10"
+end
+
+
+### TEMPLATES
+template Location
+    name = ""
+    type = ""
+end
+
+template Event
+    name = ""
+    type = ""
+end
+
+
+### INSTANCES 
+
+Location moldingPallet
+    name = "Tag10_11"
+    type = "pallet"
+end
+
+Location blaPosition
+    name = "Tag10_12"
+    type = "Boolean"
+end
+
+Event sensorTest
+    type = "Boolean"
+    name = "LightBarrier"
+end
+
+
+
+task Pickup
+    FinishedBy sensorTest == True # manual loading 
+end
+
+
+ # TASKS
+
+TransportOrderStep moldingPalette
+    Location moldingPalette_location     # Only one Location can be defined!
+    FinishedBy workerPressedButtonAtMoldingPalette
+end
+
+
+TransportOrderStep warehouse
+    Location warehouse_location
+    FinishedBy workerPressedButtonAtWarehouse
+end
+
+task Transport_Palette_Task 
+	TriggeredBy mitarbeiterButtonDasErFertigIst
+    Transport 
+    from moldingPalette # All Pallets!
+    to warehouse 
+	Repeat 3
+end
+
+TransportOrderStep t1#should work
+	Location testitest
+	TriggeredBy mitarbeiterButtonDasErFertigIst
+	FinishedBy abc == bce < 5
+	OnDone MeineTask7
 end

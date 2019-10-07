@@ -21,10 +21,11 @@ ___
 
 ## Introduction
 
-The *LoTLan* consists of 3 different building blocks, that combined with each other describes such a process:
+The *LoTLan* consists of 4 different building blocks, that combined with each other describes such a process:
 
 - Primitives
 - Instances
+- TransportOrderSteps
 - Tasks
 
 A *Primitive* is an abstract model for a series of similar objects. It is the blueprint for the representation of real objects in software objects and describes attributes (properties) of the objects. Through the instantiation of such a *Primitive* a *Instance* of a concrete object is created. A *Task* then combines these *Instances* to a logical process flow.
@@ -114,10 +115,9 @@ Generally speaking a *Task* in *LoTLan* describes that a amount of items should 
 
 ```text
 Task {name}
-    Location {location}
     Transport
-    From        {Position_1}
-    To          {Position_D}
+    From        {transportOrderStep_0}
+    To          {transportOrderStep_D}
     TriggeredBy {none|event}
     OnDone      {none|followUpTask}
 end
@@ -131,7 +131,6 @@ In the simplest form a *Task* in *LoTLan* just describes that an item should be 
 
 ```text
 Task TransportGoodsPallet
-    Location    production_hall
     Transport
     From        goodsPallet
     To          warehousePos1

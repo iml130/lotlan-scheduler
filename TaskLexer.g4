@@ -3,6 +3,7 @@ lexer grammar TaskLexer;
 CommentInProgram : '#' ~[\n]+  -> skip;
 TemplateStart: 'template ' [A-Z][a-zA-Z0-9_]* -> pushMode(TEMPLATE);
 TaskStart: 'task ' [A-Z][a-zA-Z0-9_]* -> pushMode(TASK);
+TransportOrderStepStart: 'TransportOrderStep ' [a-z][a-zA-Z0-9_]* -> pushMode(TRANSPORTORDERSTEP);
 InstanceStart: [A-Z][a-zA-Z0-9_]* ' ' [a-z][a-zA-Z0-9_]* -> pushMode(INSTANCE);
 WS: [ \t\r\n]+ -> skip;
 
@@ -19,7 +20,7 @@ EqualInTemplate: WS_I '=' WS_I;
 NLInTemplate: WS_T '\n';
 IndentationInTemplate: ('    '|'\t');
 AttributeInTemplate: [a-z][a-zA-Z0-9_]*;
-ValueInTemplate: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;  // Warning is not correct!
+ValueInTemplate: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;  // Warning from VS_CODE is not correct!
 fragment WS_T: [ \t]*;
 
 
@@ -36,6 +37,25 @@ IndentationInInstance: ('    '|'\t');
 AttributeInInstance: [a-z][a-zA-Z0-9_]*;
 ValueInInstance: ('"' [a-zA-Z0-9_* ]* '"');
 fragment WS_I: [ \t]*;
+
+mode TRANSPORTORDERSTEP;
+// Skip Comments/Empty Lines as long as Indentation is correct
+CommentInTransportOrderStep : WS_I '#' ~[\n]+  -> skip;
+CommentLineInTransportOrderStep : IndentationInInstance '#' ~[\n]+ '\n'-> skip;
+EmptyLineInTransportOrderStep: ('    '| '\t') '\n' -> skip;
+EndInTransportOrderStep: 'end' -> popMode;
+
+NLInTransportOrderStep: WS_TOS '\n';
+
+TriggeredByTOS: 'TriggeredBy' WS_TA ->  pushMode(EXPRESSION);
+FinishedByTOS: 'FinishedBy' WS_TA ->  pushMode(EXPRESSION);
+LocationTOS: 'Location' WS_TA;
+OnDoneTOS: 'OnDone' WS_TA;
+CommaTOS: ',' WS_TA;
+IndentationInTransportOrderStep: ('    '|'\t');
+NewInstanceInTransportOrderStep: [a-z][a-zA-Z0-9_]*; 
+NewTaskInTransportOrderStep: [A-Z][a-zA-Z0-9_]*;
+fragment WS_TOS: [ \t]*;
 
 
 mode TASK;
@@ -57,7 +77,6 @@ TriggeredBy: 'TriggeredBy' WS_TA ->  pushMode(EXPRESSION);
 FinishedBy: 'FinishedBy' WS_TA ->  pushMode(EXPRESSION);
 Repeat: 'Repeat' WS_TA;
 RepeatTimes: [0-9]+ WS_TA; 
-Location: 'Location' WS_TA;
 OnDone: 'OnDone' WS_TA;
 Comma: ',' WS_TA;
 
@@ -86,4 +105,4 @@ E_Integer: [0-9]+;
 E_Float: [0-9]+( '.' [0-9]+);
 E_WS: [ \r\t]  -> skip;
 E_Comment: '#' ~[\n]+ -> skip;
-E_NLInTask: [\n] -> popMode;
+E_NLInExpression: [\n] -> popMode;

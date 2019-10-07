@@ -6,7 +6,7 @@ options {
 
 
 program : 
-    (template | instance | task)*;
+    (template | instance | task | transportOrderStep)*;
 
 
 // Template Layout
@@ -16,7 +16,7 @@ template:
     EndInTemplate;
 
 innerTemplate: 
-    (IndentationInTemplate AttributeInTemplate EqualInTemplate ValueInTemplate NLInTemplate)+;
+    (IndentationInTemplate AttributeInTemplate EqualInTemplate ValueInTemplate NLInTemplate)+; 
 
 // Instance Layout
 instance: 
@@ -27,18 +27,29 @@ instance:
 innerInstance: 
     (IndentationInInstance AttributeInInstance EqualinInstance ValueInInstance NLInInstance)+;
 
+transportOrderStep:
+    TransportOrderStepStart NLInTransportOrderStep
+        innerTransportOrderStep
+    EndInTransportOrderStep;
+
+innerTransportOrderStep:
+    ( IndentationInTransportOrderStep TriggeredByTOS expression E_NLInExpression
+    | IndentationInTransportOrderStep FinishedByTOS expression E_NLInExpression
+    | IndentationInTransportOrderStep LocationTOS NewInstanceInTransportOrderStep NLInTransportOrderStep  
+    | IndentationInTransportOrderStep OnDoneTOS NewTaskInTransportOrderStep NLInTransportOrderStep)+;
+
+
 // Task Layout
 task: 
-    TaskStart NLInTask 
+    TaskStart NLInTask
         innerTask 
     EndInTask;
  
 innerTask:
     (transportOrder 
-    | IndentationInTask TriggeredBy expression E_NLInTask
-    | IndentationInTask FinishedBy expression E_NLInTask
+    | IndentationInTask TriggeredBy expression E_NLInExpression
+    | IndentationInTask FinishedBy expression E_NLInExpression
     | IndentationInTask Repeat RepeatTimes NLInTask 
-    | IndentationInTask Location NewInstance NLInTask  
     | IndentationInTask OnDone NewTask NLInTask)+;
 
 transportOrder:
