@@ -35,7 +35,7 @@ EqualinInstance: WS_I '=' WS_I;
 NLInInstance: WS_I '\n';
 IndentationInInstance: ('    '|'\t');
 AttributeInInstance: [a-z][a-zA-Z0-9_]*;
-ValueInInstance: ('"' [a-zA-Z0-9_* ]* '"');
+ValueInInstance: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;  // Warning from VS_CODE is not correct!
 fragment WS_I: [ \t]*;
 
 mode TRANSPORTORDERSTEP;
