@@ -9,7 +9,7 @@ The Logistic Task Language *(LoTLan)* is a simple, but powerful approach to desc
     - [Use of Example](#use-of-example)
   - [Primitives](#primitives)
   - [Instances](#instances)
-  - [TransportOrderSteps](#transportOrderSteps)
+  - [TransportOrderSteps](#transportordersteps)
   - [Tasks](#tasks)
     - [Example Simple Task](#example-simple-task)
     - [Example TriggeredBy Task](#example-trigger-task)
