@@ -1,6 +1,6 @@
 # Logistic Task Language
 
-The Logistic Task Language *(LoTLan)* is a simple, but powerful approach to describe intralogistic materialflow logic. A materialflow processes is mainly a transportation task like the pickup *- go to position and get item -* and the delivery *- got to position and unload item*.
+The Logistic Task Language *(LoTLan)* is a simple, but powerful approach to describe intralogistic materialflow logic. A materialflow process is mainly a transportation task like the pickup *- go to position and get item -* and the delivery *- got to position and unload item*.
 
 ## Table of contents
 
@@ -9,11 +9,12 @@ The Logistic Task Language *(LoTLan)* is a simple, but powerful approach to desc
     - [Use of Example](#use-of-example)
   - [Primitives](#primitives)
   - [Instances](#instances)
+  - [TransportOrderSteps](#transportOrderSteps)
   - [Tasks](#tasks)
     - [Example Simple Task](#example-simple-task)
-    - [Example TriggerBy Task](#example-trigger-task)
+    - [Example TriggeredBy Task](#example-trigger-task)
     - [Example OnDone Task](#example-ondone-task)
-  - [Comments](#comments) 
+  - [Comments](#comments)
   - [Full Example](#full-example)
   - [Execution](#execution)
 
@@ -28,7 +29,7 @@ The *LoTLan* consists of 4 different building blocks, that combined with each ot
 - TransportOrderSteps
 - Tasks
 
-A *Primitive* is an abstract model for a series of similar objects. It is the blueprint for the representation of real objects in software objects and describes attributes (properties) of the objects. Through the instantiation of such a *Primitive* a *Instance* of a concrete object is created. A *Task* then combines these *Instances* to a logical process flow.
+A *Primitive* is an abstract model for a series of similar objects. It is the blueprint for the representation of real objects in software objects and describes attributes (properties) of the objects. Through the instantiation of such a *Primitive* a *Instance* of a concrete object is created. The *TransportOrderStep* with the help of these *Instances* describes a short procedure. A *Task* then combines *Instances* and *TransportOrderSteps* to a enlarged logical process flow.
 
 ### Use of Example
 
@@ -36,7 +37,7 @@ The following documentation of *LoTLan* utilizes the example of a production hal
 
 <div style="text-align:center">
 
-![Example introduction](/doc/pics/1-introduction_new.png)
+![Example introduction](./doc/pics/1-introduction_new.png)
 
 *Figure 1: Example floor plan with AGV and production & warehouse area*
 </div>
@@ -45,81 +46,131 @@ This example shown in the figure above will be expanded in the course of time to
 
 ## Primitives
 
-A *Primitive* can contain multiple member variables, like palettes/storage places, multiple conveyer belts, or like sensors with the same capabilities. Therefore, a *Primitive* summarizes and specifies a set of *Instances*.
+A *Primitive* can contain multiple member variables, like pallets/storage places, multiple conveyer belts, or like sensors with the same capabilities. Therefore, a *Primitive* summarizes and specifies a set of *Instances*.
 
-In the domain of logistics such a *Primitive* could be a position. Defining such a position is done via the *__template syntax__*:
+In the domain of logistics such a *Primitive* could be a location. Defining such a location is done via the *__template syntax__*:
 
 ```text
-template Position
+template Location
     type = ""
     name = ""
 end
 ```
 
-The *Primitive* *Position* has two member variables, a *type* and a *value*. These attributes can be later on accessed inside the instances.
+The *Primitive* *Location* has two member variables, a *type* and a *value*. These attributes can be later on accessed inside the instances.
 
-The primitive *Sensor* can be defined as following:
+The *Primitives* *Event* and *Time* could be defined as following:
 
-```
-template Sensor
+```text
+template Event
     name = ""
     type = ""
 end
+
+template Time
+    timing = ""
+end
 ```
 
-**Syntax**: It is important that the attributes inside an *template - end* definition begin with a lowercase character. The name has to start with an uppercase character. Each value also needs to be prefixed with four spaces (or a `\t`). Currently only the following 3 attributes are allowed: `name` `type` `timing`
+**Syntax**: It is important that the attributes inside an *template - end* definition begin with a lowercase character. The name has to start with an uppercase character. Each attribute also needs to be prefixed with four spaces (or a `\t`). Currently only the following 3 attributes are allowed: `name`, `type`, `timing`
 
 ## Instances
 
 An *Instance* is the concrete object of a previously declared *Primitive*. Such set of *Instances* do not share any data other than the definition of their attributes.
 
-As an example, two *Instances* of positions could be initiated out of the previously made *Primitive* (see [Primitives section](#Primitives)):
+As an example, two *Instances* of locations could be initiated out of the previously made *Primitive* (see [Primitives section](#Primitives)):
 
 ```text
-Position goodsPallet
+Location goodsPallet
     type = "pallet"
     value = "productionArea_palletPlace"
 end
 
-Position warehousePos1
+Location warehousePos1
     type = "pallet"
     value = "warehouseArea_pos1"
-end
-
-Sensor buttonPallet
-    sensorId = "A_Unique_Name_for_a_Button"
-    type = "Boolean"
 end
 ```
 
 The *Instance* *goodsPallet* has two member variables, a *type* and a *value*. The *type* attribute states *what item is located there* and the *value* the *logical name of this location*.
 
-**Syntax**: The syntax of *Primitives* introduced before here is complemented by assigning values to the attributes. These values must be enclosed by `"`. Also, the name has to start with a lowercase character.
+The *Instances* *Event* and *Time* could be defined as following:
 
-Speaking of the example introduced in the [introduction](#Logistic-Task-Language), those *Instances* each define a specific position inside the two areas.
+```text
+Event agvLoadedAtGoodsPallet
+    type = "Boolean"
+    name = "LightBarrier"
+end
+
+Event agvLoadedAtWarehousePos1
+    type = "Boolean"
+    name = "LightBarrier"
+end
+
+Time lunchBreak
+    timing = "30 12 * * *"  # Cron format
+end
+```
+
+**Syntax**: The syntax of *Primitives* introduced here is complemented by assigning values to the attributes. These values must be enclosed by `"`. The name has to start with a lowercase character. Each attribute also needs to be prefixed with four spaces (or a `\t`).
+
+Speaking of the example introduced in the [introduction](#Logistic-Task-Language), the formerly shown *Location* *Instances* each define a specific location inside the two areas.
 
 <div style="text-align:center">
 
 ![Example instance](./doc/pics/2-instances_new.png)
 
-*Figure 2: Floor plan with Positions **goodsPallet** and **warehousePos1***
+*Figure 2: Floor plan with Locations **goodsPallet** and **warehousePos1***
 </div>
 
-The figure shows those positions inside the two areas *Warehouse* and *Production*.
+The figure shows those locations inside the two areas *Warehouse* and *Production*.
+
+## TransportOrderSteps
+
+A *TransportOrderStep* is a *Task*-fragment that contains only a Location and optionally a TriggeredBy, FinishedBy or OnDone statement. It can be used by a *Task* as a from/to value.
+
+```text
+TransportOrderStep {name}
+    Location {location_0}
+    TriggeredBy {none|event|time}
+    OnDone      {none|followUpTask}
+    FinishedBy  {none|event|time}
+end
+```
+
+As an example, two *TransportOrderSteps* are created, both describing a short process:
+
+```text
+TransportOrderStep loadGoodsPallet
+    Location    goodsPallet
+    FinishedBy  agvLoadedAtGoodsPallet == True
+end
+
+TransportOrderStep unloadGoodsPallet
+    Location    warehousePos1
+    FinishedBy  agvLoadedAtWarehousePos1 == False
+end
+```
+
+The *TransportOrderStep* *loadGoodsPallet* defines picking up from the *Location* *goodsPallet*, which is finished when the *Event* *agvLoadedAtGoodsPallet* is True. For the the optional statements TriggeredBy, FinishedBy and OnDone see [Tasks section](#Tasks).
+
+**Syntax**: It is important that the values inside an *TransportOrderStep - end* definition begin with a lowercase character. Each value also needs to be prefixed with four spaces (or a `\t`). The name has to start with an lowercase character. Currently only the following 3 attributes are allowed: `Location`, `TriggeredBy`, `FinishedBy`, `OnDone`
 
 ## Tasks
 
 A *Task* orchestrates different *Instances* via operations to result in a logical process flow. Such a *Task* does not need to describe who is going to transport an item - it is important that the item will be transported.
 
-Generally speaking a *Task* in *LoTLan* describes that a amount of items should be picked up at some positions and be delivered to another position. The *Task* can optionally be triggered by an event or by time and it can optionally issue a follow up *Task*:
+Generally speaking a *Task* in *LoTLan* describes that a amount of items should be picked up at some location\*s and be delivered to an\*other location\*s. The *Task* can optionally be triggered by an event or by time, can optionally issue a follow up *Task*, can optionally be finished by an event and can optionally be repeated:
 
 ```text
 Task {name}
     Transport
     From        {transportOrderStep_0}
     To          {transportOrderStep_D}
-    TriggeredBy {none|event}
+    TriggeredBy {none|event|time}
     OnDone      {none|followUpTask}
+    FinishedBy  {none|event|time}
+    Repeat      {none = once|1, ..., n|0 = forever}
 end
 ```
 
@@ -127,13 +178,13 @@ To simplify this down in the following the simplest structure of a *Task* is bui
 
 ### Example Simple Task
 
-In the simplest form a *Task* in *LoTLan* just describes that an item should be picked up at some position and be delivered to another position:
+In the simplest form a *Task* in *LoTLan* just describes that an item should be picked up at some location and be delivered to another location:
 
 ```text
 Task TransportGoodsPallet
     Transport
-    From        goodsPallet
-    To          warehousePos1
+    From        loadGoodsPallet
+    To          unloadGoodsPallet
 end
 ```
 
@@ -148,26 +199,26 @@ In terms of the introduced example production hall this *Task* looks like depict
 
 This *Task* *TransportGoodsPallet* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area.
 
-### Example TriggerBy Task
+### Example TriggeredBy Task
 
 A *Task* can be extended with a *TriggeredBy* statement that activates that *Task* if the case occurs. This statement can be an event like a button press or be something simple as a specific time:
 
 ```text
 
-Sensor buttonPallet
+Event buttonPallet
     name = "A_Unique_Name_for_a_Button"
     type = "Boolean"
 end
 
 Task TransportGoodsPallet_2
     Transport
-    From        goodsPallet
-    To          warehousePos1
+    From        loadGoodsPallet
+    To          unloadGoodsPallet
     TriggeredBy buttonPallet == True
 end
 ```
 
-In this example, the *Task* *TransportGoodsPallet_2* will be triggered by a sensor event, when a button has been pushed and the value is equal (*== True*).
+In this example, the *Task* *TransportGoodsPallet_2* will be triggered by the event if the value is equal (*== True*).
 
 In terms of the introduced example production hall this *Task* looks like depicted in the following figure.
 
@@ -185,19 +236,27 @@ This *Task* *TransportGoodsPallet_2* could be done by an AGV, that picks up a pa
 A *Task* can be extended with a *OnDone* statement that activates another *Task* when the original one has ended:
 
 ```text
+TransportOrderStep loadEmptyPallet
+    Location    warehousePos1
+    FinishedBy  agvLoadedAtWarehousePos1 == True
+end
+
+TransportOrderStep unloadEmptyPallet
+    Location    goodsPallet
+    FinishedBy  agvLoadedAtGoodsPallet == False
+end
+
 Task Refill
-	Location    production_hall
     Transport
-    From        warehousePos1
-    To          goodsPallet
+    From        loadEmptyPallet
+    To          unloadEmptyPallet
 end
 
 Task TransportGoodsPallet_3
-	Location    production_hall
     Transport
-    From        goodsPallet
-    To          warehousePos1
-    TriggeredBy buttonPallet.value == True
+    From        loadGoodsPallet
+    To          unloadGoodsPallet
+    TriggeredBy buttonPallet == True
     OnDone      Refill
 end
 ```
@@ -213,7 +272,7 @@ In terms of the introduced example production hall this *Task* looks like depict
 *Figure 3: Floor plan with Task **TransportGoodsPallet_3** & **Refill***
 </div>
 
-This *Task* *TransportGoodsPallet_3* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area, when the button *buttonPallet* is pressed. After that the AGV executes the *Task* *Refill* and so, it picks up **from** the *warehousePos1* and delivers it **to** the *goodsPallet* position.
+This *Task* *TransportGoodsPallet_3* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area, when the button *buttonPallet* is pressed. After that the AGV executes the *Task* *Refill* and so, it picks up a empty pallet **from** the *warehousePos1* and delivers it **to** the *goodsPallet* location.
 
 ## Comments
 
@@ -223,12 +282,14 @@ A comment starts with a hash character (`#`) that is not part of a string litera
 ###
 # This task shows the usage of comments in LoTLan
 ###
-Task TransportPalettTask
+Task TransportPalletTask
+    # Comment inside a task
     Transport
-    From        palett1, palett2, palett3  # All Pallets!
-    To          warehousePos1
-    TriggeredBy warehousePos1.value == True  # More comments
+    From        loadGoodsPallet  # A pallet
+    To          unloadGoodsPallet
+    TriggeredBy buttonPallet == True  # More comments
     OnDone      Refill
+    Repeat      5  # Repeat it 5 times!
 end
 ```
 
@@ -237,16 +298,15 @@ This example shows a mimicked multi-line comment that consists of three `#` that
 ## Full Example
 
 ```text
-
 ###
-# Defining a Primitive Position with the two attributes type and value
+# Defining a Primitive Location with the two attributes type and value
 ###
-template Position
+template Location
     type = ""
     name = ""
 end
 
-template Sensor
+template Event
     name = ""
     type = ""
 end
@@ -256,83 +316,105 @@ template Location
     type = ""
 end
 
-
 ###
-# Initiation of the two Positions goodsPallet and warehousePos1 and one sensor buttonPallet
+# Initiation of the two Locations goodsPallet, warehousePos1 and the three Events agvLoadedAtGoodsPallet, agvLoadedAtWarehousePos1, buttonPallet.
 ###
-Position goodsPallet  # Using the Primitive Position
+Location goodsPallet  # Using the Primitive Location
     type = "pallet"
     name = "productionArea_palletPlace"
 end
 
-Position warehousePos1
+Location warehousePos1
     type = "pallet"
     name = "warehouseArea_pos1"
 end
 
-Sensor buttonPallet
+Event agvLoadedAtGoodsPallet
+    type = "Boolean"
+    name = "LightBarrier"
+end
+
+Event agvLoadedAtWarehousePos1
+    type = "Boolean"
+    name = "LightBarrier"
+end
+
+Event buttonPallet
     name = "A_Unique_Name_for_a_Button"
     type = "Boolean"
 end
 
-Location production_hall
-    name = "Hall_1_A-32"
-    type = "building"
-    
+###
+# Creation of the TransportOrderSteps loadGoodsPallet and unloadGoodsPallet
+###
+TransportOrderStep loadGoodsPallet
+    Location    goodsPallet
+    FinishedBy  agvLoadedAtGoodsPallet == True
 end
+
+TransportOrderStep unloadGoodsPallet
+    Location    warehousePos1
+    FinishedBy  agvLoadedAtWarehousePos1 == False
+end
+
+TransportOrderStep loadEmptyPallet
+    Location    warehousePos1
+    FinishedBy  agvLoadedAtWarehousePos1 == True
+end
+
+TransportOrderStep unloadEmptyPallet
+    Location    goodsPallet
+    FinishedBy  agvLoadedAtGoodsPallet == False
+end
+
 ###
 # Creation of a Task that transports from goodsPallet to warehousePos1
 ###
 Task TransportGoodsPallet
-	Location production_hall
     Transport
-    From        goodsPallet
-    To          warehousePos1
+    From        loadGoodsPallet
+    To          unloadGoodsPallet
 end
 
 ###
-# Creation of a Task that is triggered if buttonPallet is pressed
+# Creation of a Task that is triggered if agvLoadedAtGoodsPallet occurs
 ###
 Task TransportGoodsPallet_2
-	Location production_hall
     Transport
-    From        goodsPallet
-    To          warehousePos1
-    TriggeredBy buttonPallet == True  # buttonPallet is a Sensor
+    From        loadGoodsPallet
+    To          unloadGoodsPallet
+    TriggeredBy buttonPallet == True
 end
 
 ###
 # Creation of a Task that will call Refill when done
 ###
 Task Refill
-	Location production_hall
     Transport
-    From        warehousePos1
-    To          goodsPallet
+    From        loadEmptyPallet
+    To          unloadEmptyPallet
 end
 
 Task TransportGoodsPallet_3
-	Location production_hall
     Transport
-    From        goodsPallet
-    To          warehousePos1
+    From        loadGoodsPallet
+    To          unloadGoodsPallet
     TriggeredBy buttonPallet == True
     OnDone      Refill  # If this Task is done, call Refill
 end
-
 ```
 
+___
 
-# Execution
+## Execution
 
 To Test the Text-File `examples.txt` you need to do the following:
 
 First: generate Python-Files via:
-> java -jar antlr-4.7.2-complete.jar -Dlanguage=Python2 TaskLexer.g4 TaskParser.g4 
+> java -jar antlr-4.7.2-complete.jar -Dlanguage=Python2 TaskLexer.g4 TaskParser.g4
 
 Or via (to also have the visitor available)
-> java -jar antlr-4.7.2-complete.jar -Dlanguage=Python2 -visitor TaskLexer.g4 TaskParser.g4 
-
+> java -jar antlr-4.7.2-complete.jar -Dlanguage=Python2 -visitor TaskLexer.g4 TaskParser.g4
 
 Then just simply execute:
 > python checkGrammar.py
