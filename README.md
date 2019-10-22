@@ -83,12 +83,12 @@ As an example, two *Instances* of locations could be initiated out of the previo
 ```text
 Location goodsPallet
     type = "pallet"
-    value = "productionArea_palletPlace"
+    name = "productionArea_palletPlace"
 end
 
 Location warehousePos1
     type = "pallet"
-    value = "warehouseArea_pos1"
+    name = "warehouseArea_pos1"
 end
 ```
 
