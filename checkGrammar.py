@@ -73,7 +73,7 @@ class PythonListener(TaskParserListener):
                 raise Exception("TransortOrderStep: " + ele.getText() + " was not previosuly defined!")
 
 def main():
-    lexer = TaskLexer(InputStream(open("examples.txt").read()))
+    lexer = TaskLexer(InputStream(open("examples.tl").read()))
     stream = CommonTokenStream(lexer)
     parser = TaskParser(stream)
     tree = parser.program() 
