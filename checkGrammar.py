@@ -15,7 +15,7 @@ class PythonListener(TaskParserListener):
         self.tasks = []
         self.transportOrderSteps = []
         # last visited template
-        self.lastVisitedTemplate = None
+        self.lastVisitedTemplate = None 
 
     def enterTemplate(self, ctx):
         # Get Templatename and removing Template prefix
@@ -28,7 +28,7 @@ class PythonListener(TaskParserListener):
             self.templateDict[self.lastVisitedTemplate].append(ele.getText())
 
     def enterInstance(self, ctx):
-        instanceStart =  ctx.InstanceStart().getText().split()
+        instanceStart = ctx.InstanceStart().getText().split()
         self.lastVisitedTemplate = instanceStart[0]
         self.instances.append(instanceStart[1])
 

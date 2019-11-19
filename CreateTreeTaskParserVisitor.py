@@ -50,22 +50,21 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
     # Visit a parse tree produced by TaskParser#program.
     def visitProgram(self, ctx):
         # Create Program
-        cp = CompleteProgram()
-
-
+        self.cp = CompleteProgram()
         for child in ctx.children:
             TempOrInstOrTaskOrTOS = self.visit(child)  # Get object Template|Instance|Task
 
             # append appropiatly into the corresponding list
             if isinstance(TempOrInstOrTaskOrTOS, Template):
-                cp.templates[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
+                self.cp.templates[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
             if isinstance(TempOrInstOrTaskOrTOS, Instance):
-                cp.instances[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
+                self.cp.instances[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
             if isinstance(TempOrInstOrTaskOrTOS, TaskInfo):
-                cp.taskInfos[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
+                self.cp.taskInfos[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
             if isinstance(TempOrInstOrTaskOrTOS, TransportOrderStep):
-                cp.transportOrderSteps[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
-        return cp
+                self.cp.transportOrderSteps[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
+
+        return self.cp
 
 
     # Visit a parse tree produced by TaskParser#template.
@@ -73,6 +72,9 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         t = Template()
         # Retreive the Templates name
         t.name = ctx.TemplateStart().getText()[9:] 
+
+        if t.name in self.cp.templates:
+            raise Exception("Error in line: {} there is already a template with the same name!".format(ctx.start.line))
 
         # Iterate until we found an innerTemplate
         for child in ctx.children:
@@ -108,6 +110,10 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         i.templateName = TempAndInst[0]
         i.name = TempAndInst[1]
 
+        for instance in self.cp.instances.values(): 
+            if i.name == instance.name:
+                raise Exception("Error in line: {} there is already an instance with the same name!".format(ctx.start.line))
+
         # Iterate until we found an innerInstance
         for child in ctx.children:
             if isinstance(child, TaskParser.InnerInstanceContext):
@@ -131,13 +137,15 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         # Retreive Task name
         ti.name = ctx.TaskStart().getText()[5:] 
         
+        if ti.name in self.cp.taskInfos:
+            raise Exception("Error in line: {} there is already a task with the same name!".format(ctx.start.line))
+
         # Iterate until we found an innerTask
         for child in ctx.children:
             if isinstance(child, TaskParser.InnerTaskContext):
                 self.visitInnerTask(child, ti)
                 break
         return ti
-
 
     # Visit a parse tree produced by TaskParser#innerTask.
     def visitInnerTask(self, ctx, taskInfo):
@@ -158,6 +166,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
             # Check here for each possible input we can get in Task
             if isinstance(childs[i], TaskParser.ExpressionContext):
+
                 # Case we retrieve a TriggeredBy or FinishedBy -> Distinguish them here!
                 if "TriggeredBy" in childs[i-1].getText():
                     taskInfo.triggeredBy.append(self.visitExpression(childs[i]))
@@ -175,6 +184,8 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         tos = TransportOrderStep()
         # Get TOS - name
         tos.name = ctx.TransportOrderStepStart().getText()[19:] 
+        if tos.name in self.cp.transportOrderSteps:
+            raise Exception("Error: in line: {} there is already a TransportOrderStep with the same name!").format(ctx.start.line)
 
         # iterate to get innerTransportOrderStep
         for child in ctx.children:

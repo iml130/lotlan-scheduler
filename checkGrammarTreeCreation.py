@@ -21,41 +21,20 @@ class ThrowErrorListener(ErrorListener):
     def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
         raise Exception("Task-Language could not be parsed")
 
-
 def main():
-    lexer = TaskLexer(InputStream(open("examples.txt").read()))
-    # lexer = TaskLexer(InputStream(open("TransportOrderStepExample.txt").read()))
+    lexer = TaskLexer(InputStream(open("examples.tl").read()))
     lexer._listeners.append(ThrowErrorListener())
     stream = CommonTokenStream(lexer)
     parser = TaskParser(stream)
 
-    tree = parser.program() 
+    tree = parser.program()
     visitor = CreateTreeTaskParserVisitor()
-    # printer = TaskParserListener()
     t = visitor.visit(tree)
 
-    # prints for examples.txt
+    # prints for examples.tl
     print(t.taskInfos["Transport_Palette_Task"].triggeredBy)
     print(t.taskInfos["Transport_Palette_Task"].finishedBy)
     print(t.taskInfos["Transport_Palette_Task"].repeat)
-    # print(t.transportOrderSteps["t1"].name)
-    # print(t.transportOrderSteps["t1"].location)
-    # print(t.transportOrderSteps["t1"].triggeredBy)
-    # print(t.transportOrderSteps["t1"].finishedBy)
-    # print(t.transportOrderSteps["t1"].onDone)
-    print(taskValidator.isValid(t))
-
-
-    # prints for TransportOrderStepExample.txt
-    # print(t.taskInfos["TransportToWareHouse"].transportOrders[0].to )
-    # print(t.transportOrderSteps["moldingPalette"].name)
-    # print(t.transportOrderSteps["moldingPalette"].location)
-    # print(t.transportOrderSteps["moldingPalette"].triggeredBy)
-    # print(t.transportOrderSteps["moldingPalette"].finishedBy)
-    # print(t.transportOrderSteps["moldingPalette"].onDone)
-    # print(taskValidator.isValid(t))
-
 
 if __name__ == '__main__':
-    main() 
-
+    main()

@@ -8,11 +8,11 @@ TransportOrderStep moldingPalette
     FinishedBy workerPressedButtonAtMoldingPalette
 end
 
-
 TransportOrderStep warehouse
     Location warehouse_location
     FinishedBy workerPressedButtonAtWarehouse
 end
+
 TransportOrderStep t1#should work
 	Location testitest
 	TriggeredBy mitarbeiterButtonDasErFertigIst
@@ -45,8 +45,6 @@ Container room
 	name = ""
     type = "Supply_Room"
 end
-
-
 
 
 # Basic Instance structure
@@ -206,7 +204,7 @@ task Refill
 	to moldingPalette
 end
 
-task Transport_Palette_Task
+task Transport_Palette_Task1
 	Transport 
     from t1 # All Pallets!
 	to warehouse
@@ -215,7 +213,7 @@ task Transport_Palette_Task
 end
 
 
-task Transport_Palette_Task
+task Transport_Palette_Task2
 	Transport 
     from t1 # All Pallets!
 	to warehouse
@@ -223,7 +221,7 @@ task Transport_Palette_Task
 	OnDone Refill
 end
 
-task Transport_Palette_Task
+task Transport_Palette_Task3
 	Transport 
     from warehouse # All Pallets!
 	to t1
@@ -233,7 +231,7 @@ task Transport_Palette_Task
 end
 
 
-task Transport_Palette_Task
+task Transport_Palette_Task4
 	Transport 
     from warehouse # All Pallets!
 	to t1
@@ -251,7 +249,7 @@ end
 
 
 
-template Time
+template Time2
     # As in Cron
     timing = "* * * * */10"
 end
@@ -260,7 +258,7 @@ end
 
 
 
-template Time
+template Time3
     # As in Cron
     timing = "* * *  * */10"
 end
