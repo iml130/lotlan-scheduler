@@ -125,7 +125,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
     # Visit a parse tree produced by TaskParser#innerInstance.
     def visitInnerInstance(self, ctx):
         keyval = {}
-        # Createa Dictionary of Key-Value pairs in Instance
+        # Create a Dictionary of Key-Value pairs in Instance
         for key, val in zip(ctx.AttributeInInstance(), ctx.ValueInInstance()):
             keyval[key.getText()] = val.getText()
         return keyval
@@ -163,16 +163,15 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         # For each Expression Or Trigger we call the functions and append
         for i  in range(len(ctx.children)):
             childs = ctx.children
-
             # Check here for each possible input we can get in Task
             if isinstance(childs[i], TaskParser.ExpressionContext):
 
                 # Case we retrieve a TriggeredBy or FinishedBy -> Distinguish them here!
                 if "TriggeredBy" in childs[i-1].getText():
                     taskInfo.triggeredBy.append(self.visitExpression(childs[i]))
+
                 elif "FinishedBy" in childs[i-1].getText():
                     taskInfo.finishedBy.append(self.visitExpression(childs[i]))
-
             # We received a Transport Order
             if isinstance(childs[i], TaskParser.TransportOrderContext):
                 taskInfo.transportOrders.append(self.visitTransportOrder(childs[i]))

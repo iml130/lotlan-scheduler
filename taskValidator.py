@@ -7,16 +7,14 @@ from CreateTreeTaskParserVisitor import TransportOrder
 import copy
 
 
-
 def isValid(givenTree):
-    _tree = copy.deepcopy(givenTree)
     # try and catch this for the Value False
-    return _validate(_tree, [])
+    return _validate(givenTree, [])
 
 
 def _validate(givenTree, retreivedInfo):
 
-    for instanceName, instance in givenTree.instances.iteritems():  
+    for instance in givenTree.instances.values():
         # Check if template is defined
         if instance.templateName not in givenTree.templates:
             raise Exception("Template {} is not defined in TaskLanguage".format(instance.templateName))
@@ -29,7 +27,7 @@ def _validate(givenTree, retreivedInfo):
                 raise Exception("Instace: {} does not set the Attribute: {}".format(instance.templateName, i))
 
 
-    for taskName, task in givenTree.taskInfos.iteritems():
+    for task in givenTree.taskInfos.values():
         # Check OnDone
         for i in range(len(task.onDone)):
             if _checkIfTaskPresent(givenTree, task.onDone[i]) is False:
@@ -54,13 +52,13 @@ def _validate(givenTree, retreivedInfo):
 
 
 def _checkIfTaskPresent(givenTree, taskName):
-    for _tN, _t in givenTree.taskInfos.iteritems():
+    for _tN in givenTree.taskInfos:
         if taskName == _tN:
             return True
     return False
 
 def _checkIfTransportOrderStepsPresent(givenTree, instanceName):
-    for _iN, _t in givenTree.transportOrderSteps.iteritems():
+    for _iN in givenTree.transportOrderSteps:
         if instanceName == _iN:
             return True
     return False

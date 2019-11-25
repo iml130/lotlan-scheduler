@@ -4,12 +4,12 @@
 
 # Basic TransportOrderStep-structure
 TransportOrderStep moldingPalette
-    Location moldingPalette_location     # Only one Location can be defined!
+	Location moldingPalette_location     # Only one Location can be defined!
     FinishedBy workerPressedButtonAtMoldingPalette
 end
 
 TransportOrderStep warehouse
-    Location warehouse_location
+	Location warehouse_location
     FinishedBy workerPressedButtonAtWarehouse
 end
 
@@ -79,13 +79,6 @@ PaletteSensor palette_3Full
 end
 
 
-task Reset_Task
-	Transport 
-    from 		t1
-    to 			moldingPalette
-end 
-
-
 # Basic Task structure
 task Transport_Task
     # Transport something from A to B
@@ -96,7 +89,7 @@ task Transport_Task
 	TriggeredBy	palette_1Full == TRUE
 	TriggeredBy	palette_2Full == FALSE
 	TriggeredBy	palette_3Full == !12 || 42.42 <= 42.31
-    
+	
 	OnDone		Reset_Task
 end
 
@@ -131,9 +124,6 @@ Position thisPos
 	type = "pallet"
     
 	name = "thisPos" # Values can also be set inside "
-    
-    
-    
 end
 
 
@@ -156,9 +146,9 @@ end####### End of Task
 
 
 
-
-
-
+task Reset_Task
+	TriggeredBy palette_1Full == TRUE
+end
 
 Position emptyPallet   # Another Comment
 	type = "pallet"
@@ -293,16 +283,12 @@ Event sensorTest
     name = "LightBarrier"
 end
 
-
-
 task Pickup
     FinishedBy sensorTest == True # manual loading 
 end
 
 
  # TASKS
-
-
 task Transport_Palette_Task 
 	TriggeredBy mitarbeiterButtonDasErFertigIst
     Transport 
@@ -310,5 +296,3 @@ task Transport_Palette_Task
     to warehouse 
 	Repeat 3
 end
-
-
