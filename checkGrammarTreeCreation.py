@@ -1,9 +1,9 @@
 from antlr4 import *
 from antlr4.error.ErrorListener import ErrorListener
 from antlr4.error.Errors import *
-from TaskLexer import TaskLexer
-from TaskParserListener import TaskParserListener
-from TaskParser import TaskParser
+from TaskLexer2 import TaskLexer2
+from TaskParser2Listener import TaskParser2Listener
+from TaskParser2 import TaskParser2
 from CreateTreeTaskParserVisitor import CreateTreeTaskParserVisitor
 import taskValidator
 
@@ -28,6 +28,10 @@ class ThrowErrorListener(ErrorListener):
             if line not in self.lines:
                 self.lines.append(line)
                 print("Invalid Character at line: " + str(line) + ":" + str(column))
+        elif isinstance(e, FailedPredicateException):
+            print(msg)
+        elif isinstance(e, NoViableAltException):
+            print(msg)
 
     def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
         raise Exception("Task-Language could not be parsed")
@@ -39,27 +43,31 @@ class ThrowErrorListener(ErrorListener):
         raise Exception("Task-Language could not be parsed")
 
 def main():
-    lexer = TaskLexer(InputStream(open("examples.tl").read()))
-    parser = TaskParser(CommonTokenStream(lexer))
+    lexer = TaskLexer2(InputStream(open("examples.tl").read()))
+    tokenStream = CommonTokenStream(lexer)
+    tokenStream.fill()
+    parser = TaskParser2(tokenStream)
 
+
+    for token in tokenStream.getTokens(0, 200):
+        print(token)
+        
     errorListener = ThrowErrorListener()
 
     lexer.removeErrorListeners()
     parser.removeErrorListeners()
     
     lexer._listeners.append(errorListener)
-
-    
     parser.addErrorListener(errorListener);
 
     tree = parser.program()
     visitor = CreateTreeTaskParserVisitor()
 
     # check for some semantic errors while traversing through the tree and return the program data
-    t = visitor.visit(tree)
+    #t = visitor.visit(tree)
 
     #validate semantic
-    print("Semantic of program successfully tested:", taskValidator.isValid(t))
+    #print("Semantic of program successfully tested:", taskValidator.isValid(t))
 
 if __name__ == '__main__':
     main()

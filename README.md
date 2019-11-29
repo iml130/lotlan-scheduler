@@ -5,6 +5,7 @@ The Logistic Task Language *(LoTLan)* is a simple, but powerful approach to desc
 ## Table of contents
 
 - [Logistic Task Language](#logistic-task-language)
+  - [Table of contents](#table-of-contents)
   - [Introduction](#introduction)
     - [Use of Example](#use-of-example)
   - [Primitives](#primitives)
@@ -12,7 +13,7 @@ The Logistic Task Language *(LoTLan)* is a simple, but powerful approach to desc
   - [TransportOrderSteps](#transportordersteps)
   - [Tasks](#tasks)
     - [Example Simple Task](#example-simple-task)
-    - [Example TriggeredBy Task](#example-trigger-task)
+    - [Example TriggeredBy Task](#example-triggeredby-task)
     - [Example OnDone Task](#example-ondone-task)
   - [Comments](#comments)
   - [Full Example](#full-example)

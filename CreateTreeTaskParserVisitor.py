@@ -1,5 +1,5 @@
-from TaskParserVisitor import TaskParserVisitor
-from TaskParser import TaskParser
+from TaskParser2Visitor import TaskParser2Visitor
+from TaskParser2 import TaskParser2
 
 import copy
 
@@ -45,7 +45,7 @@ class Instance(object):
         self.keyval = {} # Dictionary of attributes with set value
 
 
-class CreateTreeTaskParserVisitor(TaskParserVisitor):
+class CreateTreeTaskParserVisitor(TaskParser2Visitor):
 
     # Visit a parse tree produced by TaskParser#program.
     def visitProgram(self, ctx):
@@ -78,7 +78,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
         # Iterate until we found an innerTemplate
         for child in ctx.children:
-            if isinstance(child, TaskParser.InnerTemplateContext):
+            if isinstance(child, TaskParser2.InnerTemplateContext):
                 t.keyval = self.visitInnerTemplate(child)
                 break
             
@@ -116,7 +116,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
         # Iterate until we found an innerInstance
         for child in ctx.children:
-            if isinstance(child, TaskParser.InnerInstanceContext):
+            if isinstance(child, TaskParser2.InnerInstanceContext):
                 i.keyval = self.visitInnerInstance(child)
                 break
         return i
@@ -188,7 +188,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
         # iterate to get innerTransportOrderStep
         for child in ctx.children:
-            if isinstance(child, TaskParser.InnerTransportOrderStepContext):
+            if isinstance(child, TaskParser2.InnerTransportOrderStepContext):
                 self.visitInnerTransportOrderStep(child, tos)
                 break
 
