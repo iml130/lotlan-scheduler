@@ -21,8 +21,8 @@ class TaskInfo(object):
 
 class TransportOrder(object):
     def __init__(self):
-        self.fromm = [] # From many Instances
-        self.to = None # Target Instance
+        self.pickupFrom = [] # From many Instances
+        self.deliverTo = None # Target Instance
 
 class TransportOrderStep(object):
     def __init__(self):
@@ -230,8 +230,8 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         # Extract From/To
         dst = l[-1]
         l = l[:-1]
-        to.fromm = l[0]
-        to.to = dst
+        to.pickupFrom = l[0]
+        to.deliverTo = dst
         return to
 
     ### Expression parsing:

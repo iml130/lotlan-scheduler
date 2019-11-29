@@ -36,12 +36,12 @@ def _validate(givenTree, retreivedInfo):
         # Check TransportOrders
         for i in range(len(task.transportOrders)):
             # Fromm check
-            if _checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].fromm) is False:
-                raise Exception("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name, task.transportOrders[i].fromm))
+            if _checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].pickupFrom) is False:
+                raise Exception("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name, task.transportOrders[i].pickupFrom))
             
             # To check
-            if _checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].to) is False:
-                    raise Exception("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name, task.transportOrders[i].to))
+            if _checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].deliverTo) is False:
+                    raise Exception("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name, task.transportOrders[i].deliverTo))
 
 
         # TODO Trigger Semantic-Checking

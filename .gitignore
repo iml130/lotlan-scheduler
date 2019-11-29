@@ -1,0 +1,14 @@
+/__pycache__/CreateTreeTaskParserVisitor.cpython-37.pyc
+/__pycache__/TaskLexer.cpython-37.pyc
+/__pycache__/TaskParser.cpython-37.pyc
+/__pycache__/TaskParserListener.cpython-37.pyc
+/__pycache__/TaskParserVisitor.cpython-37.pyc
+/__pycache__/taskValidator.cpython-37.pyc
+/TaskLexer.interp
+/TaskLexer.py
+/TaskLexer.tokens
+/TaskParser.interp
+/TaskParser.py
+/TaskParser.tokens
+/TaskParserListener.py
+/TaskParserVisitor.py
