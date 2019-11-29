@@ -16,7 +16,7 @@ TransportOrderStep unloadWorkstation1
     Location dropoffItem
 end
 
-task SupplyTaskFromStorage1ToWorkstation1
+task HelloTask
     Transport
     from loadStorage
     to unloadWorkstation1
