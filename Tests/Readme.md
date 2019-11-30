@@ -4,6 +4,12 @@ Valid TaskLanguages:
 - HelloTaskTriggeredBy
 - few more to come
   
+
+What else to test:
+- missing word
+- wrong spelled word
+- empty param (OnDone)
+- Upper/Lowercases (OnDONE - does it really matter?)
   
 Invalid:
 - Missing Location
