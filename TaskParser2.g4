@@ -5,7 +5,7 @@ options {
 }
 
 program : 
-    (template | instance | task | transportOrderStep | whitespace)*;
+    (template | instance | task | transportOrderStep)*;
 
 
 // Template Layout
@@ -13,6 +13,7 @@ template:
     TemplateStart NewLine 
         (Indentation LowerCaseString EqualInBlock Value NewLine)+
     EndInBlock;
+
 
 // Instance Layout
 instance: 
@@ -23,10 +24,10 @@ instance:
 
 transportOrderStep:
     TransportOrderStepStart NewLine
-        ( Indentation TriggeredByTOS expression E_NLInExpression
-        | Indentation FinishedByTOS expression E_NLInExpression
-        | Indentation LocationTOS NewLine  
-        | Indentation OnDoneTOS NewLine)+
+        ( Indentation TriggeredBy expression E_NLInExpression
+        | Indentation FinishedBy expression E_NLInExpression
+        | Indentation Location NewLine  
+        | Indentation OnDone UpperCaseString NewLine)+
     EndInBlock;
 
 // Task Layout
@@ -38,9 +39,6 @@ task:
         | Indentation Repeat RepeatTimes NewLine 
         | Indentation OnDone UpperCaseString NewLine)+
     EndInBlock;
-
-whitespace:
-    (Indentation | NewLine)+;
 
 transportOrder:
     Indentation Transport NewLine

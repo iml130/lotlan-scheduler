@@ -1,45 +1,45 @@
 lexer grammar TaskLexer2;
 
-TemplateStart: 'template ' [A-Z][a-zA-Z0-9_]* Whitespace;
-TaskStart: 'task ' [A-Z][a-zA-Z0-9_]* Whitespace;
-TransportOrderStepStart: 'TransportOrderStep ' [a-z][a-zA-Z0-9_]* Whitespace;
-InstanceStart: [A-Z][a-zA-Z0-9_]* ' ' [a-z][a-zA-Z0-9_]* Whitespace;
-
-fragment Whitespace: [ \t]*;
-
-NewLine: '\n';
-Indentation: ('    ' | '\t');
-
+TemplateStart: 'template ' UpperCaseString -> pushMode(BLOCK);
+TaskStart: 'task ' UpperCaseString -> pushMode(BLOCK);
+TransportOrderStepStart: 'TransportOrderStep ' LowerCaseString -> pushMode(BLOCK);
+InstanceStart: UpperCaseString ' ' LowerCaseString -> pushMode(BLOCK);
+Whitespace: [ \t\r\n]+ -> skip;
 Comment: '#' ~[\n]+ -> skip;
-CommentInLine: Whitespace '#' ~[\n]+ '\n'-> skip;
-EqualInBlock: Whitespace '=' Whitespace;
+
+mode BLOCK;
+
+Indentation: ('    ' | '\t');
+NewLine: Whitespace_Block '\n';
+
+CommentInInstance : Whitespace_Block '#' ~[\n]+  -> skip;
+CommentLineInInstance : Indentation '#' ~[\n]+ '\n'-> skip;
+
+EqualInBlock: Whitespace_Block '=' Whitespace_Block;
+EndInBlock: 'end' -> popMode;
+
+Comma: ',' Whitespace_Block;
+
+Location: 'Location' Whitespace_Block;
+
+Transport: 'Transport';
+From: 'from' Whitespace_Block;
+To: 'to' Whitespace_Block;
+
+OnDone: 'OnDone' Whitespace_Block;
+
+TriggeredBy: 'TriggeredBy' Whitespace_Block -> pushMode(EXPRESSION);
+FinishedBy: 'FinishedBy' Whitespace_Block -> pushMode(EXPRESSION);
+
+Repeat: 'Repeat' Whitespace_Block;
+RepeatTimes: [0-9]+ Whitespace_Block;
 
 LowerCaseString: [a-z][a-zA-Z0-9_]*;
 UpperCaseString: [A-Z][a-zA-Z0-9_]*;
 
 Value: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;
 
-EndInBlock: 'end';
-
-// Transport Order Step Rules
-TriggeredByTOS: 'TriggeredBy' Whitespace ->  pushMode(EXPRESSION);
-FinishedByTOS: 'FinishedBy' Whitespace ->  pushMode(EXPRESSION);
-LocationTOS: 'Location' Whitespace LowerCaseString;
-OnDoneTOS: 'OnDone' Whitespace UpperCaseString;
-CommaTOS: ',' Whitespace;
-
-
-// Task Rules
-Transport: 'Transport' Whitespace;
-From: 'from' Whitespace;
-To: 'to' Whitespace;
-
-TriggeredBy: 'TriggeredBy' Whitespace ->  pushMode(EXPRESSION);
-FinishedBy: 'FinishedBy' Whitespace ->  pushMode(EXPRESSION);
-Repeat: 'Repeat' Whitespace;
-RepeatTimes: [0-9]+ Whitespace;
-OnDone: 'OnDone' Whitespace;
-Comma: ',' Whitespace;
+fragment Whitespace_Block: [ \t]*;
 
 mode EXPRESSION;
 E_LeftParenthesis: '(';

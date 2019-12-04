@@ -15,7 +15,6 @@ class ThrowErrorListener(ErrorListener):
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         # print different error messages according to the exception
-    
         # current input does not match with the expected token
         if isinstance(e, InputMismatchException):  
             missingSymbol = e.getExpectedTokens().toString(recognizer.literalNames, recognizer.symbolicNames)
@@ -31,12 +30,13 @@ class ThrowErrorListener(ErrorListener):
         elif isinstance(e, FailedPredicateException):
             print(msg)
         elif isinstance(e, NoViableAltException):
-            print(msg)
+            print(msg, line, column)
 
     def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
         raise Exception("Task-Language could not be parsed")
 
     def reportAttemptingFullContext(self, recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs):
+        print(startIndex, stopIndex)
         raise Exception("Task-Language could not be parsed")
 
     def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
@@ -45,24 +45,24 @@ class ThrowErrorListener(ErrorListener):
 def main():
     lexer = TaskLexer2(InputStream(open("examples.tl").read()))
     tokenStream = CommonTokenStream(lexer)
-    tokenStream.fill()
+    
+
     parser = TaskParser2(tokenStream)
-
-
-    for token in tokenStream.getTokens(0, 200):
-        print(token)
-        
+    
     errorListener = ThrowErrorListener()
 
     lexer.removeErrorListeners()
     parser.removeErrorListeners()
     
     lexer._listeners.append(errorListener)
-    parser.addErrorListener(errorListener);
+    parser.addErrorListener(errorListener)
 
     tree = parser.program()
     visitor = CreateTreeTaskParserVisitor()
 
+    tokenStream.fill()
+    for token in tokenStream.getTokens(0, 200):
+        print(token)
     # check for some semantic errors while traversing through the tree and return the program data
     #t = visitor.visit(tree)
 
