@@ -1,66 +1,69 @@
 lexer grammar TaskLexer2;
 
-Template: 'template ' -> pushMode(BLOCK);
-Task: 'task ' -> pushMode(BLOCK);
-TransportOrderStep: 'TransportOrderStep ' -> pushMode(BLOCK);
-Instance: UpperCaseString ' ' -> pushMode(BLOCK);
-Whitespace: [ \t\r\n]+ -> skip;
-Comment: '#' ~[\n]+ -> skip;
+TEMPLATE: 'template ' -> pushMode(BLOCK);
+TASK: 'task ' -> pushMode(BLOCK);
+TRANSPORT_ORDER_STEP: 'TransportOrderStep ' -> pushMode(BLOCK);
+INSTANCE: UPPER_CASE_STRING ' ' -> pushMode(BLOCK);
+
+WHITESPACE: [ \t\r\n]+ -> skip;
+COMMENT: '#' ~[\n]+ -> skip;
 
 mode BLOCK;
 
-Indentation: ('    ' | '\t');
-NewLine: Whitespace_Block '\n';
+EMPTY_LINE: ('    '| '\t') '\n' -> skip;
+NEW_LINE: WHITESPACE_BLOCK '\n';
 
-CommentInBlock : Whitespace_Block '#' ~[\n]+  -> skip;
-CommentLineInBlock : Indentation '#' ~[\n]+ '\n'-> skip;
+INDENTATION: ('    ' | '\t');
 
-Equal: Whitespace_Block '=' Whitespace_Block;
-EndInBlock: 'end' -> popMode;
+COMMENT_IN_BLOCK : WHITESPACE_BLOCK '#' ~[\n]+  -> skip;
+COMMENT_LINE_IN_BLOCK : INDENTATION '#' ~[\n]+ '\n'-> skip;
+
+EQUAL: WHITESPACE_BLOCK '=' WHITESPACE_BLOCK;
+END_IN_BLOCK: 'end' -> popMode;
 
 // Only For TransportOrderStep
-Location: 'Location' Whitespace_Block;
+LOCATION: 'Location' WHITESPACE_BLOCK;
 
 // Only For Task
-Repeat: 'Repeat' Whitespace_Block;
-RepeatTimes: [0-9]+ Whitespace_Block;
+REPEAT: 'Repeat' WHITESPACE_BLOCK;
+REPEAT_TIMES: [0-9]+ WHITESPACE_BLOCK;
 
 // Transport Order used in Task
-Transport: 'Transport';
-From: 'from' Whitespace_Block;
-To: 'to' Whitespace_Block;
+TRANSPORT: 'Transport';
+FROM: 'from' WHITESPACE_BLOCK;
+TO: 'to' WHITESPACE_BLOCK;
 
 // Used in both
-OnDone: 'OnDone' Whitespace_Block;
-TriggeredBy: 'TriggeredBy' Whitespace_Block -> pushMode(EXPRESSION);
-FinishedBy: 'FinishedBy' Whitespace_Block -> pushMode(EXPRESSION);
+ON_DONE: 'OnDone' WHITESPACE_BLOCK;
+TRIGGERED_BY: 'TriggeredBy' WHITESPACE_BLOCK -> pushMode(EXPRESSION);
+FINISHED_BY: 'FinishedBy' WHITESPACE_BLOCK -> pushMode(EXPRESSION);
 
-Comma: ',' Whitespace_Block;
+COMMA: ',' WHITESPACE_BLOCK;
 
-LowerCaseString: [a-z][a-zA-Z0-9_]*;
-UpperCaseString: [A-Z][a-zA-Z0-9_]*;
+LOWER_CASE_STRING: [a-z][a-zA-Z0-9_]*;
+UPPER_CASE_STRING: [A-Z][a-zA-Z0-9_]*;
 
-Value: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;
+VALUE: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;
 
-fragment Whitespace_Block: [ \t]*;
+fragment WHITESPACE_BLOCK: [ \t]*;
 
 mode EXPRESSION;
-E_LeftParenthesis: '(';
-E_RightParenthesis: ')';
-E_LessThan: '<';
-E_LessThanOrEqual: '<=';
-E_GreaterThan: '>';
-E_GreaterThanOrEqual: '>=';
-E_Equal: '==' | '=';
-E_NotEqual: '!=';
-E_BooleanAnd:	'&&';
-E_BooleanOr: '||';
-E_Not: '!';
+E_LEFT_PARENTHESIS: '(';
+E_RIGHT_PARENTHESIS: ')';
+E_LESS_THAN: '<';
+E_LESS_THAN_OR_EQUAL: '<=';
+E_GREATER_THAN: '>';
+E_GREATER_THAN_OR_EQUAL: '>=';
+E_EQUAL: '==' | '=';
+E_NOT_EQUAL: '!=';
+E_BOOLEAN_AND:	'&&';
+E_BOOLEAN_OR: '||';
+E_BOOLEAN_NOT: '!';
 E_Attribute: [a-z][a-zA-Z0-9_]+;
-E_True: 'True' | 'TRUE';
-E_False: 'False' | 'FALSE';
-E_Integer: [0-9]+;
-E_Float: [0-9]+( '.' [0-9]+);
+E_TRUE: 'True' | 'TRUE';
+E_FALSE: 'False' | 'FALSE';
+E_INTEGER: [0-9]+;
+E_FLOAT: [0-9]+( '.' [0-9]+);
 E_WS: [ \r\t]  -> skip;
-E_Comment: '#' ~[\n]+ -> skip;
-E_NLInExpression: [\n] -> popMode;
+E_COMMENT: '#' ~[\n]+ -> skip;
+E_NL_IN_EXPRESSION: [\n] -> popMode;

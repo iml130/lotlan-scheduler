@@ -9,70 +9,70 @@ program :
 
 // Template Layout
 template: 
-    Template UpperCaseString NewLine 
+    TEMPLATE UPPER_CASE_STRING NEW_LINE 
         memberVariable+
-    EndInBlock;
+    END_IN_BLOCK;
 
 // Instance Layout
 instance: 
-    Instance LowerCaseString NewLine
+    INSTANCE LOWER_CASE_STRING NEW_LINE
         memberVariable+
-    EndInBlock;
+    END_IN_BLOCK;
 
 memberVariable:
-    Indentation LowerCaseString Equal Value NewLine;
+    INDENTATION LOWER_CASE_STRING EQUAL VALUE NEW_LINE;
 
 // Transport Order Step
 transportOrderStep:
-    TransportOrderStep LowerCaseString NewLine
+    TRANSPORT_ORDER_STEP LOWER_CASE_STRING NEW_LINE
         optionalTransportOrderStepStatement*
-        Indentation Location LowerCaseString NewLine // there have to be at least one Location statement
+        INDENTATION LOCATION LOWER_CASE_STRING NEW_LINE // there have to be at least one Location statement
         optionalTransportOrderStepStatement*
-    EndInBlock;
+    END_IN_BLOCK;
 
 // Task Layout
 task: 
-    Task UpperCaseString NewLine
+    TASK UPPER_CASE_STRING NEW_LINE
         taskStatement+
-    EndInBlock;
+    END_IN_BLOCK;
 
 taskStatement:
     transportOrder 
     | optionalTransportOrderStepStatement
-    | Indentation Repeat RepeatTimes NewLine;
+    | INDENTATION REPEAT REPEAT_TIMES NEW_LINE;
 
 optionalTransportOrderStepStatement:
-    Indentation TriggeredBy expression E_NLInExpression
-    | Indentation FinishedBy expression E_NLInExpression
-    | Indentation OnDone UpperCaseString NewLine;
+    INDENTATION TRIGGERED_BY expression E_NL_IN_EXPRESSION
+    | INDENTATION FINISHED_BY expression E_NL_IN_EXPRESSION
+    | INDENTATION ON_DONE UPPER_CASE_STRING NEW_LINE;
 
 transportOrder:
-    Indentation Transport NewLine
-    Indentation From LowerCaseString NewLine
-    Indentation To dest = LowerCaseString NewLine;
+    INDENTATION TRANSPORT NEW_LINE
+    INDENTATION FROM LOWER_CASE_STRING NEW_LINE
+    INDENTATION TO dest = LOWER_CASE_STRING NEW_LINE;
 
 expression:
     attr = E_Attribute
-    | E_LeftParenthesis expression E_RightParenthesis
+    | E_LEFT_PARENTHESIS expression E_RIGHT_PARENTHESIS
     | bleft = expression binOperation bright = expression
     | unOperation unAttr = expression
     | con;
 
 binOperation:
-    op = (E_LessThan
-        | E_LessThanOrEqual
-        | E_GreaterThan
-        | E_GreaterThanOrEqual
-        | E_Equal
-        | E_NotEqual
-        | E_BooleanAnd
-        | E_BooleanOr);
+    op = (E_LESS_THAN
+        | E_LESS_THAN_OR_EQUAL
+        | E_GREATER_THAN
+        | E_GREATER_THAN_OR_EQUAL
+        | E_EQUAL
+        | E_NOT_EQUAL
+        | E_BOOLEAN_AND
+        | E_BOOLEAN_OR);
 
 unOperation:
-    op = E_Not;
+    op = E_BOOLEAN_NOT;
 
 con:
-    c = E_True 
-        | E_False
-        | E_Integer
-        | E_Float;
+    c = E_TRUE 
+        | E_FALSE
+        | E_INTEGER
+        | E_FLOAT;
