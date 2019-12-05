@@ -7,51 +7,56 @@ options {
 program : 
     (template | instance | task | transportOrderStep)*;
 
-
 // Template Layout
 template: 
-    TemplateStart NewLine 
-        (Indentation LowerCaseString EqualInBlock Value NewLine)+
+    Template UpperCaseString NewLine 
+        memberVariable+
     EndInBlock;
-
 
 // Instance Layout
 instance: 
-    InstanceStart NewLine
-        (Indentation LowerCaseString EqualInBlock Value NewLine)+
+    Instance LowerCaseString NewLine
+        memberVariable+
     EndInBlock;
 
+memberVariable:
+    Indentation LowerCaseString Equal Value NewLine;
 
+// Transport Order Step
 transportOrderStep:
-    TransportOrderStepStart NewLine
-        ( Indentation TriggeredBy expression E_NLInExpression
-        | Indentation FinishedBy expression E_NLInExpression
-        | Indentation Location NewLine  
-        | Indentation OnDone UpperCaseString NewLine)+
+    TransportOrderStep LowerCaseString NewLine
+        optionalTransportOrderStepStatement*
+        Indentation Location LowerCaseString NewLine // there have to be at least one Location statement
+        optionalTransportOrderStepStatement*
     EndInBlock;
 
 // Task Layout
 task: 
-    TaskStart NewLine
-        (transportOrder 
-        | Indentation TriggeredBy expression E_NLInExpression
-        | Indentation FinishedBy expression E_NLInExpression
-        | Indentation Repeat RepeatTimes NewLine 
-        | Indentation OnDone UpperCaseString NewLine)+
+    Task UpperCaseString NewLine
+        taskStatement+
     EndInBlock;
+
+taskStatement:
+    transportOrder 
+    | optionalTransportOrderStepStatement
+    | Indentation Repeat RepeatTimes NewLine;
+
+optionalTransportOrderStepStatement:
+    Indentation TriggeredBy expression E_NLInExpression
+    | Indentation FinishedBy expression E_NLInExpression
+    | Indentation OnDone UpperCaseString NewLine;
 
 transportOrder:
     Indentation Transport NewLine
     Indentation From LowerCaseString NewLine
     Indentation To dest = LowerCaseString NewLine;
 
-
 expression:
     attr = E_Attribute
-   | E_LeftParenthesis expression E_RightParenthesis
-   | bleft = expression binOperation bright = expression
-   | unOperation unAttr = expression
-   | con;
+    | E_LeftParenthesis expression E_RightParenthesis
+    | bleft = expression binOperation bright = expression
+    | unOperation unAttr = expression
+    | con;
 
 binOperation:
     op = (E_LessThan
@@ -67,7 +72,7 @@ unOperation:
     op = E_Not;
 
 con:
-    c = (E_True 
+    c = E_True 
         | E_False
         | E_Integer
-        | E_Float);
+        | E_Float;

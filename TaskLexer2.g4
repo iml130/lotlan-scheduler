@@ -1,9 +1,9 @@
 lexer grammar TaskLexer2;
 
-TemplateStart: 'template ' UpperCaseString -> pushMode(BLOCK);
-TaskStart: 'task ' UpperCaseString -> pushMode(BLOCK);
-TransportOrderStepStart: 'TransportOrderStep ' LowerCaseString -> pushMode(BLOCK);
-InstanceStart: UpperCaseString ' ' LowerCaseString -> pushMode(BLOCK);
+Template: 'template ' -> pushMode(BLOCK);
+Task: 'task ' -> pushMode(BLOCK);
+TransportOrderStep: 'TransportOrderStep ' -> pushMode(BLOCK);
+Instance: UpperCaseString ' ' -> pushMode(BLOCK);
 Whitespace: [ \t\r\n]+ -> skip;
 Comment: '#' ~[\n]+ -> skip;
 
@@ -12,27 +12,30 @@ mode BLOCK;
 Indentation: ('    ' | '\t');
 NewLine: Whitespace_Block '\n';
 
-CommentInInstance : Whitespace_Block '#' ~[\n]+  -> skip;
-CommentLineInInstance : Indentation '#' ~[\n]+ '\n'-> skip;
+CommentInBlock : Whitespace_Block '#' ~[\n]+  -> skip;
+CommentLineInBlock : Indentation '#' ~[\n]+ '\n'-> skip;
 
-EqualInBlock: Whitespace_Block '=' Whitespace_Block;
+Equal: Whitespace_Block '=' Whitespace_Block;
 EndInBlock: 'end' -> popMode;
 
-Comma: ',' Whitespace_Block;
-
+// Only For TransportOrderStep
 Location: 'Location' Whitespace_Block;
 
+// Only For Task
+Repeat: 'Repeat' Whitespace_Block;
+RepeatTimes: [0-9]+ Whitespace_Block;
+
+// Transport Order used in Task
 Transport: 'Transport';
 From: 'from' Whitespace_Block;
 To: 'to' Whitespace_Block;
 
+// Used in both
 OnDone: 'OnDone' Whitespace_Block;
-
 TriggeredBy: 'TriggeredBy' Whitespace_Block -> pushMode(EXPRESSION);
 FinishedBy: 'FinishedBy' Whitespace_Block -> pushMode(EXPRESSION);
 
-Repeat: 'Repeat' Whitespace_Block;
-RepeatTimes: [0-9]+ Whitespace_Block;
+Comma: ',' Whitespace_Block;
 
 LowerCaseString: [a-z][a-zA-Z0-9_]*;
 UpperCaseString: [A-Z][a-zA-Z0-9_]*;
