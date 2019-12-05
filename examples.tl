@@ -38,7 +38,7 @@ end
 
 Container container
 	name = ""
-    type = "Container"
+	type = "Container"
 end
 
 Container room

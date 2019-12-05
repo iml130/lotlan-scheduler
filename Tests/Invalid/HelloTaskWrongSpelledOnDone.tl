@@ -8,8 +8,9 @@ Location dropoffItem
     type = "SmallLoadCarrier"
 end
 
+
 TransportOrderStep loadStorage
-    Location pickupItem 
+    Location pickupItem  # Only one Location can be defined!
 end
 
 TransportOrderStep unloadWorkstation1
@@ -20,4 +21,5 @@ task HelloTask
     Transport
     from loadStorage
     to unloadWorkstation1
+    onDone HelloTask
 end

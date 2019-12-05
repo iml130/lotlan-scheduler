@@ -5,15 +5,23 @@ from TaskLexer2 import TaskLexer2
 from TaskParser2Listener import TaskParser2Listener
 from TaskParser2 import TaskParser2
 from CreateTreeTaskParserVisitor import CreateTreeTaskParserVisitor
+from os import listdir
+from os.path import isfile, join
+import sys
+
 import taskValidator
 
-import sys
+TEST_FOLDER = "Tests/"
+
 
 class ThrowErrorListener(ErrorListener):
     def __init__(self):
         self.lines = []
+        self.isValid = True
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        self.isValid = False
+
         # print different error messages according to the exception
         # current input does not match with the expected token
         if isinstance(e, InputMismatchException):  
@@ -28,25 +36,56 @@ class ThrowErrorListener(ErrorListener):
                 self.lines.append(line)
                 print("Invalid Character at line: " + str(line) + ":" + str(column))
         elif isinstance(e, FailedPredicateException):
-            print(msg)
+            print(msg, line, column)
         elif isinstance(e, NoViableAltException):
+            print(msg, line, column)
+        else:
             print(msg, line, column)
 
     def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
+        self.isValid = False
         raise Exception("Task-Language could not be parsed")
 
     def reportAttemptingFullContext(self, recognizer, dfa, startIndex, stopIndex, conflictingAlts, configs):
-        print(startIndex, stopIndex)
+        self.isValid = False
         raise Exception("Task-Language could not be parsed")
 
     def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
+        self.isValid = False
         raise Exception("Task-Language could not be parsed")
 
-def main():
-    lexer = TaskLexer2(InputStream(open("examples.tl").read()))
-    tokenStream = CommonTokenStream(lexer)
-    
 
+def getFileNames(path):
+    filenames = []
+
+    for f in listdir(path):
+        if isfile(join(path, f)):
+            # only add tasklanguage files
+            if f.split(".")[1] == "tl":
+                filenames.append(path + f)
+
+    return filenames
+
+def testFiles():
+    validFilenames = getFileNames(TEST_FOLDER + "Valid/")
+    invalidFilenames = getFileNames(TEST_FOLDER + "Invalid/")
+
+    #test valid files
+    for validFile in validFilenames:
+        if testFile(validFile) == False:
+            print(validFile + " is a valid tasklanguage program and got an error!")
+
+    # test invalid files
+    for invalidFile in invalidFilenames:
+        if testFile(invalidFile) == True:
+            print(invalidFile + " is an invalid tasklanguage program and got no error!")
+
+
+def testFile(filename):
+    print("testing file " + filename)
+
+    lexer = TaskLexer2(InputStream(open(filename).read()))
+    tokenStream = CommonTokenStream(lexer)
     parser = TaskParser2(tokenStream)
     
     errorListener = ThrowErrorListener()
@@ -60,14 +99,23 @@ def main():
     tree = parser.program()
     visitor = CreateTreeTaskParserVisitor()
 
-    tokenStream.fill()
-    for token in tokenStream.getTokens(0, 200):
-        print(token)
     # check for some semantic errors while traversing through the tree and return the program data
     #t = visitor.visit(tree)
 
     #validate semantic
     #print("Semantic of program successfully tested:", taskValidator.isValid(t))
+
+    if errorListener.isValid:#and taskValidator.isValid(t):
+        return True
+    else:
+        return False
+
+def main():
+    if(len(sys.argv) == 2 and sys.argv[1] == "--test"):
+        testFiles()
+    else: 
+        testFile("examples.tl")
+
 
 if __name__ == '__main__':
     main()
