@@ -1,87 +1,87 @@
-parser grammar TaskParser;
+parser grammar TaskParser2;
 
 options {
-	tokenVocab = TaskLexer;
+	tokenVocab = TaskLexer2;
 }
-
 
 program : 
     (template | instance | task | transportOrderStep)*;
 
-
 // Template Layout
 template: 
-    TemplateStart NLInTemplate 
-        innerTemplate 
-    EndInTemplate;
+    templateStart memberVariable+ END_IN_BLOCK;
 
-innerTemplate: 
-    (IndentationInTemplate AttributeInTemplate EqualInTemplate ValueInTemplate NLInTemplate)+; 
+templateStart:
+    TEMPLATE UPPER_CASE_STRING NEW_LINE+;
 
 // Instance Layout
 instance: 
-    InstanceStart NLInInstance 
-        innerInstance 
-    EndInInstance;
+    instanceStart memberVariable+ END_IN_BLOCK;
 
-innerInstance: 
-    (IndentationInInstance AttributeInInstance EqualinInstance ValueInInstance NLInInstance)+;
+instanceStart:
+    INSTANCE LOWER_CASE_STRING NEW_LINE+;
 
+memberVariable:
+    INDENTATION LOWER_CASE_STRING EQUAL VALUE NEW_LINE+;
+
+// Transport Order Step
 transportOrderStep:
-    TransportOrderStepStart NLInTransportOrderStep
-        innerTransportOrderStep
-    EndInTransportOrderStep;
+    tosStart tosStatements END_IN_BLOCK;
 
-innerTransportOrderStep:
-    ( IndentationInTransportOrderStep TriggeredByTOS expression E_NLInExpression
-    | IndentationInTransportOrderStep FinishedByTOS expression E_NLInExpression
-    | IndentationInTransportOrderStep LocationTOS NewInstanceInTransportOrderStep NLInTransportOrderStep  
-    | IndentationInTransportOrderStep OnDoneTOS NewTaskInTransportOrderStep NLInTransportOrderStep)+;
+tosStart:
+    TRANSPORT_ORDER_STEP LOWER_CASE_STRING NEW_LINE+;
 
+tosStatements:
+    optTosStatement*
+        INDENTATION LOCATION LOWER_CASE_STRING NEW_LINE+ // there have to be at least one Location statement
+    optTosStatement*;
 
 // Task Layout
-task: 
-    TaskStart NLInTask
-        innerTask 
-    EndInTask;
- 
-innerTask:
-    (transportOrder 
-    | IndentationInTask TriggeredBy expression E_NLInExpression
-    | IndentationInTask FinishedBy expression E_NLInExpression
-    | IndentationInTask Repeat RepeatTimes NLInTask 
-    | IndentationInTask OnDone NewTask NLInTask)+;
+task:
+    taskStart taskStatement+ END_IN_BLOCK;
 
+taskStart:
+    TASK UPPER_CASE_STRING NEW_LINE+;
+
+taskStatement:
+    transportOrder 
+    | optTosStatement NEW_LINE* // optional new lines after \n in expression
+    | INDENTATION REPEAT REPEAT_TIMES NEW_LINE+;
+
+// transport from to 
 transportOrder:
-    IndentationInTask Transport NLInTask
-    IndentationInTask From NewInstance NLInTask
-    IndentationInTask To dest = NewInstance NLInTask;
+    INDENTATION TRANSPORT NEW_LINE
+    INDENTATION FROM LOWER_CASE_STRING NEW_LINE
+    INDENTATION TO dest = LOWER_CASE_STRING NEW_LINE+;
 
+// optional to extend functionality
+optTosStatement:
+    INDENTATION TRIGGERED_BY expression E_NL_IN_EXPRESSION
+    | INDENTATION FINISHED_BY expression E_NL_IN_EXPRESSION
+    | INDENTATION ON_DONE UPPER_CASE_STRING NEW_LINE;
 
 expression:
-    attr = E_Attribute
-   | E_LeftParenthesis expression E_RightParenthesis
-   | bleft = expression binOperation bright = expression
-   | unOperation unAttr = expression
-   | con;
+    attr = E_ATTRIBUTE
+    | E_LEFT_PARENTHESIS expression E_RIGHT_PARENTHESIS
+    | bleft = expression binOperation bright = expression
+    | unOperation unAttr = expression
+    | con;
 
 binOperation:
-    op = (E_LessThan
-        | E_LessThanOrEqual
-        | E_GreaterThan
-        | E_GreaterThanOrEqual
-        | E_Equal
-        | E_NotEqual
-        | E_BooleanAnd
-        | E_BooleanOr);
+    op = (E_LESS_THAN
+        | E_LESS_THAN_OR_EQUAL
+        | E_GREATER_THAN
+        | E_GREATER_THAN_OR_EQUAL
+        | E_EQUAL
+        | E_NOT_EQUAL
+        | E_BOOLEAN_AND
+        | E_BOOLEAN_OR);
 
 unOperation:
-    op = E_Not;
+    op = E_BOOLEAN_NOT;
 
 con:
-    c = (E_True 
-        | E_False
-        | E_Integer
-        | E_Float);
-
-
+    c = E_TRUE 
+        | E_FALSE
+        | E_INTEGER
+        | E_FLOAT;

@@ -1,108 +1,69 @@
-lexer grammar TaskLexer;
+lexer grammar TaskLexer2;
 
-CommentInProgram : '#' ~[\n]+  -> skip;
-TemplateStart: 'template ' [A-Z][a-zA-Z0-9_]* -> pushMode(TEMPLATE);
-TaskStart: 'task ' [A-Z][a-zA-Z0-9_]* -> pushMode(TASK);
-TransportOrderStepStart: 'TransportOrderStep ' [a-z][a-zA-Z0-9_]* -> pushMode(TRANSPORTORDERSTEP);
-InstanceStart: [A-Z][a-zA-Z0-9_]* ' ' [a-z][a-zA-Z0-9_]* -> pushMode(INSTANCE);
-WS: [ \t\r\n]+ -> skip;
+TEMPLATE: 'template ' -> pushMode(BLOCK);
+TASK: 'task ' -> pushMode(BLOCK);
+TRANSPORT_ORDER_STEP: 'TransportOrderStep ' -> pushMode(BLOCK);
+INSTANCE: UPPER_CASE_STRING ' ' -> pushMode(BLOCK);
 
+WHITESPACE: [ \t\r\n]+ -> skip;
+COMMENT: '#' ~[\n]+ -> skip;
 
-mode TEMPLATE;
-// Skip Comments/Empty Lines as long as Indentation is correct
-CommentInTemplate : WS_T '#' ~[\n]+ -> skip;
-CommentLineInTemplate : IndentationInTemplate '#' ~[\n]+ '\n'-> skip;
-EmptyLineInTemplate: ('    '| '\t') '\n' -> skip;
-EndInTemplate: 'end' -> popMode;
+mode BLOCK;
 
+EMPTY_LINE: ('    ' | '\t') '\n' -> skip;
+NEW_LINE: WHITESPACE_BLOCK '\n';
 
-EqualInTemplate: WS_I '=' WS_I;
-NLInTemplate: WS_T '\n';
-IndentationInTemplate: ('    '|'\t');
-AttributeInTemplate: [a-z][a-zA-Z0-9_]*;
-ValueInTemplate: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;  // Warning from VS_CODE is not correct!
-fragment WS_T: [ \t]*;
+INDENTATION: ('    ' | '\t');
 
+COMMENT_IN_BLOCK : WHITESPACE_BLOCK '#' ~[\n]+  -> skip;
+COMMENT_LINE_IN_BLOCK : INDENTATION '#' ~[\n]+ '\n'-> skip;
 
-mode INSTANCE;
-// Skip Comments/Empty Lines as long as Indentation is correct
-CommentInInstance : WS_I '#' ~[\n]+  -> skip;
-CommentLineInInstance : IndentationInInstance '#' ~[\n]+ '\n'-> skip;
-EmptyLineInInstance: ('    '| '\t') '\n' -> skip;
-EndInInstance: 'end' -> popMode;
+EQUAL: WHITESPACE_BLOCK '=' WHITESPACE_BLOCK;
+END_IN_BLOCK: 'end' -> popMode;
 
-EqualinInstance: WS_I '=' WS_I;
-NLInInstance: WS_I '\n';
-IndentationInInstance: ('    '|'\t');
-AttributeInInstance: [a-z][a-zA-Z0-9_]*;
-ValueInInstance: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;  // Warning from VS_CODE is not correct!
-fragment WS_I: [ \t]*;
+// Only For TransportOrderStep
+LOCATION: 'Location' WHITESPACE_BLOCK;
 
-mode TRANSPORTORDERSTEP;
-// Skip Comments/Empty Lines as long as Indentation is correct
-CommentInTransportOrderStep : WS_I '#' ~[\n]+  -> skip;
-CommentLineInTransportOrderStep : IndentationInInstance '#' ~[\n]+ '\n'-> skip;
-EmptyLineInTransportOrderStep: ('    '| '\t') '\n' -> skip;
-EndInTransportOrderStep: 'end' -> popMode;
+// Only For Task
+REPEAT: 'Repeat' WHITESPACE_BLOCK;
+REPEAT_TIMES: [0-9]+ WHITESPACE_BLOCK;
 
-NLInTransportOrderStep: WS_TOS '\n';
+// Transport Order used in Task
+TRANSPORT: 'Transport';
+FROM: 'from' WHITESPACE_BLOCK;
+TO: 'to' WHITESPACE_BLOCK;
 
-TriggeredByTOS: 'TriggeredBy' WS_TA ->  pushMode(EXPRESSION);
-FinishedByTOS: 'FinishedBy' WS_TA ->  pushMode(EXPRESSION);
-LocationTOS: 'Location' WS_TA;
-OnDoneTOS: 'OnDone' WS_TA;
-CommaTOS: ',' WS_TA;
-IndentationInTransportOrderStep: ('    '|'\t');
-NewInstanceInTransportOrderStep: [a-z][a-zA-Z0-9_]*; 
-NewTaskInTransportOrderStep: [A-Z][a-zA-Z0-9_]*;
-fragment WS_TOS: [ \t]*;
+// Used in both
+ON_DONE: 'OnDone' WHITESPACE_BLOCK;
+TRIGGERED_BY: 'TriggeredBy' WHITESPACE_BLOCK -> pushMode(EXPRESSION);
+FINISHED_BY: 'FinishedBy' WHITESPACE_BLOCK -> pushMode(EXPRESSION);
 
+COMMA: ',' WHITESPACE_BLOCK;
 
-mode TASK;
-// Skip Comments/Empty Lines as long as Indentation is correct
-CommentInTask : WS_TA '#' ~[\n]+  -> skip;
-CommentLineInTask : IndentationInTask '#' ~[\n]+ '\n'-> skip;
-EmptyLineInTask: ('    '| '\t') '\n' -> skip;
-EndInTask: 'end' -> popMode;
+LOWER_CASE_STRING: [a-z][a-zA-Z0-9_]*;
+UPPER_CASE_STRING: [A-Z][a-zA-Z0-9_]*;
 
-NLInTask: WS_TA '\n';
+VALUE: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;
 
-//Definition of TransportOrder
-Transport: 'Transport' WS_TA;
-From: 'from' WS_TA;
-To: 'to' WS_TA;
-
-
-TriggeredBy: 'TriggeredBy' WS_TA ->  pushMode(EXPRESSION);
-FinishedBy: 'FinishedBy' WS_TA ->  pushMode(EXPRESSION);
-Repeat: 'Repeat' WS_TA;
-RepeatTimes: [0-9]+ WS_TA; 
-OnDone: 'OnDone' WS_TA;
-Comma: ',' WS_TA;
-
-IndentationInTask: ('    '|'\t');
-NewInstance: [a-z][a-zA-Z0-9_]*; 
-NewTask: [A-Z][a-zA-Z0-9_]*;
-fragment WS_TA: [ \t]*;
-
+fragment WHITESPACE_BLOCK: [ \t]*;
 
 mode EXPRESSION;
-E_LeftParenthesis: '(';
-E_RightParenthesis: ')';
-E_LessThan: '<';
-E_LessThanOrEqual: '<=';
-E_GreaterThan: '>';
-E_GreaterThanOrEqual: '>=';
-E_Equal: '==' | '=';
-E_NotEqual: '!=';
-E_BooleanAnd:	'&&';
-E_BooleanOr: '||';
-E_Not: '!';
-E_Attribute: [a-z][a-zA-Z0-9_]+;
-E_True: 'True' | 'TRUE';
-E_False: 'False' | 'FALSE';
-E_Integer: [0-9]+;
-E_Float: [0-9]+( '.' [0-9]+);
+E_LEFT_PARENTHESIS: '(';
+E_RIGHT_PARENTHESIS: ')';
+E_LESS_THAN: '<';
+E_LESS_THAN_OR_EQUAL: '<=';
+E_GREATER_THAN: '>';
+E_GREATER_THAN_OR_EQUAL: '>=';
+E_EQUAL: '==' | '=';
+E_NOT_EQUAL: '!=';
+E_BOOLEAN_AND:	'&&';
+E_BOOLEAN_OR: '||';
+E_BOOLEAN_NOT: '!';
+E_ATTRIBUTE: [a-z][a-zA-Z0-9_]+;
+E_TRUE: 'True' | 'TRUE';
+E_FALSE: 'False' | 'FALSE';
+E_INTEGER: [0-9]+;
+E_FLOAT: [0-9]+( '.' [0-9]+);
 E_WS: [ \r\t]  -> skip;
-E_Comment: '#' ~[\n]+ -> skip;
-E_NLInExpression: [\n] -> popMode;
+E_COMMENT: '#' ~[\n]+ -> skip;
+E_NL_IN_EXPRESSION: [\n] -> popMode;
