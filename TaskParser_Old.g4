@@ -1,7 +1,7 @@
 parser grammar TaskParser;
 
 options {
-	tokenVocab = TaskLexer;
+	tokenVocab = TaskLexer_Old;
 }
 
 

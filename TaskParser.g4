@@ -1,7 +1,7 @@
-parser grammar TaskParser2;
+parser grammar TaskParser;
 
 options {
-	tokenVocab = TaskLexer2;
+	tokenVocab = TaskLexer;
 }
 
 program : 

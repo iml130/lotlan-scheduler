@@ -1,5 +1,5 @@
-from TaskParser2Visitor import TaskParser2Visitor
-from TaskParser2 import TaskParser2
+from TaskParserVisitor import TaskParserVisitor
+from TaskParser import TaskParser
 
 import copy
 
@@ -45,7 +45,7 @@ class Instance(object):
         self.keyval = {} # Dictionary of attributes with set value
 
 
-class CreateTreeTaskParserVisitor(TaskParser2Visitor):
+class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
     # Visit a parse tree produced by TaskParser#program.
     def visitProgram(self, ctx):
@@ -71,8 +71,8 @@ class CreateTreeTaskParserVisitor(TaskParser2Visitor):
     def visitTemplate(self, ctx):
         t = Template()
         # Retreive the Templates name
-        t.name = ctx.TemplateStart().getText()[9:] 
-
+        t.name = ctx.UpperCaseString().getText()
+        print(t.name)
         if t.name in self.cp.templates:
             raise Exception("Error in line: {} there is already a template with the same name!".format(ctx.start.line))
 
@@ -106,9 +106,8 @@ class CreateTreeTaskParserVisitor(TaskParser2Visitor):
     def visitInstance(self, ctx):
         i = Instance()
         # Retreive Template and Instance name
-        TempAndInst = ctx.InstanceStart().getText().split()
-        i.templateName = TempAndInst[0]
-        i.name = TempAndInst[1]
+        i.templateName = ctx.template
+        i.name = ctx.LowerCaseString
 
         for instance in self.cp.instances.values(): 
             if i.name == instance.name:

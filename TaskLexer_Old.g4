@@ -1,4 +1,4 @@
-lexer grammar TaskLexer;
+lexer grammar TaskLexer_Old;
 
 CommentInProgram : '#' ~[\n]+  -> skip;
 TemplateStart: 'template ' [A-Z][a-zA-Z0-9_]* -> pushMode(TEMPLATE);

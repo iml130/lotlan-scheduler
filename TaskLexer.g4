@@ -1,4 +1,4 @@
-lexer grammar TaskLexer2;
+lexer grammar TaskLexer;
 
 TEMPLATE: 'template ' -> pushMode(BLOCK);
 TASK: 'task ' -> pushMode(BLOCK);

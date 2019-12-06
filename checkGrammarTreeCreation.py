@@ -1,9 +1,9 @@
 from antlr4 import *
 from antlr4.error.ErrorListener import ErrorListener
 from antlr4.error.Errors import *
-from TaskLexer2 import TaskLexer2
-from TaskParser2Listener import TaskParser2Listener
-from TaskParser2 import TaskParser2
+from TaskLexer import TaskLexer
+from TaskParserListener import TaskParserListener
+from TaskParser import TaskParser
 from CreateTreeTaskParserVisitor import CreateTreeTaskParserVisitor
 from os import listdir
 from os.path import isfile, join
@@ -71,11 +71,14 @@ def testFiles():
     invalidFilenames = getFileNames(TEST_FOLDER + "Invalid/")
 
     #test valid files
+
+    print("Valid files are tested now:")
     for validFile in validFilenames:
         if testFile(validFile) == False:
             print(validFile + " is a valid tasklanguage program and got an error!")
 
     # test invalid files
+    print("Invalid files are tested now:")
     for invalidFile in invalidFilenames:
         if testFile(invalidFile) == True:
             print(invalidFile + " is an invalid tasklanguage program and got no error!")
@@ -84,9 +87,9 @@ def testFiles():
 def testFile(filename):
     print("testing file " + filename)
 
-    lexer = TaskLexer2(InputStream(open(filename).read()))
+    lexer = TaskLexer(InputStream(open(filename).read()))
     tokenStream = CommonTokenStream(lexer)
-    parser = TaskParser2(tokenStream)
+    parser = TaskParser(tokenStream)
     
     errorListener = ThrowErrorListener()
 
@@ -100,7 +103,7 @@ def testFile(filename):
     visitor = CreateTreeTaskParserVisitor()
 
     # check for some semantic errors while traversing through the tree and return the program data
-    #t = visitor.visit(tree)
+    # t = visitor.visit(tree)
 
     #validate semantic
     #print("Semantic of program successfully tested:", taskValidator.isValid(t))
