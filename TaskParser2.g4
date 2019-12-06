@@ -9,50 +9,59 @@ program :
 
 // Template Layout
 template: 
-    TEMPLATE UPPER_CASE_STRING NEW_LINE 
-        memberVariable+
-    END_IN_BLOCK;
+    templateStart memberVariable+ END_IN_BLOCK;
+
+templateStart:
+    TEMPLATE UPPER_CASE_STRING NEW_LINE+;
 
 // Instance Layout
 instance: 
-    INSTANCE LOWER_CASE_STRING NEW_LINE
-        memberVariable+
-    END_IN_BLOCK;
+    instanceStart memberVariable+ END_IN_BLOCK;
+
+instanceStart:
+    INSTANCE LOWER_CASE_STRING NEW_LINE+;
 
 memberVariable:
-    INDENTATION LOWER_CASE_STRING EQUAL VALUE NEW_LINE;
+    INDENTATION LOWER_CASE_STRING EQUAL VALUE NEW_LINE+;
 
 // Transport Order Step
 transportOrderStep:
-    TRANSPORT_ORDER_STEP LOWER_CASE_STRING NEW_LINE
-        optionalTransportOrderStepStatement*
-        INDENTATION LOCATION LOWER_CASE_STRING NEW_LINE // there have to be at least one Location statement
-        optionalTransportOrderStepStatement*
-    END_IN_BLOCK;
+    tosStart tosStatements END_IN_BLOCK;
+
+tosStart:
+    TRANSPORT_ORDER_STEP LOWER_CASE_STRING NEW_LINE+;
+
+tosStatements:
+    optTosStatement*
+        INDENTATION LOCATION LOWER_CASE_STRING NEW_LINE+ // there have to be at least one Location statement
+    optTosStatement*;
 
 // Task Layout
-task: 
-    TASK UPPER_CASE_STRING NEW_LINE
-        taskStatement+
-    END_IN_BLOCK;
+task:
+    taskStart taskStatement+ END_IN_BLOCK;
+
+taskStart:
+    TASK UPPER_CASE_STRING NEW_LINE+;
 
 taskStatement:
     transportOrder 
-    | optionalTransportOrderStepStatement
-    | INDENTATION REPEAT REPEAT_TIMES NEW_LINE;
+    | optTosStatement NEW_LINE* // optional new lines after \n in expression
+    | INDENTATION REPEAT REPEAT_TIMES NEW_LINE+;
 
-optionalTransportOrderStepStatement:
+// transport from to 
+transportOrder:
+    INDENTATION TRANSPORT NEW_LINE
+    INDENTATION FROM LOWER_CASE_STRING NEW_LINE
+    INDENTATION TO dest = LOWER_CASE_STRING NEW_LINE+;
+
+// optional to extend functionality
+optTosStatement:
     INDENTATION TRIGGERED_BY expression E_NL_IN_EXPRESSION
     | INDENTATION FINISHED_BY expression E_NL_IN_EXPRESSION
     | INDENTATION ON_DONE UPPER_CASE_STRING NEW_LINE;
 
-transportOrder:
-    INDENTATION TRANSPORT NEW_LINE
-    INDENTATION FROM LOWER_CASE_STRING NEW_LINE
-    INDENTATION TO dest = LOWER_CASE_STRING NEW_LINE;
-
 expression:
-    attr = E_Attribute
+    attr = E_ATTRIBUTE
     | E_LEFT_PARENTHESIS expression E_RIGHT_PARENTHESIS
     | bleft = expression binOperation bright = expression
     | unOperation unAttr = expression

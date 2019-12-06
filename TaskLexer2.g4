@@ -10,7 +10,7 @@ COMMENT: '#' ~[\n]+ -> skip;
 
 mode BLOCK;
 
-EMPTY_LINE: ('    '| '\t') '\n' -> skip;
+EMPTY_LINE: ('    ' | '\t') '\n' -> skip;
 NEW_LINE: WHITESPACE_BLOCK '\n';
 
 INDENTATION: ('    ' | '\t');
@@ -59,7 +59,7 @@ E_NOT_EQUAL: '!=';
 E_BOOLEAN_AND:	'&&';
 E_BOOLEAN_OR: '||';
 E_BOOLEAN_NOT: '!';
-E_Attribute: [a-z][a-zA-Z0-9_]+;
+E_ATTRIBUTE: [a-z][a-zA-Z0-9_]+;
 E_TRUE: 'True' | 'TRUE';
 E_FALSE: 'False' | 'FALSE';
 E_INTEGER: [0-9]+;
