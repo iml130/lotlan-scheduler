@@ -11,7 +11,7 @@ import sys
 
 import taskValidator
 
-TEST_FOLDER = "Tests/"
+TEST_FOLDER = "tests/"
 
 
 class ThrowErrorListener(ErrorListener):

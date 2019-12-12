@@ -85,7 +85,6 @@ task Transport_Task
 	Transport 
     from 		t1
     to 			warehouse
-    
 	TriggeredBy	palette_1Full == TRUE
 	TriggeredBy	palette_2Full == FALSE
 	TriggeredBy	palette_3Full == !12 || 42.42 <= 42.31
