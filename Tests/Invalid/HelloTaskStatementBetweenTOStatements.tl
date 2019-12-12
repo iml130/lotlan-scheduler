@@ -18,7 +18,6 @@ Event triggerGetNewMaterial2
     type = "Boolean"
 end
 
-
 TransportOrderStep loadStorage
     Location pickupItem  # Only one Location can be defined!
 end
@@ -29,8 +28,11 @@ end
 
 task HelloTask
     TriggeredBy triggerGetNewMaterial == True
-    TriggeredBy triggerGetNewMaterial2 == True
+    
     Transport
     from loadStorage
+
+    TriggeredBy triggerGetNewMaterial2 == True # should not be here!
+
     to unloadWorkstation1
 end

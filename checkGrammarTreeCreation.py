@@ -61,7 +61,8 @@ def getFileNames(path):
     for f in listdir(path):
         if isfile(join(path, f)):
             # only add tasklanguage files
-            if f.split(".")[1] == "tl":
+            splittedString = f.split(".")
+            if len(splittedString) == 2 and splittedString[1] == "tl":
                 filenames.append(path + f)
 
     return filenames

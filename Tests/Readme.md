@@ -1,26 +1,26 @@
-Valid TaskLanguages:
-- HelloTask
-- HelloTaskOnDone
-- HelloTaskTriggeredBy
-- few more to come
-  
+Currently available tests:
 
-What else to test:
-- missing word
-- wrong spelled word
-- empty param (OnDone)
-- Upper/Lowercases (OnDONE - does it really matter?)
-  
+Valid:
+- HelloTask
+- HelloTaskTriggeredBy
+- HelloTaskRepeatForever
+- HelloTaskNewLinesBetweenStatements
+- HelloTaskComments
+- 
 Invalid:
 - Missing Location
 - Missing TransportOrderStep
+- WrongSpelledEvent
 - WrongSpelled Location
 - WrongSpelled TransportOrderStep
+- Wrong Spelled OnDone Task (OnDone DAS)
 - Missing Event
-- WrongSpelledEvent
 - LowerCase/UpperCase Erros
 - Naming Error
 - Missing OnDone Task (OnDone )
-- Wrong Spelled OnDone Task (OnDone DAS)
 - Invalid Characters for Names of Location/Event/TransportOrderSteps/Time/Task
-- 
+- Statement between Transport Order Statements
+- Wrong Indentation
+  
+What else to test:
+- missing word
