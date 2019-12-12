@@ -17,6 +17,21 @@ The Logistic Task Language *(LoTLan)* is a simple, but powerful approach to desc
     - [Example OnDone Task](#example-ondone-task)
   - [Comments](#comments)
   - [Full Example](#full-example)
+  - [Set of allowed chars](#set-of-allowed-chars)
+    - [Template](#template)
+      - [Examples](#examples)
+    - [Instance](#instance)
+      - [Examples](#examples-1)
+    - [Member Variables](#member-variables)
+      - [Examples](#examples-2)
+    - [TransportOrderStep](#transportorderstep)
+      - [Examples](#examples-3)
+    - [Task](#task)
+      - [Examples](#examples-4)
+    - [Expressions](#expressions)
+      - [Examples](#examples-5)
+    - [Indentations](#indentations)
+      - [Examples](#examples-6)
   - [Execution](#execution)
 
 ___
@@ -404,20 +419,261 @@ Task TransportGoodsPallet_3
     OnDone      Refill  # If this Task is done, call Refill
 end
 ```
+___
+
+## Set of allowed chars
+
+In the following we use Lower and Uppercase Strings definied as followed:
+
+*Lowercase String*
+
+starts with *lowercase char* and after that you can use every letter, number and the char '_'. \
+Regex: ```[a-z][a-zA-Z0-9_]* ```
+
+*Uppercase String*: 
+
+same as lowercase except for a *uppercase char* at the beginning. \
+Regex: ```[A-Z][a-zA-Z0-9_]*```
+
+### Template
+
+Every Template definition starts with a 'template' String. The template name has to be an Uppercase String.
+
+#### Examples
+
+Valid Program:
+```
+template Location
+    type = ""
+    name = ""
+end
+```
+
+Invalid Program:
+```
+template Location!!
+    type = ""
+    name = ""
+end
+
+template location2
+    type = ""
+    name = ""
+end
+```
+
+### Instance
+
+Every Instance definition starts with an *Uppercase String* to indicate from which template we want to create a template. The name of the instance have to be written as *Lowercase String*.
+
+#### Examples
+
+Valid Program:
+```
+Location pickupItem
+    name = "s1_pickup"
+    type = "SmallLoadCarrier"
+end
+```
+
+Invalid Program:
+```
+Location PickupItem
+    name = "s1_pickup"
+    type = "SmallLoadCarrier"
+end
+
+Location pickup-item
+    name = "s1_pickup"
+    type = "SmallLoadCarrier"
+end
+```
+
+### Member Variables
+The type has to be *Lowercase String*. The values can either be a *Lowercase* or a *Uppercase String* or a sequence of numbers and the chars '*' and '/'. They are surrounded by " ". 
+
+Regex for value: ``` '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ```
+
+#### Examples
+
+Valid Program:
+```
+Location pickupItem
+    name = "s1_pickup"
+    type = "SmallLoadCarrier"
+end
+```
+
+Invalid Program:
+```
+Location pickupItem
+    name = s1_pickup
+    type = "SmallLoad Carrier"
+end
+
+Location pickupItem2
+    name = "s1_pickup**"
+    type = "SmallLoadCarrier"
+end
+```
+
+### TransportOrderStep
+A TransportOrderStep consists of predefinied strings like "Location", "Triggered By" or "Finished By". The instance names should match the corresponding instance so they are *Lowercase Strings* too. \
+With the OnDone Keyword you define a follow up task so the taskname should match the corresponding task so its a *Uppercase String* \
+TriggeredBy and FinishedBy use expressions. To learn more about expressions goto [this section](#expressions)
+
+#### Examples
+
+Valid Program:
+```
+TransportOrderStep t1
+    Location testitest
+    TriggeredBy mitarbeiterButtonDasErFertigIst
+    FinishedBy abc == bce < 5
+    OnDone Task
+end
+```
+
+Invalid Program:
+```
+TransportOrderStep t1
+    MyLocation testitest
+    TriggeredBy mitarbeiterButtonDasErFertigIst
+    FinishedBy abc == bce < 5
+    OnDone Task
+end
+
+TransportOrderStep t1
+    Location Location1
+    TriggeredBy mitarbeiterButtonDasErFertigIst
+    FinishedBy abc == bce < 5
+    OnDone test
+end
+```
+
+### Task
+Transport, From and To are fixed Keywords. The names of the locations(from and to) need to be the same as the corresponding locations
+There are the same optional statements as in TransportOrderStep(Triggeredby, ...)
+
+#### Examples
+
+Valid Program:
+```
+task Transport_Task
+    Transport 
+    from        t1
+    to          warehouse
+    TriggeredBy palette_1Full == TRUE
+end
+```
+
+Invalid Program:
+```
+task Transport_Task
+    Transport 
+    TriggeredBy palette_1Full == TRUE
+    from        t1
+    to          warehouse
+end
+
+task Transport_Task2
+    Transport 
+    to          warehouse
+    from        t1  
+end
+```
+
+### Expressions
+
+An expression can be definied in multiple ways: 
+* As attribute
+* Holds nested expressions (have to be surrounded by a left and right parenthesis)
+*  Comparison of two expressions with a binary operation 
+*  Single expression with an unary operation
+*  A Condition Statement (e.g True, False, but also integers and floats)
+
+Regex:
+
+Attribute: ``` [a-z][a-zA-Z0-9_]+ ``` \
+Binary Operation: ``` ['<''>''<=''>=''&&''||''==''='] ``` \
+Unary Operation: ```! ``` \
+Condition Statements: ``` ['True''False''TRUE''FALSE''[0-9]+''[0-9]+( '.' [0-9]+)'] ```
+
+
+#### Examples
+
+Valid Program:
+```
+task Transport_Task
+	TriggeredBy	palette_1Full == TRUE
+	TriggeredBy	palette_2Full == FALSE
+	TriggeredBy	palette_3Full == !12 || 42.42 <= 42.31
+end
+```
+
+Invalid Program:
+```
+task Transport_Task
+	TriggeredBy	palette_1Full = TRUE
+	TriggeredBy	Palette_2Full == FALSE
+	TriggeredBy	palette_3Full == !12 || 42.42 <== 42.31
+end
+
+task Transport_Task2
+	TriggeredBy	palette_1Full == TRUE
+	TriggeredBy	palette_2Full == true
+	TriggeredBy	palette_3Full == "TRUE" || 42,42 <= 42,31
+end
+```
+
+
+### Indentations
+
+If you are in a block(Template, Instance, Task or TransportOrderStep) you need to add a Indentation after each New Line of a statement. An Intentation can be a tabulator or 3 space characters. It is also not allowed to add a Indentation before a Blockstart it must be the first Word after a New Line.
+
+Regex: ```('    ' | '\t')```
+
+#### Examples
+
+Valid Program:
+```
+Location pickupItem
+    name = "s1_pickup"
+    type = "SmallLoadCarrier"
+end
+```
+
+Invalid Program:
+```
+Location pickupItem
+                    name = "s1_pickup"
+        type = "SmallLoadCarrier"
+end
+
+    Location pickupItem2
+    name = "s1_pickup"
+    type = "SmallLoadCarrier"
+end
+```
 
 ___
 
 ## Execution
 
-To Test the Text-File `examples.txt` you need to do the following:
+To test the grammar you need to do the following:
 
 First: generate Python-Files via:
-> java -jar antlr-4.7.2-complete.jar -Dlanguage=Python2 TaskLexer.g4 TaskParser.g4
-
-Or via (to also have the visitor available)
 > java -jar antlr-4.7.2-complete.jar -Dlanguage=Python2 -visitor TaskLexer.g4 TaskParser.g4
 
 Then just simply execute:
-> python checkGrammar.py
+> python checkGrammarTreeCreation.py
 
-Iff the `examples.txt`-File contains an error, `checkGrammar` will print it. The file has been succesfully parsed, if nothing was printed.
+to test the examples.txt 
+
+or
+
+> python checkGrammarTreeCreation.py --test
+
+if you want to test *all* Testfiles in the test folder
+
+If the testfiles contain an error, `checkGrammarTreeCreation` will print it (which will happen if you test the files in the invalid folder)
