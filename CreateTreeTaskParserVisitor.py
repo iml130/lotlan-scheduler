@@ -1,7 +1,13 @@
 from TaskParserVisitor import TaskParserVisitor
 from TaskParser import TaskParser
+from enum import Enum
 
 import copy
+
+class OptType(Enum):
+    TRIGGERED_BY = 1
+    FINISHED_BY = 2
+    ON_DONE = 3
 
 class CompleteProgram(object):
     def __init__(self):
@@ -21,7 +27,7 @@ class TaskInfo(object):
 
 class TransportOrder(object):
     def __init__(self):
-        self.pickupFrom = [] # From many Instances
+        self.pickupFrom = None# From Instance
         self.deliverTo = None # Target Instance
 
 class TransportOrderStep(object):
@@ -32,7 +38,6 @@ class TransportOrderStep(object):
         self.finishedBy = []
         self.onDone = [] # Reference to the next Tasks
         
-
 class Template(object):
     def __init__(self):
         self.name = None # String of the Template Name
@@ -66,171 +71,165 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
         return self.cp
 
+    def printProgram(self):
+        for template in self.cp.templates.values():
+            print("Template Name:", template.name)
+            print("Keyval:", template.keyval)
+            print("\n")
+        for instance in self.cp.instances.values():
+            print("Template Name:", instance.templateName)
+            print("Instance Name:", instance.name)
+            print("Keyval:", instance.keyval)
+            print("\n")
+        for tos in self.cp.transportOrderSteps.values():
+            print("TransportOrderStepName:", tos.name)
+            print("Location:", tos.location)
+            print("Triggered By:", tos.triggeredBy)
+            print("Finished By:", tos.finishedBy)
+            print("OnDone:", tos.onDone)
+            print("\n")
+        for task in self.cp.taskInfos.values():
+            print("TaskName:", task.name)
+            print("Transport Order:", task.transportOrders)
+            print("Triggered By:", task.triggeredBy)
+            print("Finished By:", task.finishedBy)
+            print("OnDone:", task.onDone)
+            print("Repeat:", task.repeat)
+            print("\n")
 
     # Visit a parse tree produced by TaskParser#template.
     def visitTemplate(self, ctx):
         t = Template()
-        # Retreive the Templates name
         t.name = ctx.UpperCaseString().getText()
-        print(t.name)
-        if t.name in self.cp.templates:
-            raise Exception("Error in line: {} there is already a template with the same name!".format(ctx.start.line))
 
-        # Iterate until we found an innerTemplate
-        for child in ctx.children:
-            if isinstance(child, TaskParser2.InnerTemplateContext):
-                t.keyval = self.visitInnerTemplate(child)
-                break
-            
-        # Check if we have name/type or only timing in Template
-        if "timing" in t.keyval:
-            # Case here we have a Time Template
-            return t
-        elif "type" in t.keyval and "name" in t.keyval:
-            # Here we have type and name in template -> So an Object
-            return t
-        else:
-            raise Exception("Template {} does not contain name/type or timing. Line: {} ".format(t.name, ctx.start.line))
+        keyval = {}
+        for child in ctx.memberVariable():
+            variableContent = self.visitMemberVariable(child)
+            keyval[variableContent[0]] = variableContent[1]
+        i.keyval = keyval
 
+        return t
 
-    # Visit a parse tree produced by TaskParser#innerTemplate.
-    def visitInnerTemplate(self, ctx):
-        l = {}
-        # Create a List of all Attributes inside a Template
-        for key, val in zip(ctx.AttributeInTemplate(), ctx.ValueInTemplate()):
-            l[key.getText()] = val.getText()
-        return l
-
+    def visitTemplateStart(self, ctx):
+        return ctx.STARTS_WITH_UPPER_C_STR().getText()
 
     # Visit a parse tree produced by TaskParser#instance.
     def visitInstance(self, ctx):
         i = Instance()
+
         # Retreive Template and Instance name
-        i.templateName = ctx.template
-        i.name = ctx.LowerCaseString
+        names = self.visitInstanceStart(ctx.instanceStart())
 
-        for instance in self.cp.instances.values(): 
-            if i.name == instance.name:
-                raise Exception("Error in line: {} there is already an instance with the same name!".format(ctx.start.line))
+        i.templateName = names[0]
+        i.name = names[1]
 
-        # Iterate until we found an innerInstance
-        for child in ctx.children:
-            if isinstance(child, TaskParser2.InnerInstanceContext):
-                i.keyval = self.visitInnerInstance(child)
-                break
+        keyval = {}
+        for child in ctx.memberVariable():
+            variableContent = self.visitMemberVariable(child)
+            keyval[variableContent[0]] = variableContent[1]
+        i.keyval = keyval
+
         return i
 
+    def visitInstanceStart(self, ctx):
+        templateName = ctx.INSTANCE().getText().split(" ")[0] # get template name without whitespace after it
+        instanceName = ctx.STARTS_WITH_LOWER_C_STR().getText()
 
-    # Visit a parse tree produced by TaskParser#innerInstance.
-    def visitInnerInstance(self, ctx):
-        keyval = {}
-        # Create a Dictionary of Key-Value pairs in Instance
-        for key, val in zip(ctx.AttributeInInstance(), ctx.ValueInInstance()):
-            keyval[key.getText()] = val.getText()
-        return keyval
+        return (templateName, instanceName)
 
+    def visitMemberVariable(self, ctx):
+        variableName = ctx.STARTS_WITH_LOWER_C_STR().getText()
+        value = self.visitValue(ctx.value())
+
+        return (variableName, value)
+
+    def visitValue(self, ctx):
+        value = 0
+
+        if ctx.STRING_VALUE():
+            value = ctx.STRING_VALUE().getText()
+        elif ctx.NUMERIC_VALUE():
+            value = ctx.NUMERIC_VALUE().getText()
+        else:
+            value = ctx.EMPTY_VALUE().getText()
+
+        return value
+
+    def visitTransportOrderStep(self, ctx):
+        tos = TransportOrderStep()
+        tos.name = self.visitTosStart(ctx.tosStart())
+        self.visitTosStatements(ctx.tosStatements(), tos)
+        return tos
+
+    def visitTosStart(self, ctx):
+        return ctx.STARTS_WITH_LOWER_C_STR().getText()
+
+    def visitTosStatements(self, ctx, tos):
+        for child in ctx.children:
+            if isinstance(child, TaskParser.OptTosStatementContext):
+                values = self.visitOptTosStatement(child)
+                if values[1] == OptType.TRIGGERED_BY:
+                    tos.triggeredBy.append(values[0])
+                elif values[1] == OptType.FINISHED_BY:
+                    tos.finishedBy.append(values[0])
+                elif values[1] == OptType.ON_DONE:
+                    tos.onDone.append(values[0])
+
+            elif isinstance(child, TaskParser.LocationStatementContext):
+                location = self.visitLocationStatement(child)
+                tos.location = location
+    
+    def visitLocationStatement(self, ctx):
+        return ctx.STARTS_WITH_LOWER_C_STR().getText()
+
+    def visitOptTosStatement(self, ctx):
+        childs = ctx.children
+        for i  in range(len(ctx.children)):
+            if childs[i] == ctx.TRIGGERED_BY():
+                return(self.visitExpression(childs[i+1]), OptType.TRIGGERED_BY)
+            if childs[i] == ctx.FINISHED_BY():
+                return(self.visitExpression(childs[i+1]), OptType.FINISHED_BY)
+            elif childs[i] == ctx.ON_DONE():
+                return(ctx.STARTS_WITH_UPPER_C_STR().getText(), OptType.ON_DONE)
 
     # Visit a parse tree produced by TaskParser#task.
     def visitTask(self, ctx):
         ti = TaskInfo()
-        # Retreive Task name
-        ti.name = ctx.TaskStart().getText()[5:] 
+        ti.name = self.visitTaskStart(ctx.taskStart())
         
-        if ti.name in self.cp.taskInfos:
-            raise Exception("Error in line: {} there is already a task with the same name!".format(ctx.start.line))
+        for child in ctx.taskStatement():
+            self.visitTaskStatement(child, ti)
 
-        # Iterate until we found an innerTask
-        for child in ctx.children:
-            if isinstance(child, TaskParser.InnerTaskContext):
-                self.visitInnerTask(child, ti)
-                break
         return ti
 
-    # Visit a parse tree produced by TaskParser#innerTask.
-    def visitInnerTask(self, ctx, taskInfo):
-        # For each onDone we append a new Task
-        for trigger in ctx.NewTask():
-            taskInfo.onDone.append(trigger.getText())
+    def visitTaskStart(self, ctx):
+        return ctx.STARTS_WITH_UPPER_C_STR().getText()
 
-        # We have a Repeat, this can only be set once!
-        reps = ctx.RepeatTimes()
-        if len(reps) > 1:
-            raise Exception("The Task on Line: {} defines Repeat multiple Times ".format(ctx.start.line))
-        if len(reps) == 1:
-            taskInfo.repeat = reps[0].getText()
-
-        # For each Expression Or Trigger we call the functions and append
-        for i  in range(len(ctx.children)):
-            childs = ctx.children
-            # Check here for each possible input we can get in Task
-            if isinstance(childs[i], TaskParser.ExpressionContext):
-
-                # Case we retrieve a TriggeredBy or FinishedBy -> Distinguish them here!
-                if "TriggeredBy" in childs[i-1].getText():
-                    taskInfo.triggeredBy.append(self.visitExpression(childs[i]))
-
-                elif "FinishedBy" in childs[i-1].getText():
-                    taskInfo.finishedBy.append(self.visitExpression(childs[i]))
-            # We received a Transport Order
-            if isinstance(childs[i], TaskParser.TransportOrderContext):
-                taskInfo.transportOrders.append(self.visitTransportOrder(childs[i]))
-        
-        return self.visitChildren(ctx)
-
-
-    def visitTransportOrderStep(self, ctx):
-        tos = TransportOrderStep()
-        # Get TOS - name
-        tos.name = ctx.TransportOrderStepStart().getText()[19:] 
-        if tos.name in self.cp.transportOrderSteps:
-            raise Exception("Error: in line: {} there is already a TransportOrderStep with the same name!").format(ctx.start.line)
-
-        # iterate to get innerTransportOrderStep
-        for child in ctx.children:
-            if isinstance(child, TaskParser2.InnerTransportOrderStepContext):
-                self.visitInnerTransportOrderStep(child, tos)
-                break
-
-        return tos
-
-    def visitInnerTransportOrderStep(self, ctx, tos):
-        # For each onDone/Location we append a new Location
-        for trigger in ctx.NewTaskInTransportOrderStep():
-            tos.onDone.append(trigger.getText())
-
-        loc = ctx.NewInstanceInTransportOrderStep()
-        if len(loc) > 1:
-            raise Exception("The TransportOrderStep on Line: {} defines Location multiple Times ".format(ctx.start.line))
-        if len(loc) == 0:
-            raise Exception("The TransportOrderStep on Line: {} does not define a Location".format(ctx.start.line))
-        tos.location = loc[0].getText()
-
-        # For each Expression Or Trigger we call the functions and append
-        for i  in range(len(ctx.children)):
-            childs = ctx.children
-
-            # Check here for each possible input we can get in Task
-            if isinstance(childs[i], TaskParser.ExpressionContext):
-                # Case we retrieve a TriggeredBy or FinishedBy -> Distinguish them here!
-                if "TriggeredBy" in childs[i-1].getText():
-                    tos.triggeredBy.append(self.visitExpression(childs[i]))
-                elif "FinishedBy" in childs[i-1].getText():
-                    tos.finishedBy.append(self.visitExpression(childs[i]))
-
+    def visitTaskStatement(self, ctx, taskInfo):
+        if ctx.REPEAT_TIMES():
+            taskInfo.repeat = ctx.REPEAT_TIMES().getText()
+        elif ctx.optTosStatement():
+            values = self.visitOptTosStatement(ctx.optTosStatement())
+            if values[1] == OptType.TRIGGERED_BY:
+                taskInfo.triggeredBy.append(values[0])
+            elif values[1] == OptType.FINISHED_BY:
+                taskInfo.finishedBy.append(values[0])
+            elif values[1] == OptType.ON_DONE:
+                taskInfo.onDone.append(values[0])
+        elif ctx.transportOrder():
+            taskInfo.transportOrders.append(self.visitTransportOrder(ctx.transportOrder()))
 
     # Visit a parse tree produced by TaskParser#transportOrder.
     def visitTransportOrder(self, ctx):
         to = TransportOrder()
-        l = []
-        # Create the List
-        for srcDst in ctx.NewInstance():
-            l.append(srcDst.getText())
 
-        # Extract From/To
-        dst = l[-1]
-        l = l[:-1]
-        to.pickupFrom = l[0]
-        to.deliverTo = dst
+        childs = ctx.children
+        for i in range(len(childs)):
+            if childs[i] == ctx.FROM():
+                to.pickupFrom = childs[i+1].getText()
+            elif childs[i] == ctx.TO():
+                to.deliverTo = childs[i+1].getText()
+
         return to
 
     ### Expression parsing:
@@ -267,17 +266,12 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
     # Visit a parse tree produced by TaskParser#binOperation.
     def visitBinOperation(self, ctx):
-        # Just Return the Operation
-        return ctx.op.text
-
+        return ctx.children[0].getText()
 
     # Visit a parse tree produced by TaskParser#unOperation.
     def visitUnOperation(self, ctx):
-        return ctx.op.text
-
+        return ctx.children[0].getText()
 
     # Visit a parse tree produced by TaskParser#con.
     def visitCon(self, ctx):
-        return ctx.c.text
-
-
+        return 
