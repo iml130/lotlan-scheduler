@@ -3,14 +3,13 @@ lexer grammar TaskLexer;
 TEMPLATE: 'template ' -> pushMode(BLOCK);
 TASK: 'task ' -> pushMode(BLOCK);
 TRANSPORT_ORDER_STEP: 'TransportOrderStep ' -> pushMode(BLOCK);
-INSTANCE: UPPER_CASE_STRING ' ' -> pushMode(BLOCK);
+INSTANCE: STARTS_WITH_UPPER_C_STR ' ' -> pushMode(BLOCK);
 
 WHITESPACE: [ \t\r\n]+ -> skip;
 COMMENT: '#' ~[\n]+ -> skip;
 
 mode BLOCK;
 
-EMPTY_LINE: ('    ' | '\t') '\n' -> skip;
 NEW_LINE: WHITESPACE_BLOCK '\n';
 
 INDENTATION: ('    ' | '\t');
@@ -40,10 +39,12 @@ FINISHED_BY: 'FinishedBy' WHITESPACE_BLOCK -> pushMode(EXPRESSION);
 
 COMMA: ',' WHITESPACE_BLOCK;
 
-LOWER_CASE_STRING: [a-z][a-zA-Z0-9_]*;
-UPPER_CASE_STRING: [A-Z][a-zA-Z0-9_]*;
+STARTS_WITH_LOWER_C_STR: [a-z][a-zA-Z0-9_]*;
+STARTS_WITH_UPPER_C_STR: [A-Z][a-zA-Z0-9_]*;
 
-VALUE: '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ;
+STRING_VALUE: '"' [a-zA-Z0-9_]+ '"';
+NUMERIC_VALUE: '"' ['*'' ''/'0-9]+ '"';
+EMPTY_VALUE: '""';
 
 fragment WHITESPACE_BLOCK: [ \t]*;
 
@@ -59,7 +60,7 @@ E_NOT_EQUAL: '!=';
 E_BOOLEAN_AND:	'&&';
 E_BOOLEAN_OR: '||';
 E_BOOLEAN_NOT: '!';
-E_ATTRIBUTE: [a-z][a-zA-Z0-9_]+;
+E_ATTRIBUTE: [a-z][a-zA-Z0-9_]*;
 E_TRUE: 'True' | 'TRUE';
 E_FALSE: 'False' | 'FALSE';
 E_INTEGER: [0-9]+;
