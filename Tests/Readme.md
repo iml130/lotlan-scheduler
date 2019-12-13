@@ -6,7 +6,8 @@ Valid:
 - HelloTaskRepeatForever
 - HelloTaskNewLinesBetweenStatements
 - HelloTaskComments
-- 
+- HelloTaskExpressions
+
 Invalid:
 - Missing Location
 - Missing TransportOrderStep
