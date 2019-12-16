@@ -10,7 +10,7 @@ import sys
 from SemanticValidator import SemanticValidator
 from ThrowErrorListener import ThrowErrorListener
 
-TEST_FOLDER = "tests/"
+TEST_FOLDER = "testfiles/"
 LOG_PATH = "logs/log.txt"
 
 def getFileNames(path):
