@@ -423,11 +423,11 @@ ___
 
 ## Set of allowed chars
 
-In the following we use Lower and Uppercase Strings definied as followed:
+In the following we use Lower- and Uppercase Strings definied as followed:
 
 *Lowercase String*
 
-starts with *lowercase char* and after that you can use every letter, number and the char '_'. \
+starts with a *lowercase char* and after that you can use every letter, number and the char '_'. \
 Regex: ```[a-z][a-zA-Z0-9_]* ```
 
 *Uppercase String*: 
@@ -437,7 +437,7 @@ Regex: ```[A-Z][a-zA-Z0-9_]*```
 
 ### Template
 
-Every Template definition starts with a 'template' String. The template name has to be an Uppercase String.
+Every *Template* definition starts with a *template* String. The *template* name has to be an *Uppercase String*.
 
 #### Examples
 
@@ -464,7 +464,7 @@ end
 
 ### Instance
 
-Every Instance definition starts with an *Uppercase String* to indicate from which template we want to create a template. The name of the instance have to be written as *Lowercase String*.
+Every *Instance* definition of a *template* types tarts with an *Uppercase String* to indicate from which *template* we want to create an *instance*. The name of the *instance* have to be written as *Lowercase String*.
 
 #### Examples
 
@@ -518,9 +518,9 @@ end
 ```
 
 ### TransportOrderStep
-A TransportOrderStep consists of predefinied strings like "Location", "Triggered By" or "Finished By". The instance names should match the corresponding instance so they are *Lowercase Strings* too. \
-With the OnDone Keyword you define a follow up task so the taskname should match the corresponding task so its a *Uppercase String* \
-TriggeredBy and FinishedBy use expressions. To learn more about expressions goto [this section](#expressions)
+A *TransportOrderStep* contains the statements *Location*, *Triggered By* or *Finished By*. The *instance* names should match the corresponding *instance* so they are *Lowercase Strings* too. \
+With the *OnDone* Keyword you define a follow up *task* so the taskname should match the corresponding *task* so its a *Uppercase String* \
+*TriggeredBy* and *FinishedBy* use expressions. To learn more about expressions goto [this section](#expressions)
 
 #### Examples
 
@@ -552,8 +552,8 @@ end
 ```
 
 ### Task
-Transport, From and To are fixed Keywords. The names of the locations(from and to) need to be the same as the corresponding locations
-There are the same optional statements as in TransportOrderStep(Triggeredby, ...)
+*Transport*, *From* and *To* are fixed Keywords. The names of the locations (from and to) need to be the same as the corresponding locations
+There are the same optional statements as in TransportOrderStep (Triggeredby, ...)
 
 #### Examples
 
@@ -587,10 +587,10 @@ end
 
 An expression can be definied in multiple ways: 
 * As attribute
-* Holds nested expressions (have to be surrounded by a left and right parenthesis)
-*  Comparison of two expressions with a binary operation 
-*  Single expression with an unary operation
-*  A Condition Statement (e.g True, False, but also integers and floats)
+* As a set of nested expressions (have to be surrounded by a left and right parenthesis)
+* As comparison of two expressions with a binary operation 
+* As a single expression with an unary operation
+* As a condition statement (e.g *True*, *False*, but also integers and floats)
 
 Regex:
 
@@ -629,7 +629,7 @@ end
 
 ### Indentations
 
-If you are in a block(Template, Instance, Task or TransportOrderStep) you need to add a Indentation after each New Line of a statement. An Intentation can be a tabulator or 3 space characters. It is also not allowed to add a Indentation before a Blockstart it must be the first Word after a New Line.
+If you are in a block (*Template*, *Instance*, *Task* or *TransportOrderStep*) you need to add a Indentation after each New Line of a statement. An Intentation can be a tabulator or 3 space characters. It is also not allowed to add a Indentation before a Blockstart it must be the first Word after a New Line.
 
 Regex: ```('    ' | '\t')```
 
@@ -663,7 +663,7 @@ ___
 To test the grammar you need to do the following:
 
 First: generate Python-Files via:
-> java -jar antlr-4.7.2-complete.jar -Dlanguage=Python2 -visitor TaskLexer.g4 TaskParser.g4
+> java -jar antlr-4.7.2-complete.jar -Dlanguage=Python3 -visitor TaskLexer.g4 TaskParser.g4
 
 Then just simply execute:
 > python checkGrammarTreeCreation.py
@@ -676,4 +676,4 @@ or
 
 if you want to test *all* Testfiles in the test folder
 
-If the testfiles contain an error, `checkGrammarTreeCreation` will print it (which will happen if you test the files in the invalid folder)
+If the testfiles contain an error, `checkGrammarTreeCreation` will write it in a log file in the logs folder (which will happen if you test the files in the invalid folder)
