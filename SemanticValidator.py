@@ -11,55 +11,60 @@ class SemanticValidator:
         self.logPath = logPath
     
     def isValid(self, givenTree):
-        # try and catch this for the Value False
-        return self.validate(givenTree, [])
+        return (self.checkTemplates(givenTree) 
+                and self.checkInstances(givenTree) 
+                and self.checkTransportOrderSteps(givenTree)
+                and self.checkTasks(givenTree))
 
+    def checkTemplates(self, givenTree):
+        return True
 
-    def validate(self, givenTree, retreivedInfo):
-
+    def checkInstances(self, givenTree):
+        instanceNameCounts = {}
         for instance in givenTree.instances.values():
-            # Check if template is defined
-            if instance.templateName not in givenTree.templates:
-                print("Template {} is not defined in TaskLanguage".format(instance.templateName), file=open(self.logPath, 'a'))
-                return False
+            if instanceNameCounts.get(instance.name.value) != None:
+                print("Instance name at line {} is already definied!".format(instance.name.context.start.line))
+            else:
+                instanceNameCounts[instance.name.value] = 1
 
-            # Check if Attrs are set.
-            # NOTE Instance can set more like specified in template here
-            t = givenTree.templates[instance.templateName]
-            for i in t.keyval:
-                if i not in instance.keyval:
-                    print("Instance: {} does not set the Attribute: {}".format(instance.templateName, i), file=open(self.logPath, 'a'))
-                    return False
+        return True
 
+    def checkTransportOrderSteps(self, givenTree):
+        return True
 
+    def checkTasks(self, givenTree):
         for task in givenTree.taskInfos.values():
             # Check OnDone
             for i in range(len(task.onDone)):
-                if self.checkIfTaskPresent(givenTree, task.onDone[i]) is False:
-                    print("Task: {} refers to an unknown OnDone-Task: {}".format(task.name, task.onDone[i]), file=open(self.logPath, 'a'))
+                if self.checkIfTaskPresent(givenTree, task.onDone[i].value) is False:
+                    print("Task: {} on line {} refers to an unknown OnDone-Task: {}".format(task.name.value, task.name.context.start.line, task.onDone[i].value), file=open(self.logPath, 'a'))
                     return False
+                    
+            # TODO: Check TriggeredBy
+            # TODO: Check FinishedBy
+            # TODO: Check Repeat
 
             # Check TransportOrders
             for i in range(len(task.transportOrders)):
-                # Fromm check
-                if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].pickupFrom) is False:
-                    print("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name, task.transportOrders[i].pickupFrom), file=open(self.logPath, 'a'))
+                # From check
+                if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].value.pickupFrom.value) is False:
+                    print("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name.value, task.transportOrders[i].value.pickupFrom.value), file=open(self.logPath, 'a'))
                     return False
                 
                 # To check
-                if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].deliverTo) is False:
-                    print("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name, task.transportOrders[i].deliverTo), file=open(self.logPath, 'a'))
+                if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].value.deliverTo.value) is False:
+                    print("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name.value, task.transportOrders[i].value.deliverTo.value), file=open(self.logPath, 'a'))
                     return False
         return True
 
     def checkIfTaskPresent(self, givenTree, taskName):
         for _tN in givenTree.taskInfos:
-            if taskName == _tN:
+            if taskName == _tN.value:
                 return True
         return False
 
     def checkIfTransportOrderStepsPresent(self, givenTree, instanceName):
         for _iN in givenTree.transportOrderSteps:
-            if instanceName == _iN:
+            if instanceName == _iN.value:
                 return True
         return False
