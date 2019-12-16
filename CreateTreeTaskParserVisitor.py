@@ -16,14 +16,21 @@ class CompleteProgram(object):
         self.transportOrderSteps = {} # All defined TaskOrderSteps
         self.taskInfos = {} # All defined tasks
 
+# Each class holds ContextObjects which contain  the value(e.g. the name as string) and the context from antlr
+class ContextObject(object):
+    def __init__(self, value, context):
+        self.value = value
+        self.context = context
+
 class TaskInfo(object):
     def __init__(self):
-        self.name = None # String Name of Task
-        self.triggeredBy = [] # List of Triggers
-        self.transportOrders = [] # List of Transport Order (from|to)
+        self.name = None # Name of Task
+        self.triggeredBy = [] # Triggers
+        self.transportOrders = [] # Transport Order (from|to)
         self.onDone = [] # Reference to the next Tasks
-        self.repeat = -1 # uninitialized
+        self.repeat = ContextObject(-1, None) # uninitialized
         self.finishedBy = []
+        self.contextMapper = {}
 
 class TransportOrder(object):
     def __init__(self):
@@ -37,20 +44,26 @@ class TransportOrderStep(object):
         self.triggeredBy = [] # List of Triggers
         self.finishedBy = []
         self.onDone = [] # Reference to the next Tasks
+        self.context = None
         
 class Template(object):
     def __init__(self):
         self.name = None # String of the Template Name
         self.keyval = [] # A List of Attributes
+        self.context = None
 
 class Instance(object):
     def __init__(self):
         self.name = None # String of the Instances Name
         self.templateName = None # String of the Instances origin Template
         self.keyval = {} # Dictionary of attributes with set value
+        self.context = None
 
 
 class CreateTreeTaskParserVisitor(TaskParserVisitor):
+
+    def __init__(self):
+        super()
 
     # Visit a parse tree produced by TaskParser#program.
     def visitProgram(self, ctx):
@@ -73,23 +86,23 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
     def printProgram(self):
         for template in self.cp.templates.values():
-            print("Template Name:", template.name)
-            print("Keyval:", template.keyval)
+            print("Template Name:", template.name.value)
+            print("Keyval:", template.keyval.value)
             print("\n")
         for instance in self.cp.instances.values():
-            print("Template Name:", instance.templateName)
-            print("Instance Name:", instance.name)
+            print("Template Name:", instance.templateName.value)
+            print("Instance Name:", instance.name.value)
             print("Keyval:", instance.keyval)
             print("\n")
         for tos in self.cp.transportOrderSteps.values():
-            print("TransportOrderStepName:", tos.name)
-            print("Location:", tos.location)
+            print("TransportOrderStepName:", tos.name.value)
+            print("Location:", tos.location.value)
             print("Triggered By:", tos.triggeredBy)
             print("Finished By:", tos.finishedBy)
             print("OnDone:", tos.onDone)
             print("\n")
         for task in self.cp.taskInfos.values():
-            print("TaskName:", task.name)
+            print("TaskName:", task.name.value)
             print("Transport Order:", task.transportOrders)
             print("Triggered By:", task.triggeredBy)
             print("Finished By:", task.finishedBy)
@@ -100,7 +113,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
     # Visit a parse tree produced by TaskParser#template.
     def visitTemplate(self, ctx):
         t = Template()
-        t.name = ctx.UpperCaseString().getText()
+        t.name = self.visitTemplateStart(ctx.templateStart())
 
         keyval = {}
         for child in ctx.memberVariable():
@@ -111,7 +124,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         return t
 
     def visitTemplateStart(self, ctx):
-        return ctx.STARTS_WITH_UPPER_C_STR().getText()
+        return ContextObject(ctx.STARTS_WITH_UPPER_C_STR().getText(), ctx)
 
     # Visit a parse tree produced by TaskParser#instance.
     def visitInstance(self, ctx):
@@ -132,14 +145,14 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         return i
 
     def visitInstanceStart(self, ctx):
-        templateName = ctx.INSTANCE().getText().split(" ")[0] # get template name without whitespace after it
-        instanceName = ctx.STARTS_WITH_LOWER_C_STR().getText()
+        templateName = ContextObject(ctx.INSTANCE().getText().split(" ")[0], ctx) # get template name without whitespace after it
+        instanceName = ContextObject(ctx.STARTS_WITH_LOWER_C_STR().getText(), ctx)
 
         return (templateName, instanceName)
 
     def visitMemberVariable(self, ctx):
-        variableName = ctx.STARTS_WITH_LOWER_C_STR().getText()
-        value = self.visitValue(ctx.value())
+        variableName = ContextObject(ctx.STARTS_WITH_LOWER_C_STR().getText(), ctx)
+        value = ContextObject(self.visitValue(ctx.value()), ctx)
 
         return (variableName, value)
 
@@ -162,22 +175,21 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         return tos
 
     def visitTosStart(self, ctx):
-        return ctx.STARTS_WITH_LOWER_C_STR().getText()
+        return ContextObject(ctx.STARTS_WITH_LOWER_C_STR().getText(), ctx)
 
     def visitTosStatements(self, ctx, tos):
         for child in ctx.children:
             if isinstance(child, TaskParser.OptTosStatementContext):
                 values = self.visitOptTosStatement(child)
                 if values[1] == OptType.TRIGGERED_BY:
-                    tos.triggeredBy.append(values[0])
+                    tos.triggeredBy.append(ContextObject(values[0], child))
                 elif values[1] == OptType.FINISHED_BY:
-                    tos.finishedBy.append(values[0])
+                    tos.finishedBy.append(ContextObject(values[0], child))
                 elif values[1] == OptType.ON_DONE:
-                    tos.onDone.append(values[0])
-
+                    tos.onDone.append(ContextObject(values[0], child))
             elif isinstance(child, TaskParser.LocationStatementContext):
                 location = self.visitLocationStatement(child)
-                tos.location = location
+                tos.location = ContextObject(location, child)
     
     def visitLocationStatement(self, ctx):
         return ctx.STARTS_WITH_LOWER_C_STR().getText()
@@ -192,32 +204,31 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
             elif childs[i] == ctx.ON_DONE():
                 return(ctx.STARTS_WITH_UPPER_C_STR().getText(), OptType.ON_DONE)
 
-    # Visit a parse tree produced by TaskParser#task.
+    # Visit a parse tree produced by TaskParser.
     def visitTask(self, ctx):
         ti = TaskInfo()
         ti.name = self.visitTaskStart(ctx.taskStart())
-        
+
         for child in ctx.taskStatement():
             self.visitTaskStatement(child, ti)
-
         return ti
 
     def visitTaskStart(self, ctx):
-        return ctx.STARTS_WITH_UPPER_C_STR().getText()
+        return ContextObject(ctx.STARTS_WITH_UPPER_C_STR().getText(), ctx)
 
     def visitTaskStatement(self, ctx, taskInfo):
         if ctx.REPEAT_TIMES():
-            taskInfo.repeat = ctx.REPEAT_TIMES().getText()
+            taskInfo.repeat = ContextObject(ctx.REPEAT_TIMES().getText(), ctx)
         elif ctx.optTosStatement():
             values = self.visitOptTosStatement(ctx.optTosStatement())
             if values[1] == OptType.TRIGGERED_BY:
-                taskInfo.triggeredBy.append(values[0])
+                taskInfo.triggeredBy.append(ContextObject(values[0], ctx))
             elif values[1] == OptType.FINISHED_BY:
-                taskInfo.finishedBy.append(values[0])
+                taskInfo.finishedBy.append(ContextObject(values[0], ctx))
             elif values[1] == OptType.ON_DONE:
-                taskInfo.onDone.append(values[0])
+                taskInfo.onDone.append(ContextObject(values[0], ctx))
         elif ctx.transportOrder():
-            taskInfo.transportOrders.append(self.visitTransportOrder(ctx.transportOrder()))
+            taskInfo.transportOrders.append(ContextObject(self.visitTransportOrder(ctx.transportOrder()), ctx))
 
     # Visit a parse tree produced by TaskParser#transportOrder.
     def visitTransportOrder(self, ctx):
@@ -226,13 +237,10 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         childs = ctx.children
         for i in range(len(childs)):
             if childs[i] == ctx.FROM():
-                to.pickupFrom = childs[i+1].getText()
+                to.pickupFrom = ContextObject(childs[i+1].getText(), ctx.FROM())
             elif childs[i] == ctx.TO():
-                to.deliverTo = childs[i+1].getText()
-
+                to.deliverTo = ContextObject(childs[i+1].getText(), ctx.TO())
         return to
-
-    ### Expression parsing:
 
     # Visit a parse tree produced by TaskParser#expression.
     def visitExpression(self, ctx):
@@ -255,7 +263,6 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
             return dict(binOp=binOp, left=left, right=right)
 
         return None
-
 
     def _getContent(self, child):
         ele =  self.visit(child)
