@@ -48,9 +48,14 @@ def testFile(filename):
     print("testing file " + filename + ":", file=open(LOG_PATH, 'a'))
 
     lexer = TaskLexer(InputStream(open(filename).read()))
+    templateLexer = TaskLexer(InputStream(open("templates.tl").read()))
+
     tokenStream = CommonTokenStream(lexer)
+    templateTokenStream = CommonTokenStream(templateLexer)
+
     parser = TaskParser(tokenStream)
-    
+    templateParser = TaskParser(templateTokenStream)
+
     errorListener = ThrowErrorListener(LOG_PATH)
 
     lexer.removeErrorListeners()
@@ -60,14 +65,18 @@ def testFile(filename):
     parser.addErrorListener(errorListener)
 
     tree = parser.program()
+    templateTree = templateParser.program()
+
     visitor = CreateTreeTaskParserVisitor()
+    templateVisitor = CreateTreeTaskParserVisitor()
 
     #no syntax errors
     if errorListener.isValid:
         print("There are no syntax errors!", file=open(LOG_PATH, 'a'))
         t = visitor.visit(tree)
+        templates = templateVisitor.visit(templateTree).templates
 
-        semanticValidator = SemanticValidator(LOG_PATH)
+        semanticValidator = SemanticValidator(LOG_PATH, filename, templates)
         if semanticValidator.isValid(t):
             print("There are no semantic errros!", file=open(LOG_PATH, 'a'))
             return True
