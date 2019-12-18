@@ -1,6 +1,6 @@
 lexer grammar TaskLexer;
 
-TEMPLATE: 'template ' -> pushMode(BLOCK);
+TEMPLATE: 'template ' STARTS_WITH_UPPER_C_STR-> pushMode(BLOCK);
 TASK: 'task ' -> pushMode(BLOCK);
 TRANSPORT_ORDER_STEP: 'TransportOrderStep ' -> pushMode(BLOCK);
 INSTANCE: STARTS_WITH_UPPER_C_STR ' ' -> pushMode(BLOCK);

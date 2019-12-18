@@ -12,7 +12,7 @@ template:
     templateStart memberVariable+ END_IN_BLOCK;
 
 templateStart:
-    TEMPLATE STARTS_WITH_UPPER_C_STR NEW_LINE+;
+    TEMPLATE NEW_LINE+;
 
 // Instance Layout
 instance: 
@@ -42,9 +42,13 @@ locationStatement:
 
 // optional to extend functionality
 optTosStatement:
-    INDENTATION TRIGGERED_BY expression E_NL_IN_EXPRESSION
-    | INDENTATION FINISHED_BY expression E_NL_IN_EXPRESSION
-    | INDENTATION ON_DONE STARTS_WITH_UPPER_C_STR NEW_LINE;
+    eventStatement | onDoneStatement;
+
+eventStatement:
+    INDENTATION (TRIGGERED_BY | FINISHED_BY) expression E_NL_IN_EXPRESSION NEW_LINE*;
+
+onDoneStatement:
+    INDENTATION ON_DONE STARTS_WITH_UPPER_C_STR NEW_LINE+;
 
 // Task Layout
 task:
@@ -55,14 +59,17 @@ taskStart:
 
 taskStatement:
     transportOrder 
-    | optTosStatement NEW_LINE* // optional new lines after \n in expression
-    | INDENTATION REPEAT REPEAT_TIMES NEW_LINE+;
+    | optTosStatement
+    | repeatStatement;
 
 // transport from to 
 transportOrder:
     INDENTATION TRANSPORT NEW_LINE
     INDENTATION FROM STARTS_WITH_LOWER_C_STR NEW_LINE
     INDENTATION TO STARTS_WITH_LOWER_C_STR NEW_LINE+;
+
+repeatStatement:
+    INDENTATION REPEAT REPEAT_TIMES NEW_LINE+;
 
 expression:
     E_ATTRIBUTE
