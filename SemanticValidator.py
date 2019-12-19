@@ -11,8 +11,10 @@ class SemanticValidator:
         self.logPath = logPath
         self.filePath = filePath
         self.templates = templates
+        self.givenTree = None
 
     def isValid(self, givenTree):
+        self.givenTree = givenTree
         return (self.checkTemplates(givenTree) 
                 and self.checkInstances(givenTree) 
                 and self.checkTransportOrderSteps(givenTree)
@@ -46,7 +48,7 @@ class SemanticValidator:
 
             # check if corresponding template exists
             if template == None:
-                print("The instance {} at line {} refers to a template that does not exists!".format(instance.name.value, instance.name.context.start.line) + " File: " + self.filePath)
+                print("The instance '{}' at line {} refers to a template that does not exists!".format(instance.name.value, instance.name.context.start.line) + " File: " + self.filePath)
                 return False
             # check if the instance variables match with the corresponding template
             else:
@@ -79,13 +81,13 @@ class SemanticValidator:
 
             # Check if instance exists and if its a location
             locationName = tos.location.value
-            location = self.getInstance(givenTree, locationName)
+            location = self.getInstance(locationName)
             if location == None:
-                print("The location {} in TransportOrderStep {} could not be found!".format(locationName, tos.name.value) + " File: " + self.filePath)
+                print("The location '{}' in TransportOrderStep '{}' could not be found!".format(locationName, tos.name.value) + " File: " + self.filePath)
                 return False
             else:
                 if location.templateName.value != "Location":
-                    print("The instance {} in TransportOrderStep {} is not a Location Instance but a {} instance!".format(locationName, tos.name.value, location.templateName.value) + " File: " + self.filePath)
+                    print("The instance '{}' in TransportOrderStep '{}' is not a Location Instance but an '{}' instance!".format(locationName, tos.name.value, location.templateName.value) + " File: " + self.filePath)
                     return False
 
             # Check OnDone
@@ -99,9 +101,9 @@ class SemanticValidator:
                 return False
         return True
 
-    def getInstance(self, givenTree, locationName):
-        for instance in givenTree.instances.values():
-            if locationName == instance.name.value:
+    def getInstance(self, instanceName):
+        for instance in self.givenTree.instances.values():
+            if instanceName == instance.name.value:
                 return instance
         return None
 
@@ -128,7 +130,7 @@ class SemanticValidator:
             if self.checkFinishedBy(task.triggeredBy) == False:
                 return False
             # Check Repeat
-            if self.checkRepeat() == False:
+            if self.checkRepeat(task) == False:
                 return False
         return True
 
@@ -165,8 +167,51 @@ class SemanticValidator:
         return False
 
     # TODO
-    def checkTriggeredBy(self, expression):
+    def checkTriggeredBy(self, expressions):
+        for exp in expressions:
+            self.checkExpression(exp.value, True)
         return True
+
+    def checkExpression(self, expression, firstCall):
+        if type(expression) == str:
+            # instance name
+            if expression[0].islower():
+                # its the only element so check if its a time instance
+                if firstCall == True:
+                    if self.isTimeInstance(expression) == True:
+                        print("There is only a time instance, thats correct")
+                    # there is only a event instance check if its type is boolean
+                    else:
+                        instance = self.getInstance(expression)
+                        if instance == None:
+                            print(expression + " doesnt exists!")
+                        else:
+                            if self.hasInstanceType(instance, "boolean") == False:
+                                print(expression + " has no booelan type so it cant get parsed as single statement!")
+                            else:
+                                print("Single event as boolean is correct!")
+                else:
+                    pass # TODO
+            else:
+                pass # TODO
+        elif type(expression) == dict:
+            if len(expression) == 2:
+                print("unop")
+            else:
+                print("binOp")
+
+    # Returns false if its not a time instance or an instance at all
+    def isTimeInstance(self, instanceName):
+        instance = self.getInstance(instanceName)
+        if instance != None and instance.templateName.value == "Time": 
+            return True
+        return False
+
+    def hasInstanceType(self, instance, typeName):
+        for keyval in instance.keyval.values():
+            if keyval.value == '"' + typeName + '"':
+                return True
+        return False
 
     def checkFinishedBy(self, expression):
         return True
