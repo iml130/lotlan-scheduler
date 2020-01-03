@@ -28,8 +28,9 @@ class TaskInfo(object):
         self.triggeredBy = [] # Triggers
         self.transportOrders = [] # Transport Order (from|to)
         self.onDone = [] # Reference to the next Tasks
-        self.repeat = ContextObject(-1, None) # uninitialized
+        self.repeat = []
         self.finishedBy = []
+        self.context = None
 
 class TransportOrder(object):
     def __init__(self):
@@ -113,6 +114,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
     def visitTemplate(self, ctx):
         t = Template()
         t.name = self.visitTemplateStart(ctx.templateStart())
+        t.context = ctx
 
         keyval = []
         for child in ctx.memberVariable():
@@ -135,6 +137,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
         i.templateName = names[0]
         i.name = names[1]
+        i.context = ctx
 
         keyval = {}
         for child in ctx.memberVariable():
@@ -175,6 +178,8 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
     def visitTransportOrderStep(self, ctx):
         tos = TransportOrderStep()
         tos.name = self.visitTosStart(ctx.tosStart())
+        tos.context = ctx
+
         self.visitTosStatements(ctx.tosStatements(), tos)
         return tos
 
@@ -223,6 +228,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
     def visitTask(self, ctx):
         ti = TaskInfo()
         ti.name = self.visitTaskStart(ctx.taskStart())
+        ti.context = ctx
 
         for child in ctx.taskStatement():
             self.visitTaskStatement(child, ti)
@@ -235,7 +241,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
     # Visit a parse tree produced by TaskParser#taskStatement.
     def visitTaskStatement(self, ctx, taskInfo):
         if(ctx.repeatStatement()):
-            taskInfo.repeat = self.visitRepeatStatement(ctx.repeatStatement())
+            taskInfo.repeat.append(self.visitRepeatStatement(ctx.repeatStatement()))
         elif ctx.optTosStatement():
             values = self.visitOptTosStatement(ctx.optTosStatement())
             if values[1] == OptType.TRIGGERED_BY:

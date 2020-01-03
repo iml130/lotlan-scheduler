@@ -12,6 +12,7 @@ class SemanticValidator:
         self.filePath = filePath
         self.templates = templates
         self.givenTree = None
+        self.errorCount = 0
 
     def isValid(self, givenTree):
         self.givenTree = givenTree
@@ -20,13 +21,12 @@ class SemanticValidator:
                 and self.checkTransportOrderSteps(givenTree)
                 and self.checkTasks(givenTree))
 
-
     def checkTemplates(self, givenTree):
         templateNameCounts = {}
         for template in givenTree.templates.values():
             # check if there is more than one template with the same name
             if templateNameCounts.get(template.name.value) != None:
-                print("Template name at line {} is already used by an other template!".format(template.name.context.start.line) + " File: " + self.filePath)
+                print("The Template name '{}' at line {} is already used by an other template! File: {}".format(template.name.value, template.name.context.start.line, self.filePath))
                 return False
             else:
                 templateNameCounts[template.name.value] = 1
@@ -35,10 +35,9 @@ class SemanticValidator:
     def checkInstances(self, givenTree):
         instanceNameCounts = {}
         for instance in givenTree.instances.values():
-
             # check if there is more than one instance with the same name
             if instanceNameCounts.get(instance.name.value) != None:
-                print("Instance name at line {} is already used by an other instance!".format(instance.name.context.start.line) + " File: " + self.filePath)
+                print("The Instance name '{}' at line {} is already used by an other instance! File: {}".format(instance.name.value, instance.name.context.start.line, self.filePath))
                 return False
             else:
                 instanceNameCounts[instance.name.value] = 1
@@ -46,28 +45,37 @@ class SemanticValidator:
             templateName = instance.templateName.value
             template = self.getTemplate(givenTree, templateName)
 
-            # check if corresponding template exists
+            # check if the corresponding template exists
             if template == None:
-                print("The instance '{}' at line {} refers to a template that does not exists!".format(instance.name.value, instance.name.context.start.line) + " File: " + self.filePath)
+                print("The Instance '{}' at line {} refers to a template that does not exist! File: {}".format(instance.name.value, instance.name.context.start.line, self.filePath))
                 return False
             # check if the instance variables match with the corresponding template
             else:
-                for variable in instance.keyval:
-                    variableType = variable.value
-                    typeFound = False
-                    for tempVariableType in template.keyval:
-                        if variableType == tempVariableType.value:
-                            typeFound = True
-                    if typeFound == False:
-                        print("The attribute type {} in line {} was not defined in the corresponding template!".format(variableType, variable.context.start.line) + " File: " + self.filePath)
-                        return False
+                if self.templateAttributeExists(template, instance) == False or self.templateAttributeDefinied(template, instance) == False:
+                    print("template and instance dont match")
+                    return False
         return True
 
-    def getTemplate(self, templates, templateName):
-        for temp in self.templates.values():
-            if templateName == temp.name.value:
-                return temp
-        return None
+    # check if all attributes in the given instance are definied in the template
+    def templateAttributeExists(self, template, instance):
+        for attribute in instance.keyval:
+            typeFound = False
+            for tempAttributeType in template.keyval:
+                if attribute.value == tempAttributeType.value:
+                    typeFound = True
+            if typeFound == False:
+                print("The attribute '{}' in instance '{}' was not defined in the corresponding template!".format(attribute.value, instance.name.value) + " File: " + self.filePath)
+        
+    # check if all attributes definied in the template are set in instance
+    def templateAttributeDefinied(self, template, instance):
+        for attribute in template.keyval:
+            typeFound = False
+            for instanceAttribute in instance.keyval:
+                if attribute.value == instanceAttribute.value:
+                    typeFound = True
+            if typeFound == False:
+                print("The attribute '{}' from the corresponding template was not definied in instance '{}' in line {} !".format(attribute.value, instance.name.value, instance.context.start.line) + " File: " + self.filePath)
+        return True
 
     def checkTransportOrderSteps(self, givenTree):
         tosNameCounts = {}
@@ -94,18 +102,12 @@ class SemanticValidator:
             if self.checkOnDone(tos, givenTree) == False:
                 return False
             # Check TriggeredBy
-            if self.checkTriggeredBy(tos.triggeredBy) == False: 
+            if self.checkExpressions(tos.triggeredBy) == False: 
                 return False
             # Check FinishedBy
-            if self.checkFinishedBy(tos.finishedBy) == False:
+            if self.checkExpressions(tos.finishedBy) == False:
                 return False
         return True
-
-    def getInstance(self, instanceName):
-        for instance in self.givenTree.instances.values():
-            if instanceName == instance.name.value:
-                return instance
-        return None
 
     def checkTasks(self, givenTree):
         taskNameCounts = {}
@@ -124,10 +126,10 @@ class SemanticValidator:
             if self.checkOnDone(task, givenTree) == False:
                 return False
             # Check TriggeredBy
-            if self.checkTriggeredBy(task.triggeredBy) == False: 
+            if self.checkExpressions(task.triggeredBy) == False: 
                 return False
             # Check FinishedBy
-            if self.checkFinishedBy(task.triggeredBy) == False:
+            if self.checkExpressions(task.finishedBy) == False:
                 return False
             # Check Repeat
             if self.checkRepeat(task) == False:
@@ -139,19 +141,19 @@ class SemanticValidator:
         for i in range(len(task.transportOrders)):
             # From check
             if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].value.pickupFrom.value) == False:
-                print("Task: {} in line {} refers to an unknown TransportOrderStep in TransportOrder: {}"
+                print("Task '{}' in line {} refers to an unknown TransportOrderStep in TransportOrder '{}'"
                     .format(task.name.value, task.name.context.start.line, task.transportOrders[i].value.pickupFrom.value) + " File: " + self.filePath)
                 return False
             
             # To check
             if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].value.deliverTo.value) == False:
-                print("Task: {} refers to an unknown TransportOrderStep in TransportOrder: {}".format(task.name.value, task.transportOrders[i].value.deliverTo.value) + " File: " + self.filePath)
+                print("Task '{}' refers to an unknown TransportOrderStep in TransportOrder '{}'".format(task.name.value, task.transportOrders[i].value.deliverTo.value) + " File: " + self.filePath)
                 return False
 
     def checkOnDone(self, task, givenTree):
         for i in range(len(task.onDone)):
             if self.checkIfTaskPresent(givenTree, task.onDone[i].value) == False:
-                print("Task: {} on line {} refers to an unknown OnDone-Task: {}".format(task.name.value, task.name.context.start.line, task.onDone[i].value) + " File: " + self.filePath)
+                print("Task '{}' in line {} refers to an unknown OnDone-Task '{}'".format(task.name.value, task.name.context.start.line, task.onDone[i].value) + " File: " + self.filePath)
                 return False
 
     def checkIfTaskPresent(self, givenTree, taskName):
@@ -166,44 +168,103 @@ class SemanticValidator:
                 return True
         return False
 
-    # TODO
-    def checkTriggeredBy(self, expressions):
+    def checkExpressions(self, expressions):
         for exp in expressions:
-            self.checkExpression(exp.value, True)
+            self.checkExpression(exp.value, exp.context)
+        return True
+    
+    def checkRepeat(self, task):
+        if len(task.repeat) > 1:
+            print("There are multiple Repeat definitions in Task '{}' in line {}. File: {}".format(task.name.value, task.context.start.line, self.filePath))
+            return False
         return True
 
-    def checkExpression(self, expression, firstCall):
+    def checkExpression(self, expression, context): 
         if type(expression) == str:
-            # instance name
-            if expression[0].islower():
-                # its the only element so check if its a time instance
-                if firstCall == True:
-                    if self.isTimeInstance(expression) == True:
-                        print("There is only a time instance, thats correct")
-                    # there is only a event instance check if its type is boolean
-                    else:
-                        instance = self.getInstance(expression)
-                        if instance == None:
-                            print(expression + " doesnt exists!")
-                        else:
-                            if self.hasInstanceType(instance, "boolean") == False:
-                                print(expression + " has no booelan type so it cant get parsed as single statement!")
-                            else:
-                                print("Single event as boolean is correct!")
-                else:
-                    pass # TODO
-            else:
-                pass # TODO
+            self.checkSingleExpression(expression)
         elif type(expression) == dict:
             if len(expression) == 2:
-                print("unop")
+                self.checkUnaryOperation(expression)
             else:
-                print("binOp")
+                self.checkBinaryOperation(expression, context)
+
+    def checkSingleExpression(self, expression):
+        if self.isTimeInstance(expression) == True:
+            return True
+        # there is only a event instance check if its type is boolean
+        elif self.isEventInstance(expression) == True:
+            instance = self.getInstance(expression)
+            if self.hasInstanceType(instance, "Boolean") == False:
+                print("'" + expression + "' has no booelan type so it cant get parsed as single statement!File: {}".format(self.filePath))
+        else:
+            print("The given expression is not related to a time or event instance!" + " File: " + self.filePath)
+
+    def checkUnaryOperation(self, expression):
+        if self.isEventInstance(expression) == True:
+            instance = self.getInstance(expression)
+            if self.hasInstanceType(instance, "Boolean") == False:
+                print(expression + " has no booelan type so it cant get parsed as single statement!" + " File: " + self.filePath)
+        return self.isBooleanExpression(expression["value"])
+
+    def checkBinaryOperation(self, expression, context):
+         # check if the left side of the expression is an event instance
+        left = expression["left"]
+        if self.isEventInstance(left) == False:
+            print("The given Instance {} in the binary Operation is not an instance of type event!".format(left) + " File: " + self.filePath)
+        else:
+            eventType = self.getAttributeValue(self.getInstance(left), "type")
+            right = expression["right"]
+            if self.isBooleanExpression(right) == False:
+                print(expression)
+                print(right)
+                print("Right side is not a boolean in line {}".format(context.start.line))
+
+    # Check if the given expression can be resolved to a boolean expression
+    def isBooleanExpression(self, expression):
+        if type(expression) == str:
+            return self.isCondition(expression)
+        elif type(expression) == dict:
+            if len(expression) == 2:
+                return self.isBooleanExpression(expression["value"])
+            else:
+                if expression["left"] == "(" and expression["right"] == ")":
+                    return self.isBooleanExpression(expression["binOp"])
+                else:
+                    return (self.isBooleanExpression(expression["left"]) and self.isBooleanExpression(expression["right"]))
+
+    def isCondition(self, expression):
+        return  (self.isEventInstance(expression) 
+                or self.strIsInt(expression)
+                or self.strIsFloat(expression) 
+                or expression in ["True", "true", "False", "false"])
+
+    # Help Functions
+
+    # Get Template from given templateName
+    def getTemplate(self, templates, templateName):
+        for temp in self.templates.values():
+            if templateName == temp.name.value:
+                return temp
+        return None
+
+    # Get Instance from given instanceName
+    def getInstance(self, instanceName):
+        for instance in self.givenTree.instances.values():
+            if instanceName == instance.name.value:
+                return instance
+        return None
 
     # Returns false if its not a time instance or an instance at all
     def isTimeInstance(self, instanceName):
         instance = self.getInstance(instanceName)
         if instance != None and instance.templateName.value == "Time": 
+            return True
+        return False
+
+    # Returns false if its not a time instance or an instance at all
+    def isEventInstance(self, instanceName):
+        instance = self.getInstance(instanceName)
+        if instance != None and instance.templateName.value == "Event":
             return True
         return False
 
@@ -213,9 +274,22 @@ class SemanticValidator:
                 return True
         return False
 
-    def checkFinishedBy(self, expression):
-        return True
+    def getAttributeValue(self, instance, attributeName):
+        for key in instance.keyval:
+                if key.value == attributeName:
+                    return instance.keyval[key].value
+        return None
+        
+    def strIsInt(self, str):
+        try:
+            int(str)
+            return True
+        except ValueError:
+            return False
 
-    def checkRepeat(self, task):
-        # TODO: Check if Repeat is used more than once in the task
-        return True
+    def strIsFloat(self, str):
+        try:
+            float(str)
+            return True
+        except ValueError:
+            return False
