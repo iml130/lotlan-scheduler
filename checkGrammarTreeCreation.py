@@ -81,7 +81,7 @@ def testFile(filename):
             print("There are no semantic errros!", file=open(LOG_PATH, 'a'))
             return True
         else:
-            print("There are semantic errors!", file=open(LOG_PATH, 'a'))
+            print("There are semantic errors! Errors: " + str(semanticValidator.errorCount), file=open(LOG_PATH, 'a'))
             return False
     else:
         print("There are syntax errors!", file=open(LOG_PATH, 'a'))

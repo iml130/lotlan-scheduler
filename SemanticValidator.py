@@ -192,8 +192,9 @@ class SemanticValidator:
                 print("'" + expression + "' has no booelan type so it cant get parsed as single statement! File: {}".format(self.filePath))
                 self.errorCount = self.errorCount + 1
         else:
-            print("The given expression is not related to a time or event instance!" + " File: " + self.filePath)
-            self.errorCount = self.errorCount + 1
+            if self.isTimeInstance(expression) == False:
+                print("The given expression in line {} is not related to a time or event instance! File: {}".format(context.start.line, self.filePath))
+                self.errorCount = self.errorCount + 1
 
     def checkUnaryOperation(self, expression, context):
         if self.isBooleanExpression(expression["value"]) == False:
@@ -204,13 +205,13 @@ class SemanticValidator:
          # check if the left side of the expression is an event instance
         left = expression["left"]
         if self.isEventInstance(left) == False:
-            print("The given Instance {} in the binary Operation is not an instance of type event! File: {}".format(left, self.filePath))
+            print("The given Instance '{}' in the binary Operation in line {} is not an instance of type event! File: {}".format(left, context.start.line, self.filePath))
             self.errorCount = self.errorCount + 1
         else:
             eventType = self.getAttributeValue(self.getInstance(left), "type")
             right = expression["right"]
             if self.isBooleanExpression(right) == False:
-                print("Right side is not a boolean in line {}".format(context.start.line))
+                print("The right side in line {} is not a boolean. File: {}".format(context.start.line, self.filePath))
                 self.errorCount = self.errorCount + 1
 
     # Check if the given expression can be resolved to a boolean expression
@@ -221,11 +222,13 @@ class SemanticValidator:
             if len(expression) == 2:
                 return self.isBooleanExpression(expression["value"])
             else:
+                # an expression enclosed by parenthesis has the key binOp in the dict
                 if expression["left"] == "(" and expression["right"] == ")":
                     return self.isBooleanExpression(expression["binOp"])
                 else:
                     return (self.isBooleanExpression(expression["left"]) and self.isBooleanExpression(expression["right"]))
 
+    # Check if the given expression is a condition, event instances are interpreted as booleans
     def isCondition(self, expression):
         return  (self.isEventInstance(expression) 
                 or self.strIsInt(expression)
@@ -253,7 +256,7 @@ class SemanticValidator:
             return True
         return False
 
-    # Returns false if its not a time instance or an instance at all
+    # Returns false if its not a Event instance or an instance at all
     def isEventInstance(self, instanceName):
         instance = self.getInstance(instanceName)
         if instance != None and instance.templateName.value == "Event":

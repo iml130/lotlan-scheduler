@@ -4,6 +4,7 @@ from enum import Enum
 
 import copy
 
+# Enum to set the type of the optional statement when returned
 class OptType(Enum):
     TRIGGERED_BY = 1
     FINISHED_BY = 2
