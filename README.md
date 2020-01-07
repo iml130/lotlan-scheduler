@@ -423,7 +423,7 @@ ___
 
 ## Set of allowed chars
 
-In the following we use Lower- and Uppercase Strings definied as followed:
+In the following section we use the terms Lower- and Uppercase Strings definied as followed:
 
 *Lowercase String*
 
@@ -432,7 +432,7 @@ Regex: ```[a-z][a-zA-Z0-9_]* ```
 
 *Uppercase String*: 
 
-same as lowercase except for a *uppercase char* at the beginning. \
+same as lowercase except for an *uppercase char* at the beginning. \
 Regex: ```[A-Z][a-zA-Z0-9_]*```
 
 ### Template
@@ -464,7 +464,7 @@ end
 
 ### Instance
 
-Every *Instance* definition of a *template* types tarts with an *Uppercase String* to indicate from which *template* we want to create an *instance*. The name of the *instance* have to be written as *Lowercase String*.
+Every *Instance* definition of a *template* type starts with an *Uppercase String* to indicate from which *template* we want to create an *instance*. The name of the *instance* have to be written as *Lowercase String*.
 
 #### Examples
 
@@ -490,7 +490,7 @@ end
 ```
 
 ### Member Variables
-The type has to be *Lowercase String*. The values can either be a *Lowercase* or a *Uppercase String* or a sequence of numbers and the chars '*' and '/'. They are surrounded by " ". 
+The type has to be *Lowercase String*. The values can either be a *Lowercase* or an *Uppercase String* or a sequence of numbers and the chars '*' and '/'. They are always surrounded by " ". 
 
 Regex for value: ``` '"' [a-zA-Z0-9_]+ '"' | '"' ['*'' ''/'0-9]+ '"' | '""' ```
 
@@ -519,8 +519,8 @@ end
 
 ### TransportOrderStep
 A *TransportOrderStep* contains the statements *Location*, *Triggered By* or *Finished By*. The *instance* names should match the corresponding *instance* so they are *Lowercase Strings* too. \
-With the *OnDone* Keyword you define a follow up *task* so the taskname should match the corresponding *task* so its a *Uppercase String* \
-*TriggeredBy* and *FinishedBy* use expressions. To learn more about expressions goto [this section](#expressions)
+With the *OnDone* Keyword you define a follow up *task* so the taskname should match the corresponding *task* so its an *Uppercase String*. \
+*TriggeredBy* and *FinishedBy* use expressions. To learn more about valid expressions goto [this section](#expressions)
 
 #### Examples
 
@@ -543,16 +543,16 @@ TransportOrderStep t1
     OnDone Task
 end
 
-TransportOrderStep t1
+TransportOrderStep t2
     Location Location1
     TriggeredBy mitarbeiterButtonDasErFertigIst
     FinishedBy abc == bce < 5
-    OnDone test
+    onDone test
 end
 ```
 
 ### Task
-*Transport*, *From* and *To* are fixed Keywords. The names of the locations (from and to) need to be the same as the corresponding locations
+*Transport*, *from* and *to* are fixed Keywords. The names of the locations (*from* and *to*) need to be the same as the corresponding locations so they are *Lowercase Strings*.
 There are the same optional statements as in TransportOrderStep (Triggeredby, ...)
 
 #### Examples
@@ -580,6 +580,12 @@ task Transport_Task2
     Transport 
     to          warehouse
     from        t1  
+end
+
+task Transport_Task3
+    Transport 
+    From        t1
+    To          warehouse
 end
 ```
 
@@ -629,7 +635,7 @@ end
 
 ### Indentations
 
-If you are in a block (*Template*, *Instance*, *Task* or *TransportOrderStep*) you need to add a Indentation after each New Line of a statement. An Intentation can be a tabulator or 3 space characters. It is also not allowed to add a Indentation before a Blockstart it must be the first Word after a New Line.
+If you are in a block (*Template*, *Instance*, *Task* or *TransportOrderStep*) you need to add an *Indentation* after each New Line of a statement. An *Indentation* can be a tabulator or 3 space characters. It is also not allowed to add an *Indentation* before a Blockstart it must be the first Word after a New Line.
 
 Regex: ```('    ' | '\t')```
 
