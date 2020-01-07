@@ -12,9 +12,8 @@ class ThrowErrorListener(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         self.isValid = False
 
-        # print different error messages according to the exception
         # current input does not match with the expected token
-        if isinstance(e, InputMismatchException):  
+        if isinstance(e, InputMismatchException):
             missingSymbol = e.getExpectedTokens().toString(recognizer.literalNames, recognizer.symbolicNames)
             print("Expecting symbol '" + missingSymbol + "'" + " at line: " + str(line) + ":" + str(column), file=open(self.logPath, 'a'))
 
@@ -24,11 +23,17 @@ class ThrowErrorListener(ErrorListener):
             # exceptions that will occur due to the first one
             if line not in self.lines:
                 self.lines.append(line)
-                print("Invalid Character at line: " + str(line) + ":" + str(column), file=open(self.logPath, 'a'))
+                invalidChar = msg[msg.find("'") + 1 : msg.rfind("'")]
+                print("Invalid Character '" + invalidChar + "' at line: " + str(line) + ":" + str(column), file=open(self.logPath, 'a'))
+
+        # should not occur because we use no semantic predicates
         elif isinstance(e, FailedPredicateException):
             print(msg, line, column, file=open(self.logPath, 'a'))
+
+        # a valid symbol by the lexer but there is no parser rule to match it in the current context
         elif isinstance(e, NoViableAltException):
-            print(msg, line, column, file=open(self.logPath, 'a'))
+            print("Symbol '" + offendingSymbol.text + "' cant be used here!", line, column, file=open(self.logPath, 'a'))
+
         else:
             print(msg, line, column, file=open(self.logPath, 'a'))
 
