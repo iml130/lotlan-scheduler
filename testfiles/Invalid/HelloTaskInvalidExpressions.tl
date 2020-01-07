@@ -19,13 +19,7 @@ end
 
 TransportOrderStep loadStorage
     Location pickupItem
-    TriggeredBy time
-    TriggeredBy	event == True
-    FinishedBy event2 >= 5
-end
-
-TransportOrderStep unloadWorkstation1
-    Location pickupItem
-    TriggeredBy	event
-    FinishedBy !event
+    TriggeredBy !time
+    TriggeredBy	time == 60
+    FinishedBy !event == 5
 end

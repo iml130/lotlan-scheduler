@@ -12,12 +12,12 @@ TransportOrderStep loadStorage
     Location pickupItem 
 end
 
-TansportOrderStep unloadWorkstation1
+TransportOrderStep unloadWorkstation1
     Location dropoffItem
 end
 
 task HelloTask
     Transport
-    from loadStorage
-    to unloadWorkstation1
+    From loadStorage
+    to unloadWorkstationcvx
 end

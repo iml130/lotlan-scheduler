@@ -21,5 +21,5 @@ task HelloTask
     Transport
     from loadStorage
     to unloadWorkstation1
-    onDone HelloTask
+    OnDone HelloTask2
 end

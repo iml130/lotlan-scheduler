@@ -19,7 +19,7 @@ end
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
-    Event
+    TriggeredBy
 end
 
 task HelloTask
