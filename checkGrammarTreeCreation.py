@@ -25,6 +25,7 @@ def getFileNames(path):
 
     return filenames
 
+# method for unit testing: if an valid files got an error or vice versa return 0
 def testFiles():
     validFilenames = getFileNames(TEST_FOLDER + "Valid/")
     invalidFilenames = getFileNames(TEST_FOLDER + "Invalid/")
@@ -32,15 +33,17 @@ def testFiles():
     #test valid files
     print("Valid files are tested now: \n", file=open(LOG_PATH, 'a'))
     for validFile in validFilenames:
-        if testFile(validFile) == False:
+        if testFile(validFile) == 1:
             print(validFile + " is a valid tasklanguage program and got an error!", file=open(LOG_PATH, 'a'))
+            sys.exit(1)
         print("\n", file=open(LOG_PATH, 'a'))
 
     # test invalid files
     print("Invalid files are tested now: \n", file=open(LOG_PATH, 'a'))
     for invalidFile in invalidFilenames:
-        if testFile(invalidFile) == True:
+        if testFile(invalidFile) == 0:
             print(invalidFile + " is an invalid tasklanguage program and got no error!", file=open(LOG_PATH, 'a'))
+            sys.exit(1)
         print("\n", file=open(LOG_PATH, 'a'))
 
 
@@ -79,13 +82,13 @@ def testFile(filename):
         semanticValidator = SemanticValidator(LOG_PATH, filename, templates)
         if semanticValidator.isValid(t):
             print("There are no semantic errros!", file=open(LOG_PATH, 'a'))
-            return True
+            return 0
         else:
             print("There are semantic errors! Errors: " + str(semanticValidator.errorCount), file=open(LOG_PATH, 'a'))
-            return False
+            return 1
     else:
         print("There are syntax errors!", file=open(LOG_PATH, 'a'))
-        return False
+        return True
 
 def main():
     print("Syntax and semantic check \n\n", file=open(LOG_PATH, 'w'))
@@ -93,7 +96,7 @@ def main():
         testFiles()
     else: 
         testFile("examples/Available_Options.tl")
-
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()
