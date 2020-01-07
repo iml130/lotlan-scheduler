@@ -111,7 +111,7 @@ class SemanticValidator:
             print("The location '{}' in TransportOrderStep '{}' in line {} could not be found! File: {}".format(locationName, tos.name.value, tos.location.context.start.line, self.filePath))
             self.errorCount = self.errorCount + 1
         elif location.templateName.value != "Location":
-            print("The instance '{}' in TransportOrderStep '{}' in line {} is not a Location Instance but an '{}' instance! File: {}".format(locationName, tos.name.value, location.context.start.line, location.templateName.value, self.filePath))
+            print("The instance '{}' in TransportOrderStep '{}' in line {} is not a Location Instance but an '{}' instance! File: {}".format(locationName, tos.name.value, tos.location.context.start.line, location.templateName.value, self.filePath))
             self.errorCount = self.errorCount + 1
 
 
@@ -134,15 +134,18 @@ class SemanticValidator:
             self.checkRepeat(task)
 
     def checkTransportOrders(self, task, givenTree):
-        for i in range(len(task.transportOrders)):
+        if len(task.transportOrders) > 1:
+            print("Task '{}' in line {} has more than one TransportOrder! File: {}".format(task.name.value, task.name.context.start.line, self.filePath))
+            self.errorCount = self.errorCount + 1
+        elif len(task.transportOrders) == 1:
             # From check
-            if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].value.pickupFrom.value) == False:
-                print("Task '{}' in line {} refers to an unknown TransportOrderStep in TransportOrder '{}'! File: {}".format(task.name.value, task.name.context.start.line, task.transportOrders[i].value.pickupFrom.value, self.filePath))
+            if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[0].value.pickupFrom.value) == False:
+                print("Task '{}' in line {} refers to an unknown TransportOrderStep in TransportOrder '{}'! File: {}".format(task.name.value, task.name.context.start.line, task.transportOrders[0].value.pickupFrom.value, self.filePath))
                 self.errorCount = self.errorCount + 1
             
             # To check
-            if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[i].value.deliverTo.value) == False:
-                print("Task '{}' refers to an unknown TransportOrderStep in TransportOrder '{}'! File: {}".format(task.name.value, task.transportOrders[i].value.deliverTo.value, self.filePath))
+            if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[0].value.deliverTo.value) == False:
+                print("Task '{}' refers to an unknown TransportOrderStep in TransportOrder '{}'! File: {}".format(task.name.value, task.transportOrders[0].value.deliverTo.value, self.filePath))
                 self.errorCount = self.errorCount + 1
 
     def checkIfTaskPresent(self, givenTree, taskName):

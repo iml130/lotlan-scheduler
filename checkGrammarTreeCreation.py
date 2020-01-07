@@ -30,12 +30,14 @@ def testFiles():
     validFilenames = getFileNames(TEST_FOLDER + "Valid/")
     invalidFilenames = getFileNames(TEST_FOLDER + "Invalid/")
 
+    testFailed = False
+
     #test valid files
     print("Valid files are tested now: \n", file=open(LOG_PATH, 'a'))
     for validFile in validFilenames:
         if testFile(validFile) == 1:
             print(validFile + " is a valid tasklanguage program and got an error!", file=open(LOG_PATH, 'a'))
-            sys.exit(1)
+            testFailed = True
         print("\n", file=open(LOG_PATH, 'a'))
 
     # test invalid files
@@ -43,8 +45,11 @@ def testFiles():
     for invalidFile in invalidFilenames:
         if testFile(invalidFile) == 0:
             print(invalidFile + " is an invalid tasklanguage program and got no error!", file=open(LOG_PATH, 'a'))
-            sys.exit(1)
+            testFailed = True
         print("\n", file=open(LOG_PATH, 'a'))
+
+    if testFailed == True:
+        sys.exit(1)
 
 
 def testFile(filename):
