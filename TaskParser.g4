@@ -29,13 +29,13 @@ value:
 
 // Transport Order Step
 transportOrderStep:
-    tosStart tosStatements END_IN_BLOCK;
+    tosStart tosStatement+ END_IN_BLOCK;
 
 tosStart:
     TRANSPORT_ORDER_STEP STARTS_WITH_LOWER_C_STR NEW_LINE+;
 
-tosStatements:
-    optTosStatement* locationStatement optTosStatement*;
+tosStatement:
+    optTosStatement | locationStatement;
 
 locationStatement:
     INDENTATION LOCATION STARTS_WITH_LOWER_C_STR NEW_LINE+;

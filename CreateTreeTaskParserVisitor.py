@@ -181,7 +181,8 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         tos.name = self.visitTosStart(ctx.tosStart())
         tos.context = ctx
 
-        self.visitTosStatements(ctx.tosStatements(), tos)
+        for child in ctx.tosStatement():
+            self.visitTosStatement(child, tos)
         return tos
 
     # Visit a parse tree produced by TaskParser#tosStart.
@@ -189,19 +190,18 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         return ContextObject(ctx.STARTS_WITH_LOWER_C_STR().getText(), ctx)
 
     # Visit a parse tree produced by TaskParser#tosStatements.
-    def visitTosStatements(self, ctx, tos):
-        for child in ctx.children:
-            if isinstance(child, TaskParser.OptTosStatementContext):
-                values = self.visitOptTosStatement(child)
-                if values[1] == OptType.TRIGGERED_BY:
-                    tos.triggeredBy.append(ContextObject(values[0], child))
-                elif values[1] == OptType.FINISHED_BY:
-                    tos.finishedBy.append(ContextObject(values[0], child))
-                elif values[1] == OptType.ON_DONE:
-                    tos.onDone.append(ContextObject(values[0], child))
-            elif isinstance(child, TaskParser.LocationStatementContext):
-                location = self.visitLocationStatement(child)
-                tos.location = ContextObject(location, child)
+    def visitTosStatement(self, ctx, tos):
+        if ctx.optTosStatement():
+            values = self.visitOptTosStatement(ctx.optTosStatement())
+            if values[1] == OptType.TRIGGERED_BY:
+                tos.triggeredBy.append(ContextObject(values[0], ctx.optTosStatement()))
+            elif values[1] == OptType.FINISHED_BY:
+                tos.finishedBy.append(ContextObject(values[0], ctx.optTosStatement()))
+            elif values[1] == OptType.ON_DONE:
+                tos.onDone.append(ContextObject(values[0], ctx.optTosStatement()))
+        elif ctx.locationStatement():
+            location = self.visitLocationStatement(ctx.locationStatement())
+            tos.location = ContextObject(location, ctx.locationStatement())
     
     # Visit a parse tree produced by TaskParser#Location Statement.
     def visitLocationStatement(self, ctx):
