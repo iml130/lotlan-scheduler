@@ -86,13 +86,13 @@ def testFile(filename):
 
         semanticValidator = SemanticValidator(LOG_PATH, filename, templates)
         if semanticValidator.isValid(t):
-            print("There are no semantic errros!", file=open(LOG_PATH, 'a'))
+            print("There are no semantic errrors!", file=open(LOG_PATH, 'a'))
             return 0
         else:
-            print("There are semantic errors! Errors: " + str(semanticValidator.errorCount), file=open(LOG_PATH, 'a'))
+            print("There are semantic errors! Errors: {}".format(str(semanticValidator.errorCount)), file=open(LOG_PATH, 'a'))
             return 1
     else:
-        print("There are syntax errors!", file=open(LOG_PATH, 'a'))
+        print("There are syntax errors! Errors: {}".format(str(errorListener.errorCount)), file=open(LOG_PATH, 'a'))
         return True
 
 def main():

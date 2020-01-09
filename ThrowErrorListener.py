@@ -8,10 +8,12 @@ class ThrowErrorListener(ErrorListener):
         self.lines = []
         self.isValid = True
         self.logPath = logPath
+        self.errorCount = 0
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         self.isValid = False
-
+        self.errorCount = self.errorCount + 1
+        
         # current input does not match with the expected token
         if isinstance(e, InputMismatchException):
             missingSymbol = e.getExpectedTokens().toString(recognizer.literalNames, recognizer.symbolicNames)

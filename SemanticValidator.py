@@ -167,7 +167,7 @@ class SemanticValidator:
 
 
     # Help Functions
-
+    
     def checkOnDone(self, task, givenTree):
         for i in range(len(task.onDone)):
             if self.checkIfTaskPresent(givenTree, task.onDone[i].value) == False:
