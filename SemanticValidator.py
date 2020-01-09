@@ -7,8 +7,7 @@ from CreateTreeTaskParserVisitor import TransportOrder
 import copy
 
 class SemanticValidator:
-    def __init__(self, logPath, filePath, templates):
-        self.logPath = logPath
+    def __init__(self, filePath, templates):
         self.filePath = filePath
         self.templates = templates
         self.givenTree = None

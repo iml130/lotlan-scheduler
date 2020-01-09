@@ -5,6 +5,8 @@ from TaskParser import TaskParser
 from CreateTreeTaskParserVisitor import CreateTreeTaskParserVisitor
 from os import listdir
 from os.path import isfile, join
+from contextlib import contextmanager
+
 import sys
 
 from SemanticValidator import SemanticValidator
@@ -12,6 +14,7 @@ from ThrowErrorListener import ThrowErrorListener
 
 TEST_FOLDER = "testfiles/"
 LOG_PATH = "logs/log.txt"
+TEMPLATES_PATH = "templates.tl"
 
 def getFileNames(path):
     filenames = []
@@ -25,7 +28,16 @@ def getFileNames(path):
 
     return filenames
 
-# method for unit testing: if an valid files got an error or vice versa return 0
+@contextmanager
+def stdoutRedirection(fileobj):
+    old = sys.stdout
+    sys.stdout = fileobj
+    try:
+        yield fileobj
+    finally:
+        sys.stdout = old
+
+# method for testing: if a valid file got an error or vice versa return 0
 def testFiles():
     validFilenames = getFileNames(TEST_FOLDER + "Valid/")
     invalidFilenames = getFileNames(TEST_FOLDER + "Invalid/")
@@ -33,38 +45,33 @@ def testFiles():
     testFailed = False
 
     #test valid files
-    print("Valid files are tested now: \n", file=open(LOG_PATH, 'a'))
+    print("Valid files are tested now: \n")
     for validFile in validFilenames:
         if testFile(validFile) == 1:
-            print(validFile + " is a valid tasklanguage program and got an error!", file=open(LOG_PATH, 'a'))
+            print(validFile + " is a valid tasklanguage program and got an error!")
             testFailed = True
-        print("\n", file=open(LOG_PATH, 'a'))
+        print("\n")
 
     # test invalid files
-    print("Invalid files are tested now: \n", file=open(LOG_PATH, 'a'))
+    print("Invalid files are tested now: \n")
     for invalidFile in invalidFilenames:
         if testFile(invalidFile) == 0:
-            print(invalidFile + " is an invalid tasklanguage program and got no error!", file=open(LOG_PATH, 'a'))
+            print(invalidFile + " is an invalid tasklanguage program and got no error!")
             testFailed = True
-        print("\n", file=open(LOG_PATH, 'a'))
+        print("\n")
 
     if testFailed == True:
         sys.exit(1)
 
-
 def testFile(filename):
-    print("testing file " + filename + ":", file=open(LOG_PATH, 'a'))
+    print("testing file " + filename + ":")
 
     lexer = TaskLexer(InputStream(open(filename).read()))
-    templateLexer = TaskLexer(InputStream(open("templates.tl").read()))
-
     tokenStream = CommonTokenStream(lexer)
-    templateTokenStream = CommonTokenStream(templateLexer)
 
     parser = TaskParser(tokenStream)
-    templateParser = TaskParser(templateTokenStream)
 
-    errorListener = ThrowErrorListener(LOG_PATH)
+    errorListener = ThrowErrorListener()
 
     lexer.removeErrorListeners()
     parser.removeErrorListeners()
@@ -73,32 +80,41 @@ def testFile(filename):
     parser.addErrorListener(errorListener)
 
     tree = parser.program()
-    templateTree = templateParser.program()
 
     visitor = CreateTreeTaskParserVisitor()
-    templateVisitor = CreateTreeTaskParserVisitor()
 
-    #no syntax errors
     if errorListener.isValid:
-        print("There are no syntax errors!", file=open(LOG_PATH, 'a'))
-        t = visitor.visit(tree)
-        templates = templateVisitor.visit(templateTree).templates
+        print("There are no syntax errors!")
 
-        semanticValidator = SemanticValidator(LOG_PATH, filename, templates)
+        t = visitor.visit(tree)
+        templates = loadTemplates()
+
+        semanticValidator = SemanticValidator(filename, templates)
         if semanticValidator.isValid(t):
-            print("There are no semantic errrors!", file=open(LOG_PATH, 'a'))
+            print("There are no semantic errrors!")
             return 0
         else:
-            print("There are semantic errors! Errors: {}".format(str(semanticValidator.errorCount)), file=open(LOG_PATH, 'a'))
+            print("There are semantic errors! Errors: {}".format(str(semanticValidator.errorCount)))
             return 1
     else:
-        print("There are syntax errors! Errors: {}".format(str(errorListener.errorCount)), file=open(LOG_PATH, 'a'))
+        print("There are syntax errors! Errors: {}".format(str(errorListener.errorCount)))
         return True
 
+def loadTemplates():
+    lexer = TaskLexer(InputStream(open(TEMPLATES_PATH).read()))
+    tokenStream = CommonTokenStream(lexer)
+    parser = TaskParser(tokenStream)
+    tree = parser.program()
+    visitor = CreateTreeTaskParserVisitor()
+
+    return visitor.visit(tree).templates
+
 def main():
-    print("Syntax and semantic check \n\n", file=open(LOG_PATH, 'w'))
     if(len(sys.argv) == 2 and sys.argv[1] == "--test"):
-        testFiles()
+        # redirect stdout to the log file if we test many files
+        with open(LOG_PATH, 'a') as out:
+            with stdoutRedirection(out):
+                testFiles()
     else: 
         testFile("examples/Available_Options.tl")
     sys.exit(0)

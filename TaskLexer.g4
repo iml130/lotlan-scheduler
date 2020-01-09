@@ -32,7 +32,7 @@ TRANSPORT: 'Transport';
 FROM: 'from' WHITESPACE_BLOCK;
 TO: 'to' WHITESPACE_BLOCK;
 
-// Used in both
+// Used in both TOS and Task
 ON_DONE: 'OnDone' WHITESPACE_BLOCK;
 TRIGGERED_BY: 'TriggeredBy' WHITESPACE_BLOCK -> pushMode(EXPRESSION);
 FINISHED_BY: 'FinishedBy' WHITESPACE_BLOCK -> pushMode(EXPRESSION);
