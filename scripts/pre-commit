@@ -1,6 +1,5 @@
-#!C:/PROGRA~1/Git/bin/sh.exe
+#!/bin/bash.exe
 echo "Running pre-commit hook"
-cd ../
 python checkGrammarTreeCreation.py --test
 if [ $? -ne 0 ]
 then
