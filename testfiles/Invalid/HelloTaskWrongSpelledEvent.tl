@@ -8,13 +8,13 @@ Location dropoffItem
     type = "SmallLoadCarrier"
 end
 
-Eventt triggerGetNewMaterial
+Event triggerGetNewMaterial
     name = "virtualSensorNewMaterialToWs1"
     type = "Boolean"
 end
 
 TransportOrderStep loadStorage
-    Location pickupItem  # Only one Location can be defined!
+    Location pickupItem
 end
 
 TransportOrderStep unloadWorkstation1
@@ -22,7 +22,7 @@ TransportOrderStep unloadWorkstation1
 end
 
 task HelloTask
-    TriggeredBy triggerGetNewMateria == True
+    TriggeredBy triggerGetNewMateria == True # error: the instace name was spelled wrong so the validator cant find the correct instance
     Transport
     from loadStorage
     to unloadWorkstation1

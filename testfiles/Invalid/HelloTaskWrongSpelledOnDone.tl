@@ -8,18 +8,23 @@ Location dropoffItem
     type = "SmallLoadCarrier"
 end
 
-
 TransportOrderStep loadStorage
-    Location pickupItem  # Only one Location can be defined!
+    Location pickupItem
 end
 
-TransportOrderStep unloadWorkstation1
+TransportOrderStep unloadWorkstation
     Location dropoffItem
 end
 
 task HelloTask
     Transport
     from loadStorage
-    to unloadWorkstation1
-    OnDone HelloTask2
+    to unloadWorkstation
+    OnDone HelloTask22  # error: the task name was spelled wrong so the validator cant find the correct instance
+end
+
+task HelloTask2
+    Transport
+    from loadStorage
+    to unloadWorkstation
 end

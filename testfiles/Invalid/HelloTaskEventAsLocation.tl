@@ -9,5 +9,5 @@ Event event
 end
 
 TransportOrderStep loadStorage
-    Location event 
+    Location event # error: an event instance is used as location
 end

@@ -13,13 +13,8 @@ Event triggerGetNewMaterial
     type = "Boolean"
 end
 
-Event triggerGetNewMaterial2
-    name = "virtualSensorNewMaterialToWs2"
-    type = "Boolean"
-end
-
 TransportOrderStep loadStorage
-    Location pickupItem  # Only one Location can be defined!
+    Location pickupItem
 end
 
 TransportOrderStep unloadWorkstation1
@@ -27,12 +22,10 @@ TransportOrderStep unloadWorkstation1
 end
 
 task HelloTask
-    TriggeredBy triggerGetNewMaterial == True
-    
     Transport
     from loadStorage
 
-    TriggeredBy triggerGetNewMaterial2 == True # should not be here!
+    TriggeredBy triggerGetNewMaterial == True # error: a transport Order is an atomic statement so it cant be splitted
 
     to unloadWorkstation1
 end

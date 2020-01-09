@@ -26,5 +26,5 @@ task HelloTask
     from loadStorage
     to unloadWorkstation1
     Repeat		5
-    Repeat		1
+    Repeat		1 # error: an repeat statement was already definied
 end

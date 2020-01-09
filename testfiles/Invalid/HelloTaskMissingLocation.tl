@@ -8,7 +8,7 @@ TransportOrderStep loadStorage
 end
 
 TransportOrderStep unloadWorkstation1
-    Location
+    Location # error: there is no location given for 'Location'
 end
 
 task HelloTask

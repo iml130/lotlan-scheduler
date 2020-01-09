@@ -20,7 +20,7 @@ task HelloTask
     Transport
     from loadStorage
     to unloadWorkstation1
-    Transport
+    Transport # error: an TransportOrder statement was already definied
     from unloadWorkstation1
     to loadStorage
 end

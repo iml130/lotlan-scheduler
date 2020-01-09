@@ -10,7 +10,7 @@ end
 
 
 TransportOrderStep loadStorage
-    Location pickupItem  # Only one Location can be defined!
+    Location pickupItem
 end
 
 TransportOrderStep unloadWorkstation1
@@ -21,5 +21,5 @@ task HelloTask
     Transport
     from loadStorage
     to unloadWorkstation1
-    OnDone
+    OnDone # error: there is no followUp Task given for 'OnDone'
 end

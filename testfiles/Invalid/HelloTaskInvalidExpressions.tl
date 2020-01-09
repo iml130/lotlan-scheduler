@@ -19,7 +19,6 @@ end
 
 TransportOrderStep loadStorage
     Location pickupItem
-    TriggeredBy !time
-    TriggeredBy	time == 60
-    FinishedBy !event == 5
+    TriggeredBy !time # error: it is not possible to use a single Time instance with an unary operation (only works with event)
+    TriggeredBy	time == 60 # error: you cant compare time with something (time format in cron)
 end

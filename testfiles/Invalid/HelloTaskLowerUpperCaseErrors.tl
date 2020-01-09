@@ -8,15 +8,15 @@ Location dropoffItem
     type = "SmallLoadCarrier"
 end
 
-TransportOrderStep LoadStorage
+TransportOrderStep LoadStorage # error: instance name has to start with an lowercase Character
     Location pickupItem 
 end
 
 TransportOrderStep unloadWorkstation1
-    Location DropoffItem
+    Location DropoffItem # error: instance name has to start with an lowercase Character
 end
 
-task helloTask
+task helloTask # error: task name has to start with an Uppercase Character
     Transport
     from loadStorage
     to unloadWorkstation1

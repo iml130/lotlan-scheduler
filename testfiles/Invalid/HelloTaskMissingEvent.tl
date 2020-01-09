@@ -14,12 +14,12 @@ Event triggerGetNewMaterial
 end
 
 TransportOrderStep loadStorage
-    Location pickupItem  # Only one Location can be defined!
+    Location pickupItem
 end
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
-    TriggeredBy
+    TriggeredBy # error: there is no event given for 'Triggered By'
 end
 
 task HelloTask

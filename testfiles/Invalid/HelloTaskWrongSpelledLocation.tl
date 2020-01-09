@@ -3,7 +3,7 @@ Location pickupItem
     type = "SmallLoadCarrier"
 end
 
-Locatinn dropoffItem
+Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
 end
@@ -13,7 +13,7 @@ TransportOrderStep loadStorage
 end
 
 TransportOrderStep unloadWorkstation1
-    Location dropoffItem
+    Location dropoffItem2  # error: the instace name was spelled wrong so the validator cant find the correct instance
 end
 
 task HelloTask
