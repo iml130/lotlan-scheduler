@@ -64,8 +64,6 @@ def testFiles():
         sys.exit(1)
 
 def testFile(filename):
-    print("testing file " + filename + ":")
-
     lexer = TaskLexer(InputStream(open(filename).read()))
     tokenStream = CommonTokenStream(lexer)
 
@@ -84,20 +82,15 @@ def testFile(filename):
     visitor = CreateTreeTaskParserVisitor()
 
     if errorListener.isValid:
-        print("There are no syntax errors!")
-
         t = visitor.visit(tree)
         templates = loadTemplates()
 
         semanticValidator = SemanticValidator(filename, templates)
         if semanticValidator.isValid(t):
-            print("There are no semantic errrors!")
             return 0
         else:
-            print("There are semantic errors! Errors: {}".format(str(semanticValidator.errorCount)))
             return 1
     else:
-        print("There are syntax errors! Errors: {}".format(str(errorListener.errorCount)))
         return True
 
 def loadTemplates():
@@ -112,11 +105,11 @@ def loadTemplates():
 def main():
     if(len(sys.argv) == 2 and sys.argv[1] == "--test"):
         # redirect stdout to the log file if we test many files
-        with open(LOG_PATH, 'a') as out:
+        with open(LOG_PATH, 'w') as out:
             with stdoutRedirection(out):
                 testFiles()
-    else: 
-        testFile("examples/Available_Options.tl")
+    elif len(sys.argv) == 2:
+        testFile(sys.argv[1])
     sys.exit(0)
 
 if __name__ == '__main__':
