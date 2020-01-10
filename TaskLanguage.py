@@ -63,8 +63,8 @@ def testFiles():
     if testFailed == True:
         sys.exit(1)
 
-def testFile(filename):
-    lexer = TaskLexer(InputStream(open(filename).read()))
+def testFile(documentText):
+    lexer = TaskLexer(InputStream(documentText))
     tokenStream = CommonTokenStream(lexer)
 
     parser = TaskParser(tokenStream)
@@ -85,7 +85,7 @@ def testFile(filename):
         t = visitor.visit(tree)
         templates = loadTemplates()
 
-        semanticValidator = SemanticValidator(filename, templates)
+        semanticValidator = SemanticValidator(documentText, templates)
         if semanticValidator.isValid(t):
             return 0
         else:
