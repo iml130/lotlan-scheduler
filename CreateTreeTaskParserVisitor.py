@@ -70,18 +70,20 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
     def visitProgram(self, ctx):
         # Create Program
         self.cp = CompleteProgram()
-        for child in ctx.children:
-            TempOrInstOrTaskOrTOS = self.visit(child)  # Get object Template|Instance|Task
 
-            # append appropiatly into the corresponding list
-            if isinstance(TempOrInstOrTaskOrTOS, Template):
-                self.cp.templates[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
-            if isinstance(TempOrInstOrTaskOrTOS, Instance):
-                self.cp.instances[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
-            if isinstance(TempOrInstOrTaskOrTOS, TaskInfo):
-                self.cp.taskInfos[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
-            if isinstance(TempOrInstOrTaskOrTOS, TransportOrderStep):
-                self.cp.transportOrderSteps[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
+        if ctx.children:
+            for child in ctx.children:
+                TempOrInstOrTaskOrTOS = self.visit(child)  # Get object Template|Instance|Task
+
+                # append appropiatly into the corresponding list
+                if isinstance(TempOrInstOrTaskOrTOS, Template):
+                    self.cp.templates[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
+                if isinstance(TempOrInstOrTaskOrTOS, Instance):
+                    self.cp.instances[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
+                if isinstance(TempOrInstOrTaskOrTOS, TaskInfo):
+                    self.cp.taskInfos[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
+                if isinstance(TempOrInstOrTaskOrTOS, TransportOrderStep):
+                    self.cp.transportOrderSteps[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
 
         return self.cp
 
