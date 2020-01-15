@@ -3,11 +3,12 @@ from antlr4.error.ErrorListener import ErrorListener
 from antlr4.error.Errors import *
 
 class ThrowErrorListener(ErrorListener):
-    def __init__(self):
+    def __init__(self, usedInExtension):
         super()
         self.lines = []
         self.isValid = True
         self.errorCount = 0
+        self.usedInExtension = usedInExtension
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         self.isValid = False
@@ -16,10 +17,10 @@ class ThrowErrorListener(ErrorListener):
         # current input does not match with the expected token
         if isinstance(e, InputMismatchException):
             missingSymbol = e.getExpectedTokens().toString(recognizer.literalNames, recognizer.symbolicNames)
-            print("Expecting symbol '" + missingSymbol + "'" + " at line: ", end = "")
-            # extra prints so its easier for the vs code extension to parse
-            print(str(line), end = "")
-            print(str(column))
+            msg = "Expecting symbol '" + missingSymbol + "'" + " at line:"
+            offendingSymbolLength = len(offendingSymbol.text)
+
+            self.printError(msg, line, column, offendingSymbolLength)
 
         # the lexer could not decide which path to take so the input doesnt match with anything
         elif isinstance(e, LexerNoViableAltException):
@@ -28,25 +29,30 @@ class ThrowErrorListener(ErrorListener):
             if line not in self.lines:
                 self.lines.append(line)
                 invalidChar = msg[msg.find("'") + 1 : msg.rfind("'")]
-                print("Invalid Character '" + invalidChar + "' at line: ", end = "")
-                print(str(line), end = "")
-                print(str(column))
+                msg = "Invalid Character '" + invalidChar + "' at line:"
+                offendingSymbolLength = 1 # the first char that doesnt match so length is 1
 
-        # should not occur because we use no semantic predicates
-        elif isinstance(e, FailedPredicateException):
-            print(msg, end = "")
-            print(str(line), end = "")
-            print(str(column))
-
+                self.printError(msg, line, column, offendingSymbolLength)
         # a valid symbol by the lexer but there is no parser rule to match it in the current context
         elif isinstance(e, NoViableAltException):
-            print("Symbol '" + offendingSymbol.text + "' cant be used here!")
-            print(str(line), end = "")
-            print(str(column))
+            msg = "Symbol '" + offendingSymbol.text + "' cant be used here!"
+            offendingSymbolLength = len(offendingSymbol.text)
+            
+            self.printError(msg, line, column, offendingSymbolLength)
         else:
-            print(msg, end = "")
-            print(str(line), end = "")
-            print(str(column))
+            offendingSymbolLength = len(offendingSymbol.text)
+            self.printError(msg + "at line:", line, column, offendingSymbolLength)
+
+    def printError(self, msg, line, column, offSymbolLength):
+        # python shell in extension parses print statements of python
+        if self.usedInExtension == True:
+            print(msg)
+            print(line)
+            print(column)
+            print(offSymbolLength)
+        else:
+            print(msg, str(line) + ":" + str(column))
+
 
     def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
         self.isValid = False

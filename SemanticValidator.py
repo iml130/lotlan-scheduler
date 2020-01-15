@@ -290,3 +290,6 @@ class SemanticValidator:
             return True
         except ValueError:
             return False
+
+    def printError(self, msg, line, column, offSymbolLength):
+        print("error")
