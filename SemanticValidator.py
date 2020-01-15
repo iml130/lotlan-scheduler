@@ -61,12 +61,11 @@ class SemanticValidator:
                 self.printError(msg, instance.name.context.start.line, instance.name.context.start.column, len(instance.name.value))
             # check if the instance variables match with the corresponding template
             else:
-                if self.templateAttributeExists(template, instance) == False or self.templateAttributeDefinied(template, instance) == False:
-                    # TODO
-                    self.errorCount = self.errorCount + 1
+                self.checkIfTemplateAttributeExists(template, instance) 
+                self.checkIfTemplateAttributeDefinied(template, instance)
 
     # check if all attributes in the given instance are definied in the template
-    def templateAttributeExists(self, template, instance):
+    def checkIfTemplateAttributeExists(self, template, instance):
         for attribute in instance.keyval:
             typeFound = False
             for tempAttributeType in template.keyval:
@@ -74,10 +73,10 @@ class SemanticValidator:
                     typeFound = True
             if typeFound == False:
                 msg = "The attribute '{}' in instance '{}' was not defined in the corresponding template".format(attribute.value, instance.name.value)
-                self.printError(msg, instance.name.context.line, instance.name.context.column, len(attribute.name.value))
+                self.printError(msg, instance.name.context.start.line, instance.name.context.start.column, len(attribute.value))
         
     # check if all attributes definied in the template are set in instance
-    def templateAttributeDefinied(self, template, instance):
+    def checkIfTemplateAttributeDefinied(self, template, instance):
         for attribute in template.keyval:
             typeFound = False
             for instanceAttribute in instance.keyval:
