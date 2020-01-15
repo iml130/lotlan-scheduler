@@ -46,7 +46,7 @@ STRING_VALUE: '"' [a-zA-Z0-9_]+ '"';
 NUMERIC_VALUE: '"' ['*'' ''/'0-9]+ '"';
 EMPTY_VALUE: '""';
 
-fragment WHITESPACE_BLOCK: [ \t]*;
+fragment WHITESPACE_BLOCK: [ \t\r]*;
 
 mode EXPRESSION;
 E_LEFT_PARENTHESIS: '(';
