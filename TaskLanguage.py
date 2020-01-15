@@ -8,7 +8,6 @@ from os.path import isfile, join
 from contextlib import contextmanager
 
 import sys
-
 from SemanticValidator import SemanticValidator
 from ThrowErrorListener import ThrowErrorListener
 
@@ -67,6 +66,8 @@ def testFiles():
     # pre-commit script checks if there was errors (checks for return value 1)
     if testFailed == True:
         sys.exit(1)
+    
+    print("All tests passed!")
 
 def testFile(input, usedInExtension):
     lexer = None
