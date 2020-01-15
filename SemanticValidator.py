@@ -7,11 +7,12 @@ from CreateTreeTaskParserVisitor import TransportOrder
 import copy
 
 class SemanticValidator:
-    def __init__(self, filePath, templates):
+    def __init__(self, filePath, templates, usedInExtension):
         self.filePath = filePath
         self.templates = templates
         self.givenTree = None
         self.errorCount = 0
+        self.usedInExtension = usedInExtension
 
     def isValid(self, givenTree):
         self.givenTree = givenTree
@@ -33,8 +34,8 @@ class SemanticValidator:
         for template in givenTree.templates.values():
             # check if there is more than one template with the same name
             if templateNameCounts.get(template.name.value) != None:
-                print("The Template name '{}' at line {} is already used by an other template! File: {}".format(template.name.value, template.name.context.start.line, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "The Template name '{}' is already used by an other template".format(template.name.value)
+                self.printError(msg, template.name.context.start.line, template.name.context.start.column, len(template.name.value))
             else:
                 templateNameCounts[template.name.value] = 1
 
@@ -46,8 +47,8 @@ class SemanticValidator:
         for instance in givenTree.instances.values():
             # check if there is more than one instance with the same name
             if instanceNameCounts.get(instance.name.value) != None:
-                print("The Instance name '{}' at line {} is already used by an other instance! File: {}".format(instance.name.value, instance.name.context.start.line, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "The Instance name '{}' is already used by an other instance".format(instance.name.value)
+                self.printError(msg, instance.name.context.start.line, instance.name.context.start.column, len(instance.name.value))
             else:
                 instanceNameCounts[instance.name.value] = 1
 
@@ -56,11 +57,12 @@ class SemanticValidator:
 
             # check if the corresponding template exists
             if template == None:
-                print("The Instance '{}' at line {} refers to a template that does not exist! File: {}".format(instance.name.value, instance.name.context.start.line, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "The Instance '{}' refers to a template that does not exist".format(instance.name.value)
+                self.printError(msg, instance.name.context.start.line, instance.name.context.start.column, len(instance.name.value))
             # check if the instance variables match with the corresponding template
             else:
                 if self.templateAttributeExists(template, instance) == False or self.templateAttributeDefinied(template, instance) == False:
+                    # TODO
                     self.errorCount = self.errorCount + 1
 
     # check if all attributes in the given instance are definied in the template
@@ -71,8 +73,8 @@ class SemanticValidator:
                 if attribute.value == tempAttributeType.value:
                     typeFound = True
             if typeFound == False:
-                print("The attribute '{}' in instance '{}' was not defined in the corresponding template! File: {}".format(attribute.value, instance.name.value, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "The attribute '{}' in instance '{}' was not defined in the corresponding template".format(attribute.value, instance.name.value)
+                self.printError(msg, instance.name.context.line, instance.name.context.column, len(attribute.name.value))
         
     # check if all attributes definied in the template are set in instance
     def templateAttributeDefinied(self, template, instance):
@@ -82,8 +84,8 @@ class SemanticValidator:
                 if attribute.value == instanceAttribute.value:
                     typeFound = True
             if typeFound == False:
-                print("The attribute '{}' from the corresponding template was not definied in instance '{}' in line {}! File: {}".format(attribute.value, instance.name.value, instance.context.start.line, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "The attribute '{}' from the corresponding template was not definied in instance '{}'".format(attribute.value, instance.name.value)
+                self.printError(msg, instance.context.start.line, instance.context.start.column, len(attribute.value))
 
 
     # TransportOrderStep Check
@@ -93,8 +95,8 @@ class SemanticValidator:
         for tos in givenTree.transportOrderSteps.values():
             # Check if there is more than one tos with the same name
             if tosNameCounts.get(tos.name.value) != None:
-                print("TransportOrderStep name in line {} is already used by an other TransportOrderStep! File: {}".format(tos.name.context.start.line, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "TransportOrderStep name is already used by an other TransportOrderStep".format(tos.name.context.start.line)
+                self.printError(msg, tos.name.context.start.line, tos.name.context.start.column, len(tos.name.value))
             else:
                 tosNameCounts[tos.name.value] = 1
 
@@ -107,11 +109,11 @@ class SemanticValidator:
         locationName = tos.location.value
         location = self.getInstance(locationName)
         if location == None:
-            print("The location '{}' in TransportOrderStep '{}' in line {} could not be found! File: {}".format(locationName, tos.name.value, tos.location.context.start.line, self.filePath))
-            self.errorCount = self.errorCount + 1
+            msg = "The location '{}' in TransportOrderStep '{}' could not be found".format(locationName, tos.name.value)
+            self.printError(msg, tos.location.context.start.line, tos.location.context.start.column, len(locationName))
         elif location.templateName.value != "Location":
-            print("The instance '{}' in TransportOrderStep '{}' in line {} is not a Location Instance but an '{}' instance! File: {}".format(locationName, tos.name.value, tos.location.context.start.line, location.templateName.value, self.filePath))
-            self.errorCount = self.errorCount + 1
+            msg = "The instance '{}' in TransportOrderStep '{}' is not a Location Instance but an '{}' instance".format(locationName, tos.name.value, location.templateName.value)
+            self.printError(msg, tos.location.context.start.line, tos.location.context.start.column, len(locationName))
 
 
     # Task Check
@@ -121,8 +123,8 @@ class SemanticValidator:
         for task in givenTree.taskInfos.values():
             # Check if there is more than one task with the same name
             if taskNameCounts.get(task.name.value) != None:
-                print("Task name at line {} is already used by an other task! File: {}".format(task.name.context.start.line, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "Task name is already used by an other task".format()
+                self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.name))
             else:
                 taskNameCounts[task.name.value] = 1
 
@@ -134,18 +136,18 @@ class SemanticValidator:
 
     def checkTransportOrders(self, task, givenTree):
         if len(task.transportOrders) > 1:
-            print("Task '{}' in line {} has more than one TransportOrder! File: {}".format(task.name.value, task.name.context.start.line, self.filePath))
-            self.errorCount = self.errorCount + 1
+            msg = "Task '{}' has more than one TransportOrder".format(task.name.value)
+            self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.name.value))
         elif len(task.transportOrders) == 1:
             # From check
             if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[0].value.pickupFrom.value) == False:
-                print("Task '{}' in line {} refers to an unknown TransportOrderStep in TransportOrder '{}'! File: {}".format(task.name.value, task.name.context.start.line, task.transportOrders[0].value.pickupFrom.value, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "Task '{}' refers to an unknown TransportOrderStep in 'from': '{}' ".format(task.name.value, task.name.context.start.line, task.transportOrders[0].value.pickupFrom.value)
+                self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.transportOrders[0].value.pickupFrom.value))
             
             # To check
             if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[0].value.deliverTo.value) == False:
-                print("Task '{}' refers to an unknown TransportOrderStep in TransportOrder '{}'! File: {}".format(task.name.value, task.transportOrders[0].value.deliverTo.value, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "Task '{}' refers to an unknown TransportOrderStep in TransportOrder '{}'".format(task.name.value, task.transportOrders[0].value.deliverTo.value)
+                self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.transportOrders[0].value.deliverTo.value))
 
     def checkIfTaskPresent(self, givenTree, taskName):
         for _tN in givenTree.taskInfos:
@@ -161,8 +163,8 @@ class SemanticValidator:
 
     def checkRepeat(self, task):
         if len(task.repeat) > 1:
-            print("There are multiple Repeat definitions in Task '{}' in line {}. File: {}".format(task.name.value, task.context.start.line, self.filePath))
-            self.errorCount = self.errorCount + 1
+            msg = "There are multiple Repeat definitions in Task '{}'".format(task.name.value)
+            self.printError(msg, task.context.start.line, task.context.start.column, len(task.name.value))
 
 
     # Help Functions
@@ -170,7 +172,8 @@ class SemanticValidator:
     def checkOnDone(self, task, givenTree):
         for i in range(len(task.onDone)):
             if self.checkIfTaskPresent(givenTree, task.onDone[i].value) == False:
-                print("Task '{}' in line {} refers to an unknown OnDone-Task '{}'! File: {}".format(task.name.value, task.name.context.start.line, task.onDone[i].value, self.filePath))
+                msg = "Task '{}' refers to an unknown OnDone-Task '{}'".format(task.name.value, task.onDone[i].value)
+                self.printError(msg, task.name.context.start.line, task.name.context.start.column, 1) 
                 self.errorCount = self.errorCount + 1
 
     def checkExpressions(self, expressions):
@@ -292,4 +295,12 @@ class SemanticValidator:
             return False
 
     def printError(self, msg, line, column, offSymbolLength):
-        print("error")
+        if self.usedInExtension == True:
+            print(msg)
+            print(line)
+            print(column)
+            print(offSymbolLength)
+        else:
+            print(msg)
+            print("File '" + self.filePath + "', line " + str(line) + ":" + str(column))
+        self.errorCount = self.errorCount + 1

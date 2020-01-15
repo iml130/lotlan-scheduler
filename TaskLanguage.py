@@ -80,7 +80,7 @@ def testFile(input, usedInExtension):
 
     tokenStream = CommonTokenStream(lexer)
     parser = TaskParser(tokenStream)
-    errorListener = ThrowErrorListener(usedInExtension)
+    errorListener = ThrowErrorListener(input, usedInExtension)
 
     lexer.removeErrorListeners()
     parser.removeErrorListeners()
@@ -98,7 +98,7 @@ def testFile(input, usedInExtension):
         t = visitor.visit(tree)
         templates = loadTemplates()
 
-        semanticValidator = SemanticValidator(input, templates)
+        semanticValidator = SemanticValidator(input, templates, usedInExtension)
         if semanticValidator.isValid(t) != True:
             return False
         else:

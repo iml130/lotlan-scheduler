@@ -3,11 +3,12 @@ from antlr4.error.ErrorListener import ErrorListener
 from antlr4.error.Errors import *
 
 class ThrowErrorListener(ErrorListener):
-    def __init__(self, usedInExtension):
+    def __init__(self, filePath, usedInExtension):
         super()
         self.lines = []
         self.isValid = True
         self.errorCount = 0
+        self.filePath = filePath
         self.usedInExtension = usedInExtension
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
@@ -17,7 +18,7 @@ class ThrowErrorListener(ErrorListener):
         # current input does not match with the expected token
         if isinstance(e, InputMismatchException):
             missingSymbol = e.getExpectedTokens().toString(recognizer.literalNames, recognizer.symbolicNames)
-            msg = "Expecting symbol '" + missingSymbol + "'" + " at line:"
+            msg = "Expecting symbol '" + missingSymbol + "'"
             offendingSymbolLength = len(offendingSymbol.text)
 
             self.printError(msg, line, column, offendingSymbolLength)
@@ -29,19 +30,19 @@ class ThrowErrorListener(ErrorListener):
             if line not in self.lines:
                 self.lines.append(line)
                 invalidChar = msg[msg.find("'") + 1 : msg.rfind("'")]
-                msg = "Invalid Character '" + invalidChar + "' at line:"
+                msg = "Invalid Character '" + invalidChar + "'"
                 offendingSymbolLength = 1 # the first char that doesnt match so length is 1
 
                 self.printError(msg, line, column, offendingSymbolLength)
         # a valid symbol by the lexer but there is no parser rule to match it in the current context
         elif isinstance(e, NoViableAltException):
-            msg = "Symbol '" + offendingSymbol.text + "' cant be used here!"
+            msg = "Symbol '" + offendingSymbol.text + "' cant be used here"
             offendingSymbolLength = len(offendingSymbol.text)
             
             self.printError(msg, line, column, offendingSymbolLength)
         else:
             offendingSymbolLength = len(offendingSymbol.text)
-            self.printError(msg + "at line:", line, column, offendingSymbolLength)
+            self.printError(msg, line, column, offendingSymbolLength)
 
     def printError(self, msg, line, column, offSymbolLength):
         # python shell in extension parses print statements of python
@@ -51,7 +52,8 @@ class ThrowErrorListener(ErrorListener):
             print(column)
             print(offSymbolLength)
         else:
-            print(msg, str(line) + ":" + str(column))
+            print(msg)
+            print("File '" + self.filePath + "', line " + str(line) + ":" + str(column))
 
 
     def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
