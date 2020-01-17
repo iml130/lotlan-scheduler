@@ -80,8 +80,9 @@ def testFile(input, usedInExtension):
         lexer = TaskLexer(InputStream(input))
 
     tokenStream = CommonTokenStream(lexer)
+
     parser = TaskParser(tokenStream)
-    errorListener = ThrowErrorListener(input, usedInExtension)
+    errorListener = ThrowErrorListener(input, usedInExtension, tokenStream)
 
     lexer.removeErrorListeners()
     parser.removeErrorListeners()

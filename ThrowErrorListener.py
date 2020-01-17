@@ -2,14 +2,26 @@ from antlr4 import *
 from antlr4.error.ErrorListener import ErrorListener
 from antlr4.error.Errors import *
 
+symbolicNames = {
+    "STARTS_WITH_LOWER_C_STR"                                       : "a String that starts with a lowercase char",
+    "STARTS_WITH_UPPER_C_STR"                                       : "a String that starts with a uppercase char",
+    '{STRING_VALUE, NUMERIC_VALUE, \'""\'}'                         : "a value (String, number, nothing)",
+    "EQUAL"                                                         : "an equal literal",
+    "{'(', '!', E_ATTRIBUTE, E_TRUE, E_FALSE, E_INTEGER, E_FLOAT}"  : "a condition",
+    "TO"                                                            : "a to",
+    "FROM"                                                          : "a from",
+    "INDENTATION"                                                   : "an indentation",
+}
+
 class ThrowErrorListener(ErrorListener):
-    def __init__(self, filePath, usedInExtension):
+    def __init__(self, filePath, usedInExtension, tokenStream):
         super()
         self.lines = []
         self.isValid = True
         self.errorCount = 0
         self.filePath = filePath
         self.usedInExtension = usedInExtension
+        self.tokenStream = tokenStream
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         self.isValid = False
@@ -18,8 +30,21 @@ class ThrowErrorListener(ErrorListener):
         # current input does not match with the expected token
         if isinstance(e, InputMismatchException):
             missingSymbol = e.getExpectedTokens().toString(recognizer.literalNames, recognizer.symbolicNames)
-            msg = "Expecting symbol '" + missingSymbol + "'"
+
+            symbolDescription = symbolicNames.get(missingSymbol)
+            msg = ""
+            if symbolDescription:
+                msg = "Expecting " + symbolicNames[missingSymbol] + "'"
+            else:
+                msg = "Expecting symbol '" + missingSymbol + "'"
+
             offendingSymbolLength = len(offendingSymbol.text)
+    
+            hiddenToken = self.tokenStream.getHiddenTokensToLeft(offendingSymbol.tokenIndex)
+            if hiddenToken != None:
+                lastToken = hiddenToken.pop()
+                commentLength = len(lastToken.text)
+                column = column - commentLength
 
             self.printError(msg, line, column, offendingSymbolLength)
 
@@ -42,6 +67,13 @@ class ThrowErrorListener(ErrorListener):
             self.printError(msg, line, column, offendingSymbolLength)
         else:
             offendingSymbolLength = len(offendingSymbol.text)
+
+            hiddenToken = self.tokenStream.getHiddenTokensToLeft(offendingSymbol.tokenIndex)
+            if hiddenToken != None:
+                lastToken = hiddenToken.pop()
+                commentLength = len(lastToken.text)
+                column = column - commentLength
+                
             self.printError(msg, line, column, offendingSymbolLength)
 
     def printError(self, msg, line, column, offSymbolLength):
@@ -49,7 +81,7 @@ class ThrowErrorListener(ErrorListener):
         if self.usedInExtension == True:
             print(msg)
             print(line)
-            print(column)
+            print(column) # for ext: antlr starts at column 0, vs code at column 1
             print(offSymbolLength)
         else:
             print(msg)

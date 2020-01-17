@@ -6,7 +6,7 @@ TRANSPORT_ORDER_STEP: 'TransportOrderStep ' -> pushMode(BLOCK);
 INSTANCE: STARTS_WITH_UPPER_C_STR ' ' -> pushMode(BLOCK);
 
 WHITESPACE: [ \t\r\n]+ -> skip;
-COMMENT: '#' ~[\n]+ -> skip;
+COMMENT: '#' ~[\n]* -> skip;
 
 mode BLOCK;
 
@@ -14,8 +14,8 @@ NEW_LINE: WHITESPACE_BLOCK '\n';
 
 INDENTATION: ('    ' | '\t');
 
-COMMENT_IN_BLOCK : WHITESPACE_BLOCK '#' ~[\n]+  -> skip;
-COMMENT_LINE_IN_BLOCK : INDENTATION '#' ~[\n]+ '\n'-> skip;
+COMMENT_IN_BLOCK : WHITESPACE_BLOCK '#' ~[\n]+  -> channel(HIDDEN);
+COMMENT_LINE_IN_BLOCK : INDENTATION '#' ~[\n]+ '\n'-> channel(HIDDEN);
 
 EQUAL: WHITESPACE_BLOCK '=' WHITESPACE_BLOCK;
 END_IN_BLOCK: 'end' -> popMode;
