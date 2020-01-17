@@ -4,7 +4,7 @@ Location pickupItem
 end
 
 Location dropoffItem
-    name = "?ws1_dropoff" # error: '?' is not a valid character for the name attribute
+    name = "w?s1_dropoff" #error: '?' is not a valid character for the name attribute
     type = "SmallLoadCarrier"
 end
 
@@ -23,7 +23,7 @@ end
 
 
 task HelloTask
-    Transport
+    Transport 
     from loadStorage
     to UnloadWorkstation1 # error: instance names has to start with an lowercase char
 end

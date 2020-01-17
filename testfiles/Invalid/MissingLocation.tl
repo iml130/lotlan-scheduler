@@ -1,5 +1,5 @@
 Location pickupItem
-    name = "s1_pickup"
+    name            # errorsdfasd asd fasdf asdfa 
     type = "SmallLoadCarrier"
 end
 
