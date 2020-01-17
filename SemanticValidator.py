@@ -94,7 +94,7 @@ class SemanticValidator:
         for tos in givenTree.transportOrderSteps.values():
             # Check if there is more than one tos with the same name
             if tosNameCounts.get(tos.name.value) != None:
-                msg = "TransportOrderStep name is already used by an other TransportOrderStep".format(tos.name.context.start.line)
+                msg = "TransportOrderStep name '{}' is already used by an other TransportOrderStep".format(tos.name.value)
                 self.printError(msg, tos.name.context.start.line, tos.name.context.start.column, len(tos.name.value))
             else:
                 tosNameCounts[tos.name.value] = 1
@@ -173,7 +173,6 @@ class SemanticValidator:
             if self.checkIfTaskPresent(givenTree, task.onDone[i].value) == False:
                 msg = "Task '{}' refers to an unknown OnDone-Task '{}'".format(task.name.value, task.onDone[i].value)
                 self.printError(msg, task.name.context.start.line, task.name.context.start.column, 1) 
-                self.errorCount = self.errorCount + 1
 
     def checkExpressions(self, expressions):
         for exp in expressions:
@@ -193,30 +192,30 @@ class SemanticValidator:
         if self.isEventInstance(expression) == True:
             instance = self.getInstance(expression)
             if self.hasInstanceType(instance, "Boolean") == False:
-                print("'" + expression + "' has no booelan type so it cant get parsed as single statement! File: {}".format(self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "'" + expression + "' has no booelan type so it cant get parsed as single statement"
+                self.printError(msg, context.start.line, context.start.column, 1)
         else:
             if self.isTimeInstance(expression) == False:
-                print("The given expression in line {} is not related to a time or event instance! File: {}".format(context.start.line, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "The given expression is not related to a time or event instance"
+                self.printError(msg, context.start.line, context.start.column, 1)
 
     def checkUnaryOperation(self, expression, context):
         if self.isBooleanExpression(expression["value"]) == False:
-            print("'" + expression["value"] + "' in line {} is not a boolean so it cant get parsed as a single statement! File: {}".format(context.start.line, self.filePath))
-            self.errorCount = self.errorCount + 1
+            msg = "'" + expression["value"] + "' is not a boolean so it cant get parsed as a single statement"
+            self.printError(msg, context.start.line, context.start.column, len(expression["value"]))
 
     def checkBinaryOperation(self, expression, context):
          # check if the left side of the expression is an event instance
         left = expression["left"]
         if self.isEventInstance(left) == False:
-            print("The given Instance '{}' in the binary Operation in line {} is not an instance of type event! File: {}".format(left, context.start.line, self.filePath))
-            self.errorCount = self.errorCount + 1
+            msg = "The given Instance '{}' in the binary Operation is not an instance of type event".format(left)
+            self.printError(msg, context.start.line, context.start.column, len(left))
         else:
             eventType = self.getAttributeValue(self.getInstance(left), "type")
             right = expression["right"]
             if self.isBooleanExpression(right) == False:
-                print("The right side in line {} is not a boolean. File: {}".format(context.start.line, self.filePath))
-                self.errorCount = self.errorCount + 1
+                msg = "The right side is not a boolean"
+                self.printError(msg, context.start.line, context.start.column)
 
     # Check if the given expression can be resolved to a boolean expression
     def isBooleanExpression(self, expression):
