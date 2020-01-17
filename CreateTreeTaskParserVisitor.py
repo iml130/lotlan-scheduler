@@ -41,7 +41,7 @@ class TransportOrder(object):
 class TransportOrderStep(object):
     def __init__(self):
         self.name = None # String Name of Task
-        self.location = None
+        self.locations = []
         self.triggeredBy = [] # List of Triggers
         self.finishedBy = []
         self.onDone = [] # Reference to the next Tasks
@@ -203,7 +203,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
                 tos.onDone.append(ContextObject(values[0], ctx.optTosStatement()))
         elif ctx.locationStatement():
             location = self.visitLocationStatement(ctx.locationStatement())
-            tos.location = ContextObject(location, ctx.locationStatement())
+            tos.locations.append(ContextObject(location, ctx.locationStatement()))
     
     # Visit a parse tree produced by TaskParser#Location Statement.
     def visitLocationStatement(self, ctx):

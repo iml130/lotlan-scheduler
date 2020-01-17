@@ -99,20 +99,26 @@ class SemanticValidator:
             else:
                 tosNameCounts[tos.name.value] = 1
 
-            self.checkLocation(tos)
+            self.checkLocations(tos)
             self.checkOnDone(tos, givenTree)
             self.checkExpressions(tos.triggeredBy) 
             self.checkExpressions(tos.finishedBy)
 
-    def checkLocation(self, tos):
-        locationName = tos.location.value
-        location = self.getInstance(locationName)
-        if location == None:
-            msg = "The location '{}' in TransportOrderStep '{}' could not be found".format(locationName, tos.name.value)
-            self.printError(msg, tos.location.context.start.line, tos.location.context.start.column, len(locationName))
-        elif location.templateName.value != "Location":
-            msg = "The instance '{}' in TransportOrderStep '{}' is not a Location Instance but an '{}' instance".format(locationName, tos.name.value, location.templateName.value)
-            self.printError(msg, tos.location.context.start.line, tos.location.context.start.column, len(locationName))
+    def checkLocations(self, tos):
+        if len(tos.locations) > 1:
+            msg = "There are more than one 'Location' definitions in TransportOrderStep '{}'".format(tos.name.value)
+            self.printError(msg, tos.name.context.start.line, tos.name.context.start.column, len(tos.name.value))
+        else:
+            location = tos.locations[0]
+            locationName = location.value
+            locationInstance = self.getInstance(locationName)
+
+            if locationInstance == None:
+                msg = "The location instance '{}' in TransportOrderStep '{}' could not be found".format(locationName, tos.name.value)
+                self.printError(msg, location.context.start.line, location.context.start.column, len(locationName))
+            elif locationInstance.templateName.value != "Location":
+                msg = "The instance '{}' in TransportOrderStep '{}' is not a 'Location' instance but a '{}' instance".format(locationName, tos.name.value, locationInstance.templateName.value)
+                self.printError(msg, location.context.start.line, location.context.start.column, len(locationName))
 
 
     # Task Check
@@ -123,7 +129,7 @@ class SemanticValidator:
             # Check if there is more than one task with the same name
             if taskNameCounts.get(task.name.value) != None:
                 msg = "Task name is already used by an other task".format()
-                self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.name))
+                self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.name.value))
             else:
                 taskNameCounts[task.name.value] = 1
 
@@ -139,40 +145,27 @@ class SemanticValidator:
             self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.name.value))
         elif len(task.transportOrders) == 1:
             # From check
-            if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[0].value.pickupFrom.value) == False:
+            if self.checkIfTosIsPresent(givenTree, task.transportOrders[0].value.pickupFrom.value) == False:
                 msg = "Task '{}' refers to an unknown TransportOrderStep in 'from': '{}' ".format(task.name.value, task.name.context.start.line, task.transportOrders[0].value.pickupFrom.value)
                 self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.transportOrders[0].value.pickupFrom.value))
             
             # To check
-            if self.checkIfTransportOrderStepsPresent(givenTree, task.transportOrders[0].value.deliverTo.value) == False:
-                msg = "Task '{}' refers to an unknown TransportOrderStep in TransportOrder '{}'".format(task.name.value, task.transportOrders[0].value.deliverTo.value)
+            if self.checkIfTosIsPresent(givenTree, task.transportOrders[0].value.deliverTo.value) == False:
+                msg = "Task '{}' refers to an unknown TransportOrderStep in 'to' '{}'".format(task.name.value, task.transportOrders[0].value.deliverTo.value)
                 self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.transportOrders[0].value.deliverTo.value))
-
-    def checkIfTaskPresent(self, givenTree, taskName):
-        for _tN in givenTree.taskInfos:
-            if taskName == _tN.value:
-                return True
-        return False
-
-    def checkIfTransportOrderStepsPresent(self, givenTree, instanceName):
-        for _iN in givenTree.transportOrderSteps:
-            if instanceName == _iN.value:
-                return True
-        return False
 
     def checkRepeat(self, task):
         if len(task.repeat) > 1:
             msg = "There are multiple Repeat definitions in Task '{}'".format(task.name.value)
             self.printError(msg, task.context.start.line, task.context.start.column, len(task.name.value))
 
-
-    # Help Functions
-    
-    def checkOnDone(self, task, givenTree):
-        for i in range(len(task.onDone)):
-            if self.checkIfTaskPresent(givenTree, task.onDone[i].value) == False:
-                msg = "Task '{}' refers to an unknown OnDone-Task '{}'".format(task.name.value, task.onDone[i].value)
-                self.printError(msg, task.name.context.start.line, task.name.context.start.column, 1) 
+    def checkOnDone(self, taskOrTos, givenTree):
+        if len(taskOrTos.onDone) > 1:
+            msg = "There is more than one 'OnDone' definition in '{}'".format(taskOrTos.name.value)
+            self.printError(msg, taskOrTos.name.context.start.line, taskOrTos.name.context.start.column, len(taskOrTos.name.value))
+        elif len(taskOrTos.onDone) == 1 and self.checkIfTaskIsPresent(givenTree, taskOrTos.onDone[0].value) == False:
+            msg = "The task name '{}' in the OnDone statement refers to an unknown Task".format(taskOrTos.onDone[0].value)
+            self.printError(msg, taskOrTos.onDone[0].context.start.line, taskOrTos.onDone[0].context.start.column, len(taskOrTos.onDone[0].value)) 
 
     def checkExpressions(self, expressions):
         for exp in expressions:
@@ -238,6 +231,9 @@ class SemanticValidator:
                 or self.strIsFloat(expression) 
                 or expression in ["True", "true", "False", "false"])
 
+
+    # Help Functions
+    
     # Get Template from given templateName
     def getTemplate(self, templates, templateName):
         for temp in self.templates.values():
@@ -278,6 +274,18 @@ class SemanticValidator:
                     return instance.keyval[key].value
         return None
         
+    def checkIfTosIsPresent(self, givenTree, instanceName):
+        for tos in givenTree.transportOrderSteps:
+            if instanceName == tos.value:
+                return True
+        return False
+
+    def checkIfTaskIsPresent(self, givenTree, instanceName):
+        for task in givenTree.taskInfos:
+            if instanceName == task.value:
+                return True
+        return False
+
     def strIsInt(self, str):
         try:
             int(str)
