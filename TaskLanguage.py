@@ -6,10 +6,14 @@ from CreateTreeTaskParserVisitor import CreateTreeTaskParserVisitor
 from os import listdir
 from os.path import isfile, join
 from contextlib import contextmanager
-
+import os
 import sys
 from SemanticValidator import SemanticValidator
 from ThrowErrorListener import ThrowErrorListener
+
+from os import walk
+from os.path import splitext, join
+
 
 TEST_FOLDER = "testfiles/"
 LOG_PATH = "logs/log.txt"
@@ -18,12 +22,13 @@ TEMPLATES_PATH = "templates.tl"
 def getFileNames(path):
     filenames = []
 
-    for f in listdir(path):
-        if isfile(join(path, f)):
-            # only add tasklanguage files
-            splittedString = f.split(".")
-            if len(splittedString) == 2 and splittedString[1] == "tl":
-                filenames.append(path + f)
+    for root, dirs, files in walk(path):
+        for file in files:
+            full_path = join(root, file)
+            ext = splitext(file)[1]
+
+            if ext == ".tl":
+                filenames.append(full_path)
 
     return filenames
 
@@ -47,7 +52,7 @@ def testFiles():
     #test valid files
     print("Valid files are tested now:\n")
     for validFile in validFilenames:
-        if testFile(validFile, False) == False:
+        if testFile(validFile, False, TEMPLATES_PATH) == False:
             print(validFile + " is a valid tasklanguage program and got an error!")
             testFailed = True
         else:
@@ -56,7 +61,7 @@ def testFiles():
     # test invalid files
     print("\nInvalid files are tested now:\n")
     for invalidFile in invalidFilenames:
-        if testFile(invalidFile, False) == True:
+        if testFile(invalidFile, False, TEMPLATES_PATH) == True:
             print(invalidFile + " is an invalid tasklanguage program and got no error!")
             testFailed = True
         else:
@@ -69,7 +74,7 @@ def testFiles():
     
     print("All tests passed!")
 
-def testFile(input, usedInExtension):
+def testFile(input, usedInExtension, templatePath = TEMPLATES_PATH):
     lexer = None
 
     # this checks wether the input is a String or a File to test
@@ -98,7 +103,7 @@ def testFile(input, usedInExtension):
         return False
     else:
         t = visitor.visit(tree)
-        templates = loadTemplates()
+        templates = loadTemplates(templatePath)
 
         semanticValidator = SemanticValidator(input, templates, usedInExtension)
         if semanticValidator.isValid(t) != True:
@@ -107,8 +112,8 @@ def testFile(input, usedInExtension):
             return True
 
 # templates definied in the task language are in a separate file
-def loadTemplates():
-    lexer = TaskLexer(InputStream(open(TEMPLATES_PATH).read()))
+def loadTemplates(path):
+    lexer = TaskLexer(InputStream(open(path).read()))
     tokenStream = CommonTokenStream(lexer)
     parser = TaskParser(tokenStream)
     tree = parser.program()
@@ -128,9 +133,10 @@ def main():
         else:
             testFile(sys.argv[1], False)
     # a file or string has been passed and the ext keyword so the script is called by the extension
-    elif len(sys.argv) == 3 and sys.argv[2] == "--ext":
-        testFile(sys.argv[1], True)
-
+    elif len(sys.argv) == 4 :
+        if sys.argv[2] == "--ext":
+            testFile(sys.argv[1], True, sys.argv[3])
+                
     # sys exit for pre-commit script
     sys.exit(0)
 
