@@ -1,0 +1,31 @@
+Location pickupItem
+    name = "s1_pickup"
+    type = "SmallLoadCarrier"
+end
+
+Location dropoffItem
+    name = "ws1_dropoff"
+    type = "SmallLoadCarrier"
+end
+
+TransportOrderStep loadStorage
+    Location pickupItem
+end
+
+TransportOrderStep unloadWorkstation1
+    Location dropoffItem
+    OnDone HelloTask
+    OnDone SameTask # error: there is already a OnDone statement
+end
+
+task HelloTask
+    Transport
+    from loadStorage
+    to unloadWorkstation1
+end
+
+task SameTask
+    Transport
+    from loadStorage
+    to unloadWorkstation1
+end
