@@ -1,23 +1,25 @@
-from antlr4 import *
-from TaskLexer import TaskLexer
-from TaskParserListener import TaskParserListener
-from TaskParser import TaskParser
-from CreateTreeTaskParserVisitor import CreateTreeTaskParserVisitor
-from os import listdir
-from os.path import isfile, join
-from contextlib import contextmanager
-import os
-import sys
-from SemanticValidator import SemanticValidator
-from ThrowErrorListener import ThrowErrorListener
+__author__ = "Maximilian Hörstrup"
+__version__ = "0.0.1"
+__maintainer__ = "Maximilian Hörstrup"
 
+# standard libraries
+import sys
 from os import walk
 from os.path import splitext, join
+from contextlib import contextmanager
 
+# 3rd party lib
+from antlr4 import *
 
-TEST_FOLDER = "testfiles/"
-LOG_PATH = "logs/log.txt"
-TEMPLATES_PATH = "templates.tl"
+# local sources
+from TaskLexer import TaskLexer
+from TaskParser import TaskParser
+from TaskParserListener import TaskParserListener
+from CreateTreeTaskParserVisitor import CreateTreeTaskParserVisitor
+from SemanticValidator import SemanticValidator
+from ThrowErrorListener import ThrowErrorListener
+# globals defines
+from defines import TEST_FOLDER, LOG_PATH, TEMPLATES_PATH
 
 def getFileNames(path):
     filenames = []

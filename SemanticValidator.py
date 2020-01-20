@@ -1,17 +1,20 @@
+__author__ = "Maximilian Hörstrup"
+__version__ = "0.0.1"
+__maintainer__ = "Maximilian Hörstrup"
+
+# local sources
 from CreateTreeTaskParserVisitor import CompleteProgram
 from CreateTreeTaskParserVisitor import Instance
 from CreateTreeTaskParserVisitor import TaskInfo
 from CreateTreeTaskParserVisitor import Template
 from CreateTreeTaskParserVisitor import TransportOrder
 
-import copy
-
 class SemanticValidator:
     def __init__(self, filePath, templates, usedInExtension):
         self.filePath = filePath
         self.templates = templates
         self.givenTree = None
-        self.errorCount = 0
+        self.valid = True
         self.usedInExtension = usedInExtension
 
     def isValid(self, givenTree):
@@ -22,7 +25,7 @@ class SemanticValidator:
         self.checkTransportOrderSteps(givenTree)
         self.checkTasks(givenTree)
 
-        if self.errorCount > 0:
+        if self.valid == False:
             return False
         return True
 
@@ -308,4 +311,5 @@ class SemanticValidator:
         else:
             print(msg)
             print("File '" + self.filePath + "', line " + str(line) + ":" + str(column))
-        self.errorCount = self.errorCount + 1
+
+        self.valid = False

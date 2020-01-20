@@ -1,6 +1,11 @@
-from antlr4 import *
-from antlr4.error.ErrorListener import ErrorListener
+__author__ = "Maximilian Hörstrup"
+__version__ = "0.0.1"
+__maintainer__ = "Maximilian Hörstrup"
+
+# local sources
 from antlr4.error.Errors import *
+from antlr4.error.ErrorListener import ErrorListener
+
 
 symbolicNames = {
     "STARTS_WITH_LOWER_C_STR"                                       : "a String that starts with a lowercase char",
@@ -18,15 +23,12 @@ class ThrowErrorListener(ErrorListener):
         super()
         self.lines = []
         self.isValid = True
-        self.errorCount = 0
         self.filePath = filePath
         self.usedInExtension = usedInExtension
         self.tokenStream = tokenStream
 
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         self.isValid = False
-        self.errorCount = self.errorCount + 1
-        
         # current input does not match with the expected token
         if isinstance(e, InputMismatchException):
             missingSymbol = e.getExpectedTokens().toString(recognizer.literalNames, recognizer.symbolicNames)
@@ -76,18 +78,6 @@ class ThrowErrorListener(ErrorListener):
                 
             self.printError(msg, line, column, offendingSymbolLength)
 
-    def printError(self, msg, line, column, offSymbolLength):
-        # python shell in extension parses print statements of python
-        if self.usedInExtension == True:
-            print(msg)
-            print(line)
-            print(column) # for ext: antlr starts at column 0, vs code at column 1
-            print(offSymbolLength)
-        else:
-            print(msg)
-            print("File '" + self.filePath + "', line " + str(line) + ":" + str(column))
-
-
     def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts, configs):
         self.isValid = False
         raise Exception("Task-Language could not be parsed")
@@ -99,3 +89,14 @@ class ThrowErrorListener(ErrorListener):
     def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction, configs):
         self.isValid = False
         raise Exception("Task-Language could not be parsed")
+
+    def printError(self, msg, line, column, offSymbolLength):
+        # python shell in extension parses print statements of python
+        if self.usedInExtension == True:
+            print(msg)
+            print(line)
+            print(column) # for ext: antlr starts at column 0, vs code at column 1
+            print(offSymbolLength)
+        else:
+            print(msg)
+            print("File '" + self.filePath + "', line " + str(line) + ":" + str(column))
