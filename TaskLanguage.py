@@ -7,6 +7,7 @@ import sys
 from os import walk
 from os.path import splitext, join
 from contextlib import contextmanager
+import codecs
 
 # 3rd party lib
 from antlr4 import *
@@ -81,7 +82,7 @@ def testFile(input, usedInExtension, templatePath = TEMPLATES_PATH):
 
     # this checks wether the input is a String or a File to test
     try:
-        languageFile = open(input, "r")
+        languageFile = codecs.open(input, "r", encoding = 'utf8')
         lexer = TaskLexer(InputStream(languageFile.read()))
     except IOError:
         lexer = TaskLexer(InputStream(input))
