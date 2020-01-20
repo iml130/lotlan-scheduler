@@ -98,5 +98,5 @@ class ThrowErrorListener(ErrorListener):
             print(column) # for ext: antlr starts at column 0, vs code at column 1
             print(offSymbolLength)
         else:
-            print(msg)
+            print(msg.encode('utf-8'))
             print("File '" + self.filePath + "', line " + str(line) + ":" + str(column))
