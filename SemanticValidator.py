@@ -146,7 +146,7 @@ class SemanticValidator:
         elif len(task.transportOrders) == 1:
             # From check
             if self.checkIfTosIsPresent(givenTree, task.transportOrders[0].value.pickupFrom.value) == False:
-                msg = "Task '{}' refers to an unknown TransportOrderStep in 'from': '{}' ".format(task.name.value, task.name.context.start.line, task.transportOrders[0].value.pickupFrom.value)
+                msg = "Task '{}' refers to an unknown TransportOrderStep in 'from': '{}' ".format(task.name.value, task.transportOrders[0].value.pickupFrom.value)
                 self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.transportOrders[0].value.pickupFrom.value))
             
             # To check
@@ -181,20 +181,19 @@ class SemanticValidator:
                 self.checkBinaryOperation(expression, context)
 
     def checkSingleExpression(self, expression, context):
-        # there is only a event instance check if its type is boolean
+        # there is only an event instance check if its type is boolean
         if self.isEventInstance(expression) == True:
             instance = self.getInstance(expression)
             if self.hasInstanceType(instance, "Boolean") == False:
                 msg = "'" + expression + "' has no booelan type so it cant get parsed as single statement"
                 self.printError(msg, context.start.line, context.start.column, 1)
-        else:
-            if self.isTimeInstance(expression) == False:
-                msg = "The given expression is not related to a time or event instance"
-                self.printError(msg, context.start.line, context.start.column, 1)
+        elif self.isTimeInstance(expression) == False:
+            msg = "The given expression is not related to a time or event instance"
+            self.printError(msg, context.start.line, context.start.column, 1)
 
     def checkUnaryOperation(self, expression, context):
         if self.isBooleanExpression(expression["value"]) == False:
-            msg = "'" + expression["value"] + "' is not a boolean so it cant get parsed as a single statement"
+            msg = "The given expression couldnt be resolved to a boolean so it cant get parsed as a single statement"
             self.printError(msg, context.start.line, context.start.column, len(expression["value"]))
 
     def checkBinaryOperation(self, expression, context):
@@ -208,7 +207,7 @@ class SemanticValidator:
             right = expression["right"]
             if self.isBooleanExpression(right) == False:
                 msg = "The right side is not a boolean"
-                self.printError(msg, context.start.line, context.start.column)
+                self.printError(msg, context.start.line, context.start.column, len(right))
 
     # Check if the given expression can be resolved to a boolean expression
     def isBooleanExpression(self, expression):
