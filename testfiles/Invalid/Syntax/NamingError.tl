@@ -3,7 +3,7 @@ Location pickupItem
     type = "SmallLoadCarrier"
 end
 
-Location dropoffItem
+location dropoffItem # the keyword 'Location' was spelled wrong
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
 end
@@ -12,18 +12,13 @@ TransportOrderStep loadStorage
     Location pickupItem
 end
 
-TransportOrderStep unloadWorkstation
+
+TransportOrderStep unloadWorkstation # the keyword 'TransportOrderStep' was spelled wrong
     Location dropoffItem
 end
 
-task HelloTask
-    Transport
-    from loadStorage
-    to unloadWorkstation
-    OnDone HelloTask22  # error: the task name was spelled wrong so the validator cant find the correct instance
-end
 
-task HelloTask2
+task helloTask # the keyword 'task' was spelled wrong
     Transport
     from loadStorage
     to unloadWorkstation

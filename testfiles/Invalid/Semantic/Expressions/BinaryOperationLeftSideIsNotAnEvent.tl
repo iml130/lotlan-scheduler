@@ -5,9 +5,10 @@ end
 
 Event event
     name = "event"
-    type = "boolean"
+    type = "Boolean"
 end
 
 TransportOrderStep loadStorage
-    Location event # error: an event instance is used as location
+    Location pickupItem
+    TriggeredBy pickupItem == 10 # error: left side is not an event instance
 end

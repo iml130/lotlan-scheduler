@@ -3,7 +3,7 @@ Location pickupItem
     type = "SmallLoadCarrier"
 end
 
-new Locatio dropoffItem # the keyword 'Location' was spelled wrong
+Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
 end
@@ -12,14 +12,15 @@ TransportOrderStep loadStorage
     Location pickupItem
 end
 
-
-TransportOrderStep unloadWorkstation # the keyword 'TransportOrderStep' was spelled wrong
+TransportOrderStep unloadWorkstation1
     Location dropoffItem
+    
 end
 
-
-task helloTask # the keyword 'task' was spelled wrong
+task HelloTask
     Transport
     from loadStorage
-    to unloadWorkstation
+    to unloadWorkstation1
+
+    OnDone HelloTask1 # error task 'HelloTask1' doesnt exist 
 end
