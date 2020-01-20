@@ -11,3 +11,6 @@ test:
   stage: test
   script:
     - python TaskLanguage.py --test
+  tags:
+    - asprunner
+
