@@ -6,17 +6,8 @@ __maintainer__ = "Maximilian Hörstrup"
 from antlr4.error.Errors import *
 from antlr4.error.ErrorListener import ErrorListener
 
-
-symbolicNames = {
-    "STARTS_WITH_LOWER_C_STR"                                       : "a String that starts with a lowercase char",
-    "STARTS_WITH_UPPER_C_STR"                                       : "a String that starts with a uppercase char",
-    '{STRING_VALUE, NUMERIC_VALUE, \'""\'}'                         : "a value (String, number, nothing)",
-    "EQUAL"                                                         : "an equal literal",
-    "{'(', '!', E_ATTRIBUTE, E_TRUE, E_FALSE, E_INTEGER, E_FLOAT}"  : "a condition",
-    "TO"                                                            : "a to",
-    "FROM"                                                          : "a from",
-    "INDENTATION"                                                   : "an indentation",
-}
+# globals defines
+from defines import SYMBOLIC_NAMES
 
 class ThrowErrorListener(ErrorListener):
     def __init__(self, filePath, usedInExtension, tokenStream):
@@ -27,18 +18,39 @@ class ThrowErrorListener(ErrorListener):
         self.usedInExtension = usedInExtension
         self.tokenStream = tokenStream
 
+
+    # if there are more than one possible symbol that can be used 
+    # antlr produces a string in the format: {token1, token2, ..}
+    def parseExpectedSymbols(self, symbolString):
+        if symbolString.startswith("{") and symbolString.endswith("}"):
+            tokens = symbolString.split(",")
+
+            outputString = ""
+            for token in tokens:
+                token = token.replace(' ', '').replace("{", "").replace("}", "")
+                symbol = SYMBOLIC_NAMES.get(token)
+                if symbol:
+                    outputString += symbol + " or "
+                else:
+                    outputString += token + " or "
+            outputString = outputString[:-4] # remove last or
+            return outputString
+        else:
+            symbol = SYMBOLIC_NAMES.get(symbolString)
+            if symbol:
+                return symbol
+            else:
+                return symbolString
+
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
         self.isValid = False
         # current input does not match with the expected token
         if isinstance(e, InputMismatchException):
-            missingSymbol = e.getExpectedTokens().toString(recognizer.literalNames, recognizer.symbolicNames)
+            missingSymbol = e.getExpectedTokens().toString(recognizer.symbolicNames, recognizer.literalNames)
 
-            symbolDescription = symbolicNames.get(missingSymbol)
-            msg = ""
-            if symbolDescription:
-                msg = "Expecting " + symbolicNames[missingSymbol] + "'"
-            else:
-                msg = "Expecting symbol '" + missingSymbol + "'"
+            symbolDescription = self.parseExpectedSymbols(missingSymbol)
+
+            msg = "expected " + symbolDescription
 
             offendingSymbolLength = len(offendingSymbol.text)
     
@@ -67,6 +79,23 @@ class ThrowErrorListener(ErrorListener):
             offendingSymbolLength = len(offendingSymbol.text)
             
             self.printError(msg, line, column, offendingSymbolLength)
+
+        # those errors dont throw an exception so check it like this
+        elif msg.startswith("extraneous input"):
+            offendingSymbol = msg.split("'")[1]
+            startIndex = msg.find("expecting") + len("expecting") + 1
+            endIndex = len(msg)
+            expectedSymbol = msg[startIndex : endIndex]
+
+            symbolDescription = self.parseExpectedSymbols(expectedSymbol)
+            msg = "Wrong symbol '" + offendingSymbol + "' used. Expected " + symbolDescription
+
+            self.printError(msg, line, column, len(offendingSymbol))
+        elif msg.startswith("missing"):
+            missingSymbol = msg.split(" ")[1]
+            symbolDescription = self.parseExpectedSymbols(missingSymbol)
+            msg = "Missing " + symbolDescription
+            self.printError(msg, line, column, 1)
         else:
             offendingSymbolLength = len(offendingSymbol.text)
 

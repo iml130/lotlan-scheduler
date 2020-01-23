@@ -6,6 +6,7 @@ __maintainer__ = "Maximilian Hörstrup"
 from defines import TEMPLATES_PATH
 
 import TaskLanguageTest
+import sys
 
 def main():
     # command line arguments: 
