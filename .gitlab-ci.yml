@@ -13,7 +13,7 @@ stages:
 test:
   stage: test
   script:
-    - python3 TaskLanguage.py --test
+    - python3 TaskLanguageTest.py
   tags:
     - asprunner
 
