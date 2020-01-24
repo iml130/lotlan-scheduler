@@ -5,18 +5,18 @@ Location pickupItem
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-# error: missing end
+# error: missing End
 
 TransportOrderStep loadStorage
     Location pickupItem 
-end
+End
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
-# error: missing end
+# error: missing End
 
-task HelloTask
+Task helloTask
     Transport
-    from loadStorage
-    to unloadWorkstation1
-# error: missing end
+    From loadStorage
+    To unloadWorkstation1
+# error: missing End

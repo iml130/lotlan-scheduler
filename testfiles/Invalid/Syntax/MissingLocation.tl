@@ -1,18 +1,18 @@
 Location pickupItem
     name            # errorsdfasd asd fasdf asdfa 
     type = "SmallLoadCarrier"
-end
+End
 
 TransportOrderStep loadStorage
     Location pickupItem 
-end
+End
 
 TransportOrderStep unloadWorkstation1
     Location # error: there is no location given for 'Location'
-end
+End
 
-task HelloTask
+Task helloTask
     Transport
-    from loadStorage
-    to unloadWorkstation1
-end
+    From loadStorage
+    To unloadWorkstation1
+End

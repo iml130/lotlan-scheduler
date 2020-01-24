@@ -1,29 +1,29 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Location dropoffItem
     name = "w?s1_dropoff" #error: '?' is not a valid character for the name attribute
     type = "SmallLoadCarrier"
-end
+End
 
 TransportOrderStep loadStorage
     Location pickupItem 
-end
+End
 
 TransportOrderStep unloadWorkstation1§
     Location !!dropoffItem # error: '!' is not a valid character for an instance name
-end
+End
 
 Event triggerGetNewMaterial.. # error: '.' is not a valid character for an instance name
     name = "virtualSensorNewMaterialToWs1"
     type = "Boolean"
-end
+End
 
 
-task HelloTask
+Task helloTask
     Transport 
-    from loadStorage
-    to UnloadWorkstation1 # error: instance names has to start with an lowercase char
-end
+    From loadStorage
+    To UnloadWorkstation1 # error: instance names has to start with an lowercase char
+End

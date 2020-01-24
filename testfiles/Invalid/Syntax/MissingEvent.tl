@@ -1,30 +1,30 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 Event triggerGetNewMaterial
     name = "virtualSensorNewMaterialToWs1"
     type = "Boolean"
-end
+End
 
 TransportOrderStep loadStorage
     Location pickupItem
-end
+End
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
     TriggeredBy # error: there is no event given for 'Triggered By'
-end
+End
 
-task HelloTask
+Task helloTask
     TriggeredBy triggerGetNewMateria == True
     Transport
-    from loadStorage
-    to unloadWorkstation1
-end
+    From loadStorage
+    To unloadWorkstation1
+End

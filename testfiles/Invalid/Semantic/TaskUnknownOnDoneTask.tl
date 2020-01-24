@@ -1,26 +1,26 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 TransportOrderStep loadStorage
     Location pickupItem
-end
+End
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
     
-end
+End
 
-task HelloTask
+Task helloTask
     Transport
-    from loadStorage
-    to unloadWorkstation1
+    From loadStorage
+    To unloadWorkstation1
 
-    OnDone HelloTask1 # error task 'HelloTask1' doesnt exist 
-end
+    OnDone helloTask1 # error task 'HelloTask1' doesnt exist 
+End

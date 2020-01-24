@@ -1,8 +1,8 @@
 Event event
     name = "event"
     type = "NotABoolean"
-end
+End
 
-task LoadStorage
+Task loadStorage
     TriggeredBy event # error: expression is not an event instance
-end
+End

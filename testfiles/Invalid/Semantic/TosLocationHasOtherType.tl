@@ -1,13 +1,13 @@
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 Event event
     name = "event"
     type = "Boolean"
-end
+End
 
 TransportOrderStep loadStorage
     Location event
-end
+End

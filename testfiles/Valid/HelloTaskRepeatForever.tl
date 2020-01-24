@@ -1,25 +1,25 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 
 TransportOrderStep loadStorage
     Location pickupItem  # Only one Location can be defined!
-end
+End
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
-end
+End
 
-task HelloTask
+Task helloTask
     Transport
-    from loadStorage
-    to unloadWorkstation1
-    OnDone HelloTask
-end
+    From loadStorage
+    To unloadWorkstation1
+    OnDone helloTask
+End

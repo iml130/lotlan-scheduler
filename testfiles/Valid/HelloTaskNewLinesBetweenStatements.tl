@@ -7,7 +7,7 @@ Location pickupItem
 
 
     type = "SmallLoadCarrier"
-end
+End
 
 
 
@@ -18,44 +18,44 @@ Location dropoffItem
     name = "ws1_dropoff"
 
     type = "SmallLoadCarrier"
-end
+End
 
 Event event
     name = "event1"
     type = "Integer"
-end
+End
 
 TransportOrderStep loadStorage
     Location pickupItem 
-end
+End
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
 
 
-    OnDone HelloTask
+    OnDone helloTask
 
     TriggeredBy event = 5
 
 
     
-end
+End
 
 
 
 
-task HelloTask
+Task helloTask
     Transport
-    from loadStorage
-    to unloadWorkstation1
+    From loadStorage
+    To unloadWorkstation1
 
     TriggeredBy event = 5
 
     
-    OnDone Task2
+    OnDone task2
 
 
-end
+End
 
-task Task2
+Task task2
     TriggeredBy	event = 5
-end
+End

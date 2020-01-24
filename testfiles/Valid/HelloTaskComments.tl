@@ -4,31 +4,31 @@
 Location pickupItem #block starts
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 # this defines a location
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 ######
 ## Multiline comments with multiple #
 #######
 TransportOrderStep loadStorage
     Location pickupItem  # Only one Location can be defined!
-end
+End
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
     #Comment before statement: TriggeredBy event
-end
+End
 
-task HelloTask
+Task helloTask
     Transport #transport
-    from loadStorage #from
-    to unloadWorkstation1 #to
+    From loadStorage #from
+    To unloadWorkstation1 #to
 
     # on done
-    OnDone HelloTask
-end #end of program
+    OnDone helloTask
+End #end of program

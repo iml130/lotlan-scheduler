@@ -1,17 +1,17 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Event event
     name = "event"
     type = "Boolean"
-end
+End
 
 Time time
     timing = "30 12 * * *"
-end
+End
 
-task LoadStorage
+Task loadStorage
     TriggeredBy pickupItem # error: expression is not an event instance
-end
+End

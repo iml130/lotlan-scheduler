@@ -1,12 +1,12 @@
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 TransportOrderStep loadStorage
     Location dropoffItem 
-end
+End
 
 TransportOrderStep loadStorage
     Location dropoffItem
-end
+End

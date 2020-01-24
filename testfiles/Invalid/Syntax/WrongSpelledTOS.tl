@@ -1,23 +1,23 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 TransportOrderStep loadStorage
     Location pickupItem 
-end
+End
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
-end
+End
 
-task HelloTask
+Task helloTask
     Transport
-    From loadStorage # 'From' is not correct it has to be 'from'
-    to unloadWorkstation
-end
+    from loadStorage # 'from' is not correct it has to be 'From'
+    To unloadWorkstation
+End

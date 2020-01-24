@@ -1,25 +1,25 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 location dropoffItem # the keyword 'Location' was spelled wrong
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 TransportOrderStep loadStorage
     Location pickupItem
-end
+End
 
 
-TransportOrderStep unloadWorkstation # the keyword 'TransportOrderStep' was spelled wrong
+TransportOrderStepp unloadWorkstation # the keyword 'TransportOrderStep' was spelled wrong
     Location dropoffItem
-end
+End
 
 
-task helloTask # the keyword 'task' was spelled wrong
+Taskk helloTask # the keyword 'Task' was spelled wrong
     Transport
-    from loadStorage
-    to unloadWorkstation
-end
+    From loadStorage
+    To unloadWorkstation
+End

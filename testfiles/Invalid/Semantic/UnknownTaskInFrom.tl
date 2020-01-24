@@ -1,23 +1,23 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 TransportOrderStep loadStorage
     Location pickupItem 
-end
+End
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
-end
+End
 
-task HelloTask
+Task helloTask
     Transport
-    from loadStorage1 # error: there is no 'loadStorage1' instance
-    to unloadWorkstation1
-end
+    From loadStorage1 # error: there is no 'loadStorage1' instance
+    To unloadWorkstation1
+End

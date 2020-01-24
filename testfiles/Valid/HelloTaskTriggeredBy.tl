@@ -1,36 +1,36 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 Event triggerGetNewMaterial
     name = "virtualSensorNewMaterialToWs1"
     type = "Boolean"
-end
+End
 
 Event triggerGetNewMaterial2
     name = "virtualSensorNewMaterialToWs2"
     type = "Boolean"
-end
+End
 
 
 TransportOrderStep loadStorage
     Location pickupItem  # Only one Location can be defined!
-end
+End
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
-end
+End
 
-task HelloTask
+Task helloTask
     TriggeredBy triggerGetNewMaterial == True
     TriggeredBy triggerGetNewMaterial2 == True
     Transport
-    from loadStorage
-    to unloadWorkstation1
-end
+    From loadStorage
+    To unloadWorkstation1
+End

@@ -1,31 +1,31 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Event event
     name = "event"
     type = "Boolean"
-end
+End
 
 Event event2
     name = "event2"
     type = "Integer"
-end
+End
 
 Time time
     timing = "30 12 * * *"
-end
+End
 
 TransportOrderStep loadStorage
     Location pickupItem
     TriggeredBy time
     TriggeredBy	event == True
     FinishedBy event2 >= 5
-end
+End
 
 TransportOrderStep unloadWorkstation1
     Location pickupItem
     TriggeredBy	event
     FinishedBy !event
-end
+End

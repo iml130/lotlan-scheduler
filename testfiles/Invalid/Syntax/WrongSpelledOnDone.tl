@@ -1,30 +1,30 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
-end
+End
 
 TransportOrderStep loadStorage
     Location pickupItem
-end
+End
 
 TransportOrderStep unloadWorkstation
     Location dropoffItem
-end
+End
 
-task HelloTask
+Task helloTask
     Transport
-    from loadStorage
-    to unloadWorkstation
-    onDone HelloTask22  # error: 'onDone' is not correct it has to be 'OnDone'
-end
+    From loadStorage
+    To unloadWorkstation
+    onDone helloTask22  # error: 'onDone' is not correct it has to be 'OnDone'
+End
 
-task HelloTask2
+Task helloTask2
     Transport
-    from loadStorage
-    to unloadWorkstation
-end
+    From loadStorage
+    To unloadWorkstation
+End
