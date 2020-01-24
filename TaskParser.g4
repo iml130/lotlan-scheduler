@@ -48,14 +48,14 @@ eventStatement:
     INDENTATION (TRIGGERED_BY | FINISHED_BY) expression E_NL_IN_EXPRESSION NEW_LINE*;
 
 onDoneStatement:
-    INDENTATION ON_DONE STARTS_WITH_UPPER_C_STR NEW_LINE+;
+    INDENTATION ON_DONE STARTS_WITH_LOWER_C_STR NEW_LINE+;
 
 // Task Layout
 task:
     taskStart taskStatement+ END_IN_BLOCK;
 
 taskStart:
-    TASK STARTS_WITH_UPPER_C_STR NEW_LINE+;
+    TASK STARTS_WITH_LOWER_C_STR NEW_LINE+;
 
 taskStatement:
     transportOrder 

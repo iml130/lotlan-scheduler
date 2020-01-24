@@ -1,7 +1,7 @@
 lexer grammar TaskLexer;
 
-TEMPLATE: 'template ' STARTS_WITH_UPPER_C_STR-> pushMode(BLOCK);
-TASK: 'task ' -> pushMode(BLOCK);
+TEMPLATE: 'Template ' STARTS_WITH_UPPER_C_STR-> pushMode(BLOCK);
+TASK: 'Task ' -> pushMode(BLOCK);
 TRANSPORT_ORDER_STEP: 'TransportOrderStep ' -> pushMode(BLOCK);
 INSTANCE: STARTS_WITH_UPPER_C_STR ' ' -> pushMode(BLOCK);
 
@@ -18,7 +18,7 @@ COMMENT_IN_BLOCK : WHITESPACE_BLOCK '#' ~[\n]+  -> channel(HIDDEN);
 COMMENT_LINE_IN_BLOCK : INDENTATION '#' ~[\n]+ '\n'-> channel(HIDDEN);
 
 EQUAL: WHITESPACE_BLOCK '=' WHITESPACE_BLOCK;
-END_IN_BLOCK: 'end' -> popMode;
+END_IN_BLOCK: 'End' -> popMode;
 
 // Only For TransportOrderStep
 LOCATION: 'Location' WHITESPACE_BLOCK;
@@ -29,8 +29,8 @@ REPEAT_TIMES: [0-9]+ WHITESPACE_BLOCK;
 
 // Transport Order used in Task
 TRANSPORT: 'Transport';
-FROM: 'from' WHITESPACE_BLOCK;
-TO: 'to' WHITESPACE_BLOCK;
+FROM: 'From' WHITESPACE_BLOCK;
+TO: 'To' WHITESPACE_BLOCK;
 
 // Used in both TOS and Task
 ON_DONE: 'OnDone' WHITESPACE_BLOCK;

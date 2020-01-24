@@ -225,7 +225,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
             return (self.visitExpression(ctx.expression()), OptType.FINISHED_BY)
 
     def visitOnDoneStatement(self, ctx):
-        return (ctx.STARTS_WITH_UPPER_C_STR().getText(), OptType.ON_DONE)
+        return (ctx.STARTS_WITH_LOWER_C_STR().getText(), OptType.ON_DONE)
 
     # Visit a parse tree produced by TaskParser.
     def visitTask(self, ctx):
@@ -239,7 +239,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
     # Visit a parse tree produced by TaskParser#taskStart.
     def visitTaskStart(self, ctx):
-        return ContextObject(ctx.STARTS_WITH_UPPER_C_STR().getText(), ctx)
+        return ContextObject(ctx.STARTS_WITH_LOWER_C_STR().getText(), ctx)
 
     # Visit a parse tree produced by TaskParser#taskStatement.
     def visitTaskStatement(self, ctx, taskInfo):

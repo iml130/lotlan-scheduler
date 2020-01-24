@@ -1,13 +1,13 @@
-template Location
+Template Location
     name = ""
     type = ""
-end
+End
 
-template Event
+Template Event
     name = ""
     type = ""
-end
+End
 
-template Time
+Template Time
     timing = ""
-end
+End
