@@ -137,10 +137,12 @@ class SemanticValidator:
                 taskNameCounts[task.name.value] = 1
 
             self.checkTransportOrders(task, givenTree)
+
+            self.checkRepeatOrOnDone(task)
             self.checkOnDone(task, givenTree)
+            self.checkRepeat(task)
             self.checkExpressions(task.triggeredBy)
             self.checkExpressions(task.finishedBy)
-            self.checkRepeat(task)
 
     def checkTransportOrders(self, task, givenTree):
         if len(task.transportOrders) > 1:
@@ -169,6 +171,11 @@ class SemanticValidator:
         elif len(taskOrTos.onDone) == 1 and self.checkIfTaskIsPresent(givenTree, taskOrTos.onDone[0].value) == False:
             msg = "The task name '{}' in the OnDone statement refers to an unknown Task".format(taskOrTos.onDone[0].value)
             self.printError(msg, taskOrTos.onDone[0].context.start.line, taskOrTos.onDone[0].context.start.column, len(taskOrTos.onDone[0].value)) 
+
+    def checkRepeatOrOnDone(self, task):
+        if len(task.repeat) > 0 and len(task.onDone) > 0:
+            msg = "The task '{}' has both OnDone and Repeat statements. It is only allowed to have either of them".format(task.name.value)
+            self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.name.value))
 
     def checkExpressions(self, expressions):
         for exp in expressions:
