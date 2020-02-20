@@ -14,8 +14,8 @@ End
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
-    OnDone HelloTask
-    OnDone SameTask # error: there is already a OnDone statement
+    OnDone helloTask
+    OnDone sameTask # error: there is already a OnDone statement
 End
 
 Task helloTask

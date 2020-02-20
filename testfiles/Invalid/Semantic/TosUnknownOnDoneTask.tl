@@ -17,7 +17,7 @@ TransportOrderStep unloadWorkstation1
     OnDone helloTask2 # error: the given tasks doesnt exist
 End
 
-Task HelloTask
+Task helloTask
     Transport
     From loadStorage
     To unloadWorkstation1
