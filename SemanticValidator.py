@@ -16,6 +16,7 @@ class SemanticValidator:
         self.givenTree = None
         self.valid = True
         self.usedInExtension = usedInExtension
+        self.errorCount = 0
 
     def isValid(self, givenTree):
         self.givenTree = givenTree
@@ -319,4 +320,5 @@ class SemanticValidator:
             print(msg)
             print("File '" + self.filePath + "', line " + str(line) + ":" + str(column))
 
+        self.errorCount = self.errorCount + 1
         self.valid = False

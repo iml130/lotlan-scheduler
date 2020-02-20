@@ -11,6 +11,7 @@ import codecs
 
 # 3rd party lib
 from antlr4 import *
+from tabulate import tabulate
 
 # local sources
 from TaskLexer import TaskLexer
@@ -22,6 +23,11 @@ from ThrowErrorListener import ThrowErrorListener
 
 # globals defines
 from defines import TEST_FOLDER, LOG_PATH, TEMPLATES_PATH
+
+class ErrorInformation(object):
+    def __init__(self, syntaxErrorCount, semanticErrorCount):
+        self.syntaxErrorCount = syntaxErrorCount
+        self.semanticErrorCount = semanticErrorCount
 
 def getFileNames(path):
     filenames = []
@@ -53,31 +59,62 @@ def testFiles():
 
     testFailed = False
 
+    testResults = []
+
     #test valid files
     print("Valid files are tested now:\n")
+
+    count = 1
     for validFile in validFilenames:
-        if testFile(validFile, TEMPLATES_PATH) == False:
-            print(validFile + " is a valid tasklanguage program and got an error!")
+        errorInformation = testFile(validFile, TEMPLATES_PATH)
+        syntaxErrors = errorInformation.syntaxErrorCount
+        semanticErrors = errorInformation.semanticErrorCount
+        errorCount =  syntaxErrors + semanticErrors
+        if  errorCount != 0:
+            testResults.append((count, validFile, "0 , 0", str(syntaxErrors) + " , " + str(semanticErrors), False))
             testFailed = True
         else:
-            print(validFile + " passed the Test!");
+            testResults.append((count, validFile, "0 , 0", "0 , 0", True))
+        count = count + 1
+
+    testResults.append(("------", "--------------------", "------------", "-----", "-----"))
 
     # test invalid files
     print("\nInvalid files are tested now:\n")
+
     for invalidFile in invalidFilenames:
-        if testFile(invalidFile, TEMPLATES_PATH) == True:
-            print(invalidFile + " is an invalid tasklanguage program and got no error!")
-            testFailed = True
+        errorInformation = testFile(invalidFile, TEMPLATES_PATH)
+        syntaxErrors = errorInformation.syntaxErrorCount
+        semanticErrors = errorInformation.semanticErrorCount
+        errorCount =  syntaxErrors + semanticErrors
+
+        expectedErrorsString = ""
+
+        if "Semantic" in invalidFile:
+            expectedErrorsString = "0 , 1"
+            if syntaxErrors == 0 and semanticErrors == 1:
+                testResults.append((count, invalidFile, expectedErrorsString, "0 , 1", True))
+            else:
+                testResults.append((count, invalidFile, expectedErrorsString, str(syntaxErrors) + " , " + str(semanticErrors), False))
+                testFailed = True
         else:
-            print(invalidFile + " passed the Test!");
+            expectedErrorsString = ">0 , 0"
+            if syntaxErrors > 0:
+                testResults.append((count, invalidFile, expectedErrorsString,str(syntaxErrors) + " , 0", True))
+            else:
+                testResults.append((count, invalidFile, expectedErrorsString, "0 , " + str(semanticErrors), False))
+                testFailed = True
+
         print("\n")
+        count = count + 1
+
+    print(tabulate(testResults, headers = ["Test Nr.", "Test Name", "Expected error count (syntax , semantic)", "Error count", "Has passed"], tablefmt="orgtbl"))
 
     # pre-commit script checks if there was errors (checks for return value 1)
     if testFailed == True:
-        sys.exit(1)
-    
-    print("All tests passed!")
+        sys.exit(1) 
 
+# returns errocount
 def testFile(input, templatePath, usedInExtension = False):
     lexer = None
 
@@ -104,16 +141,16 @@ def testFile(input, templatePath, usedInExtension = False):
     visitor = CreateTreeTaskParserVisitor()
 
     if errorListener.isValid == False:
-        return False
+        return ErrorInformation(errorListener.errorCount, 0)
     else:
         t = visitor.visit(tree)
         templates = loadTemplates(templatePath)
 
         semanticValidator = SemanticValidator(input, templates, usedInExtension)
-        if semanticValidator.isValid(t) != True:
-            return False
-        else:
-            return True
+        if semanticValidator.isValid(t) == False:
+            return ErrorInformation(0, semanticValidator.errorCount)
+        return ErrorInformation(0, 0)
+        
 
 # templates definied in the task language are in a separate file
 def loadTemplates(path):

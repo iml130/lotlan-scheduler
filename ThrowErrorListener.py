@@ -17,6 +17,7 @@ class ThrowErrorListener(ErrorListener):
         self.filePath = filePath
         self.usedInExtension = usedInExtension
         self.tokenStream = tokenStream
+        self.errorCount = 0
 
 
     # if there are more than one possible symbol that can be used 
@@ -129,3 +130,4 @@ class ThrowErrorListener(ErrorListener):
         else:
             print(msg)
             print("File '" + self.filePath + "', line " + str(line) + ":" + str(column))
+        self.errorCount = self.errorCount + 1
