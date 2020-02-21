@@ -57,13 +57,10 @@ def testFiles():
     validFilenames = getFileNames(TEST_FOLDER + "Valid/")
     invalidFilenames = getFileNames(TEST_FOLDER + "Invalid/")
 
-    testFailed = False
-
+    failedTests = 0
     testResults = []
 
-    #test valid files
-    print("Valid files are tested now:\n")
-
+    print("Error messages of tests: \n")
     count = 1
     for validFile in validFilenames:
         errorInformation = testFile(validFile, TEMPLATES_PATH)
@@ -72,15 +69,12 @@ def testFiles():
         errorCount =  syntaxErrors + semanticErrors
         if  errorCount != 0:
             testResults.append((count, validFile, "0 , 0", str(syntaxErrors) + " , " + str(semanticErrors), False))
-            testFailed = True
+            failedTests = failedTests + 1
         else:
             testResults.append((count, validFile, "0 , 0", "0 , 0", True))
         count = count + 1
 
-    testResults.append(("------", "--------------------", "------------", "-----", "-----"))
-
-    # test invalid files
-    print("\nInvalid files are tested now:\n")
+    testResults.append(("------", "-----------------------------------------", "-----", "-----", "-----"))
 
     for invalidFile in invalidFilenames:
         errorInformation = testFile(invalidFile, TEMPLATES_PATH)
@@ -96,22 +90,24 @@ def testFiles():
                 testResults.append((count, invalidFile, expectedErrorsString, "0 , 1", True))
             else:
                 testResults.append((count, invalidFile, expectedErrorsString, str(syntaxErrors) + " , " + str(semanticErrors), False))
-                testFailed = True
+                failedTests = failedTests + 1
         else:
             expectedErrorsString = ">0 , 0"
             if syntaxErrors > 0:
                 testResults.append((count, invalidFile, expectedErrorsString,str(syntaxErrors) + " , 0", True))
             else:
                 testResults.append((count, invalidFile, expectedErrorsString, "0 , " + str(semanticErrors), False))
-                testFailed = True
+                failedTests = failedTests + 1
 
         print("\n")
         count = count + 1
 
+    testCount = len(validFilenames) + len(invalidFilenames)
     print(tabulate(testResults, headers = ["Test Nr.", "Test Name", "Expected error count (syntax , semantic)", "Error count", "Has passed"], tablefmt="orgtbl"))
+    print("Tests passed: {} of {}".format(testCount - failedTests, testCount))
 
     # pre-commit script checks if there was errors (checks for return value 1)
-    if testFailed == True:
+    if failedTests > 0:
         sys.exit(1) 
 
 # returns errocount
