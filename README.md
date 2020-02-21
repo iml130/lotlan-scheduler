@@ -437,34 +437,34 @@ Regex: ```[A-Z][a-zA-Z0-9_]*```
 
 ### Template
 
-Every *Template* definition starts with a *template* String. The *template* name has to be an *Uppercase String*.
+Every *Template* definition starts with a *Template* String. The *Template* name has to be an *Uppercase String*.
 
 #### Examples
 
 Valid Program:
 ```
-template Location
+Template Location
     type = ""
     name = ""
-end
+End
 ```
 
 Invalid Program:
 ```
-template Location!!
+Template Location!!
     type = ""
     name = ""
-end
+End
 
-template location2
+Template location2
     type = ""
     name = ""
-end
+End
 ```
 
 ### Instance
 
-Every *Instance* definition of a *template* type starts with an *Uppercase String* to indicate from which *template* we want to create an *instance*. The name of the *instance* have to be written as *Lowercase String*.
+Every *Instance* definition of a *Template* type starts with an *Uppercase String* to indicate from which *Template* we want to create an *Instance*. The name of the *Instance* have to be written as *Lowercase String*.
 
 #### Examples
 
@@ -518,8 +518,8 @@ end
 ```
 
 ### TransportOrderStep
-A *TransportOrderStep* contains the statements *Location*, *Triggered By* or *Finished By*. The *instance* names should match the corresponding *instance* so they are *Lowercase Strings* too. \
-With the *OnDone* Keyword you define a follow up *task* so the taskname should match the corresponding *task* so its an *Uppercase String*. \
+A *TransportOrderStep* contains the statements *Location*, *Triggered By* or *Finished By*. The *Instance* names should match the corresponding *Instance* so they are *Lowercase Strings* too. \
+With the *OnDone* Keyword you define a follow up *Task* so the task name should match the corresponding *Task* which is an *Lowercase String*. \
 *TriggeredBy* and *FinishedBy* use expressions. To learn more about valid expressions goto [this section](#expressions)
 
 #### Examples
@@ -530,7 +530,7 @@ TransportOrderStep t1
     Location testitest
     TriggeredBy mitarbeiterButtonDasErFertigIst
     FinishedBy abc == bce < 5
-    OnDone Task
+    OnDone task
 end
 ```
 
@@ -540,7 +540,7 @@ TransportOrderStep t1
     MyLocation testitest
     TriggeredBy mitarbeiterButtonDasErFertigIst
     FinishedBy abc == bce < 5
-    OnDone Task
+    OnDone task
 end
 
 TransportOrderStep t2
@@ -552,41 +552,41 @@ end
 ```
 
 ### Task
-*Transport*, *from* and *to* are fixed Keywords. The names of the locations (*from* and *to*) need to be the same as the corresponding locations so they are *Lowercase Strings*.
+*Transport*, *From* and *To* are fixed Keywords. The names of the locations (*From* and *To*) need to be the same as the corresponding locations so they are *Uppercase Strings*.
 There are the same optional statements as in TransportOrderStep (Triggeredby, ...)
 
 #### Examples
 
 Valid Program:
 ```
-task Transport_Task
+Task transport_Task
     Transport 
-    from        t1
-    to          warehouse
+    From        t1
+    To          warehouse
     TriggeredBy palette_1Full == TRUE
-end
+End
 ```
 
 Invalid Program:
 ```
-task Transport_Task
+Task transport_Task
     Transport 
     TriggeredBy palette_1Full == TRUE
-    from        t1
-    to          warehouse
-end
+    From        t1
+    To          warehouse
+End
 
-task Transport_Task2
+Task transport_Task2
     Transport 
-    to          warehouse
-    from        t1  
-end
+    To          warehouse
+    From        t1  
+End
 
-task Transport_Task3
+Task transport_Task3
     Transport 
     From        t1
     To          warehouse
-end
+End
 ```
 
 ### Expressions
@@ -621,14 +621,11 @@ Invalid Program:
 ```
 task Transport_Task
 	TriggeredBy	palette_1Full = TRUE
-	TriggeredBy	Palette_2Full == FALSE
-	TriggeredBy	palette_3Full == !12 || 42.42 <== 42.31
 end
 
 task Transport_Task2
-	TriggeredBy	palette_1Full == TRUE
 	TriggeredBy	palette_2Full == true
-	TriggeredBy	palette_3Full == "TRUE" || 42,42 <= 42,31
+	TriggeredBy	palette_3Full == "TRUE"
 end
 ```
 
