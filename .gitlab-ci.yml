@@ -5,7 +5,7 @@ before_script:
   - apt install -y python3 python3-pip openjdk-8-jdk 
   - python3 --version
   - pip3 install -r requirements.txt --upgrade
-  - cd /src/
+  - cd src/
   - java -jar antlr-4.7.2-complete.jar -Dlanguage=Python3 -visitor TaskLexer.g4 TaskParser.g4
 
 stages:
