@@ -9,65 +9,20 @@ from enum import Enum
 from TaskParserVisitor import TaskParserVisitor
 from TaskParser import TaskParser
 
+from transport.CompleteProgram import CompleteProgram, ContextObject
+from transport.Template import Template
+from transport.Instance import Instance
+from transport.TaskInfo import TaskInfo
+from transport.TransportOrderStep import TransportOrderStep, TransportOrder
+
+
 # Enum to set the type of the optional statement when returned
 class OptType(Enum):
     TRIGGERED_BY = 1
     FINISHED_BY = 2
     ON_DONE = 3
 
-class CompleteProgram(object):
-    def __init__(self):
-        self.templates = {} # All defined templates
-        self.instances = {} # All defined instances
-        self.transportOrderSteps = {} # All defined TaskOrderSteps
-        self.taskInfos = {} # All defined tasks
-
-# Each class holds ContextObjects which contain  the value(e.g. the name as string) and the context from antlr
-class ContextObject(object):
-    def __init__(self, value, context):
-        self.value = value
-        self.context = context
-
-class TaskInfo(object):
-    def __init__(self):
-        self.name = None # Name of Task
-        self.triggeredBy = [] # Triggers
-        self.transportOrders = [] # Transport Order (from|to)
-        self.onDone = [] # Reference to the next Tasks
-        self.repeat = []
-        self.finishedBy = []
-        self.context = None
-
-class TransportOrder(object):
-    def __init__(self):
-        self.pickupFrom = None# From Instance
-        self.deliverTo = None # Target Instance
-
-class TransportOrderStep(object):
-    def __init__(self):
-        self.name = None # String Name of Task
-        self.locations = []
-        self.triggeredBy = [] # List of Triggers
-        self.finishedBy = []
-        self.onDone = [] # Reference to the next Tasks
-        self.context = None
-        
-class Template(object):
-    def __init__(self):
-        self.name = None # String of the Template Name
-        self.keyval = [] # A List of Attributes
-        self.context = None
-
-class Instance(object):
-    def __init__(self):
-        self.name = None # String of the Instances Name
-        self.templateName = None # String of the Instances origin Template
-        self.keyval = {} # Dictionary of attributes with set value
-        self.context = None
-
-
 class CreateTreeTaskParserVisitor(TaskParserVisitor):
-
     def __init__(self):
         super()
 
