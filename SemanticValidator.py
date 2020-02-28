@@ -3,11 +3,11 @@ __version__ = "0.0.1"
 __maintainer__ = "Maximilian Hörstrup"
 
 # local sources
-from CreateTreeTaskParserVisitor import CompleteProgram
-from CreateTreeTaskParserVisitor import Instance
-from CreateTreeTaskParserVisitor import TaskInfo
-from CreateTreeTaskParserVisitor import Template
-from CreateTreeTaskParserVisitor import TransportOrder
+from transport.CompleteProgram import CompleteProgram, ContextObject
+from transport.Template import Template
+from transport.Instance import Instance
+from transport.TaskInfo import TaskInfo
+from transport.TransportOrderStep import TransportOrderStep, TransportOrder
 
 class SemanticValidator:
     def __init__(self, filePath, templates, usedInExtension):
@@ -208,17 +208,16 @@ class SemanticValidator:
             self.printError(msg, context.start.line, context.start.column, len(expression["value"]))
 
     def checkBinaryOperation(self, expression, context):
-         # check if the left side of the expression is an event instance
+        # check if the left side of the expression is an event instance
         left = expression["left"]
-        if self.isEventInstance(left) == False:
-            msg = "The given Instance '{}' in the binary Operation is not an instance of type event".format(left)
+        right = expression["right"]
+
+        if self.isBooleanExpression(right) == False:
+            msg = "The right side is not a boolean expression "
+            self.printError(msg, context.start.line, context.start.column, len(right))
+        if self.isBooleanExpression(left) == False:
+            msg = "The left side is not a boolean expression"
             self.printError(msg, context.start.line, context.start.column, len(left))
-        else:
-            eventType = self.getAttributeValue(self.getInstance(left), "type")
-            right = expression["right"]
-            if self.isBooleanExpression(right) == False:
-                msg = "The right side is not a boolean"
-                self.printError(msg, context.start.line, context.start.column, len(right))
 
     # Check if the given expression can be resolved to a boolean expression
     def isBooleanExpression(self, expression):
