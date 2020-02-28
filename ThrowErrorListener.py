@@ -2,7 +2,7 @@ __author__ = "Maximilian Hörstrup"
 __version__ = "0.0.1"
 __maintainer__ = "Maximilian Hörstrup"
 
-# local sources
+# 3rd party packages
 from antlr4.error.Errors import *
 from antlr4.error.ErrorListener import ErrorListener
 

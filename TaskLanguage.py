@@ -2,11 +2,14 @@ __author__ = "Maximilian Hörstrup"
 __version__ = "0.0.1"
 __maintainer__ = "Maximilian Hörstrup"
 
+# standard libraries
+import sys
+
+# local sources
+import TaskLanguageTest
+
 # globals defines
 from defines import TEMPLATES_PATH
-
-import TaskLanguageTest
-import sys
 
 def main():
     # command line arguments: 

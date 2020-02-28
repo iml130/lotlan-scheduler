@@ -1,8 +1,13 @@
-from TaskParserVisitor import TaskParserVisitor
-from TaskParser import TaskParser
+__author__ = "Maximilian Hörstrup"
+__version__ = "0.0.1"
+__maintainer__ = "Maximilian Hörstrup"
+
+# standard libraries
 from enum import Enum
 
-import copy
+# local sources
+from TaskParserVisitor import TaskParserVisitor
+from TaskParser import TaskParser
 
 # Enum to set the type of the optional statement when returned
 class OptType(Enum):
