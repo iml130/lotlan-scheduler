@@ -3,18 +3,14 @@ Location pickupItem
     type = "SmallLoadCarrier"
 End
 
-Location pickupItem2
-    name = "s1_pickup"
-    type = "SmallLoadCarrier"
-End
-
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
 End
 
+
 TransportOrderStep loadStorage
-    Location pickupItem 
+    Location pickupItem  # Only one Location can be defined!
 End
 
 TransportOrderStep unloadWorkstation1
@@ -25,6 +21,21 @@ Task helloTask
     Transport
     From loadStorage
     To unloadWorkstation1
-    Repeat		5
-    Repeat		1 # error: an repeat statement was already definied
+    OnDone helloTask
+End
+
+Task helloTask2
+    OnDone helloTask
+End
+
+Task helloTask3
+    OnDone helloTask4
+End
+
+Task helloTask4
+    OnDone helloTask4
+End
+
+Task helloTask5
+    OnDone helloTask
 End

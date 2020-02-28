@@ -1,5 +1,5 @@
-TEST_FOLDER = "testfiles/"
-LOG_PATH = "logs/log.txt"
+TEST_FOLDER = "../test/"
+LOG_PATH = "../logs/log.txt"
 TEMPLATES_PATH = "templates.tl"
 
 SYMBOLIC_NAMES = {

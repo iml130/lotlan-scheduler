@@ -29,3 +29,8 @@ TransportOrderStep unloadWorkstation1
     TriggeredBy	event
     FinishedBy !event
 End
+
+TransportOrderStep binOpTest
+    Location	pickupItem
+    TriggeredBy (event == True) && (event2 == True)
+End

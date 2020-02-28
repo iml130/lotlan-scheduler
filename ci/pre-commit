@@ -1,6 +1,6 @@
 #!/bin/bash.exe
 echo "Running pre-commit hook"
-python TaskLanguageTest.py
+python src/TaskLanguageTest.py
 if [ $? -ne 0 ]
 then
     echo "One of the tests failed! Pass them before commit"
