@@ -19,7 +19,6 @@ End
 
 TransportOrderStep loadStorage
     Location pickupItem
-    TriggeredBy time
     TriggeredBy	event == True
     FinishedBy event2 >= 5
 End

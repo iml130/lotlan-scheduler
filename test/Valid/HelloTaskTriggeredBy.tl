@@ -29,7 +29,6 @@ End
 
 Task helloTask
     TriggeredBy triggerGetNewMaterial == True
-    TriggeredBy triggerGetNewMaterial2 == True
     Transport
     From loadStorage
     To unloadWorkstation1
