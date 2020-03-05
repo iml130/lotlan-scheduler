@@ -19,7 +19,7 @@ End
 
 TransportOrderStep loadStorage
     Location pickupItem
-    TriggeredBy	event == True
+    TriggeredBy time
     FinishedBy event2 >= 5
 End
 
@@ -31,5 +31,5 @@ End
 
 TransportOrderStep binOpTest
     Location	pickupItem
-    TriggeredBy (event == True) && (event2 == True)
+    TriggeredBy (event == True) and (event2 == True)
 End
