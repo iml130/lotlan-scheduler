@@ -105,8 +105,8 @@ class SemanticValidator:
 
             self.checkLocations(tos)
             self.checkOnDone(tos, givenTree)
-            self.checkExpressions(tos.triggeredBy) 
-            self.checkExpressions(tos.finishedBy)
+            self.checkExpressions(tos.triggeredBy, tos) 
+            self.checkExpressions(tos.finishedBy, tos)
 
     def checkLocations(self, tos):
         if len(tos.locations) > 1:
@@ -142,8 +142,8 @@ class SemanticValidator:
             self.checkRepeatOrOnDone(task)
             self.checkOnDone(task, givenTree)
             self.checkRepeat(task)
-            self.checkExpressions(task.triggeredBy)
-            self.checkExpressions(task.finishedBy)
+            self.checkExpressions(task.triggeredBy, task)
+            self.checkExpressions(task.finishedBy, task)
 
     def checkTransportOrders(self, task, givenTree):
         if len(task.transportOrders) > 1:
@@ -178,9 +178,12 @@ class SemanticValidator:
             msg = "The task '{}' has both OnDone and Repeat statements. It is only allowed to have either of them".format(task.name.value)
             self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.name.value))
 
-    def checkExpressions(self, expressions):
-        for exp in expressions:
-            self.checkExpression(exp.value, exp.context)
+    def checkExpressions(self, expressions, taskOrTos):
+        if len(expressions) > 1:
+            msg = "There is more than one TriggeredBy or FinishedBy Statement in '{}'".format(taskOrTos.name.value)
+            self.printError(msg, taskOrTos.context.start.line, taskOrTos.context.start.column, len(taskOrTos.name.value))
+        elif len(expressions) == 1:
+            self.checkExpression(expressions[0].value, expressions[0].context)
     
     def checkExpression(self, expression, context): 
         if type(expression) == str:
