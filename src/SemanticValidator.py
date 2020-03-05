@@ -276,7 +276,7 @@ class SemanticValidator:
 
     def hasInstanceType(self, instance, typeName):
         for keyval in instance.keyval.values():
-            if keyval.value == '"' + typeName + '"':
+            if keyval.value.split('"')[1] == typeName:
                 return True
         return False
 

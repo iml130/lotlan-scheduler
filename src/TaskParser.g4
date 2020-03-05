@@ -25,7 +25,11 @@ memberVariable:
     INDENTATION STARTS_WITH_LOWER_C_STR EQUAL value NEW_LINE+;
 
 value:
-    STRING_VALUE | NUMERIC_VALUE | EMPTY_VALUE;
+    STRING_VALUE
+    | NUMERIC_VALUE
+    | EMPTY_VALUE
+    | INTEGER
+    | FLOAT;
 
 // Transport Order Step
 transportOrderStep:
@@ -35,7 +39,7 @@ tosStart:
     TRANSPORT_ORDER_STEP STARTS_WITH_LOWER_C_STR NEW_LINE+;
 
 tosStatement:
-    optTosStatement | locationStatement;
+    optTosStatement | locationStatement | parameterStatement;
 
 locationStatement:
     INDENTATION LOCATION STARTS_WITH_LOWER_C_STR NEW_LINE+;
@@ -50,6 +54,9 @@ eventStatement:
 onDoneStatement:
     INDENTATION ON_DONE STARTS_WITH_LOWER_C_STR NEW_LINE+;
 
+parameterStatement:
+    INDENTATION PARAMETER (STARTS_WITH_LOWER_C_STR COMMA)* STARTS_WITH_LOWER_C_STR NEW_LINE+;
+    
 // Task Layout
 task:
     taskStart taskStatement+ END_IN_BLOCK;
@@ -60,13 +67,21 @@ taskStart:
 taskStatement:
     transportOrder 
     | optTosStatement
-    | repeatStatement;
+    | repeatStatement
+    | constraintsStatement;
+
+constraintsStatement:
+    INDENTATION CONSTRAINTS expression E_NL_IN_EXPRESSION NEW_LINE*;
 
 // transport from to 
 transportOrder:
     INDENTATION TRANSPORT NEW_LINE
-    INDENTATION FROM STARTS_WITH_LOWER_C_STR NEW_LINE
-    INDENTATION TO STARTS_WITH_LOWER_C_STR NEW_LINE+;
+    INDENTATION FROM STARTS_WITH_LOWER_C_STR parameters? NEW_LINE
+    INDENTATION TO STARTS_WITH_LOWER_C_STR parameters? NEW_LINE+;
+
+parameters:
+    value 
+    | value COMMA parameters;
 
 repeatStatement:
     INDENTATION REPEAT REPEAT_TIMES NEW_LINE+;
