@@ -10,8 +10,9 @@ COMMENT: '#' ~[\n]* -> skip;
 
 mode BLOCK;
 
-NEW_LINE: '\n';
+NEW_LINE:  [ \t]* '\n';
 INDENTATION: ('    ' | '\t');
+
 
 COMMENT_IN_BLOCK : '#' ~[\n]+  -> channel(HIDDEN);
 COMMENT_LINE_IN_BLOCK : INDENTATION '#' ~[\n]+ '\n'-> channel(HIDDEN);
