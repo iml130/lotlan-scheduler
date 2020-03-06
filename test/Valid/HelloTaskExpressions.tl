@@ -25,11 +25,11 @@ End
 
 TransportOrderStep unloadWorkstation1
     Location pickupItem
-    TriggeredBy	event
+    TriggeredBy event
     FinishedBy !event
 End
 
 TransportOrderStep binOpTest
-    Location	pickupItem
+    Location pickupItem
     TriggeredBy (event == True) and (event2 == True)
 End

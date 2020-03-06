@@ -20,6 +20,6 @@ End
 
 Task helloTask
     Transport
-    From loadStorage 10, "right"
+    From loadStorage "right", 10
     To unloadWorkstation1 "left"
 End

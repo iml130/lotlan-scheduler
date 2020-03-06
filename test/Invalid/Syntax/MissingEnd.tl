@@ -1,11 +1,13 @@
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
+# error: missing End
 
 Location dropoffItem
     name = "ws1_dropoff"
     type = "SmallLoadCarrier"
 # error: missing End
+
 
 TransportOrderStep loadStorage
     Location pickupItem 

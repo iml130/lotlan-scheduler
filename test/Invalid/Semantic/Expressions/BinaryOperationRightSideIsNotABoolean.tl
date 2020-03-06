@@ -10,5 +10,5 @@ End
 
 TransportOrderStep loadStorage
     Location pickupItem
-    FinishedBy	event == pickupItem # error: the right side can not be resolved to a boolean (a String is never a boolean)
+    FinishedBy event == pickupItem # error: the right side can not be resolved to a boolean (a String is never a boolean)
 End

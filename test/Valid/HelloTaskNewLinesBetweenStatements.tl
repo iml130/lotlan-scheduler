@@ -34,10 +34,14 @@ TransportOrderStep unloadWorkstation1
 
     OnDone helloTask
 
-    TriggeredBy event = 5
+
+    TriggeredBy event == 5
 
 
-    
+
+
+
+
 End
 
 
@@ -47,8 +51,7 @@ Task helloTask
     Transport
     From loadStorage
     To unloadWorkstation1
-
-    TriggeredBy event = 5
+    TriggeredBy event == 5
 
     
     OnDone task2
@@ -57,5 +60,5 @@ Task helloTask
 End
 
 Task task2
-    TriggeredBy	event = 5
+    TriggeredBy event == 5
 End
