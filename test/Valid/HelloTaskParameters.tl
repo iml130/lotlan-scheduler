@@ -10,12 +10,12 @@ End
 
 TransportOrderStep loadStorage
     Location pickupItem
-    Parameter liftHeight, unloadDirection
+    Parameters liftHeight, unloadDirection
 End
 
 TransportOrderStep unloadWorkstation1
     Location dropoffItem
-    Parameter unloadDirection
+    Parameters unloadDirection
 End
 
 Task helloTask
