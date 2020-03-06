@@ -8,3 +8,6 @@ class Instance(object):
         self.templateName = None # String of the Instances origin Template
         self.keyval = {} # Dictionary of attributes with set value
         self.context = None
+
+    def __repr__(self):
+        return "Template: {} \n Attributes: {} \n".format(self.templateName, self.keyval)

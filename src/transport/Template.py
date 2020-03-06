@@ -7,3 +7,6 @@ class Template(object):
         self.name = None # String of the Template Name
         self.keyval = [] # A List of Attributes
         self.context = None
+
+    def __repr__(self):
+        return "{}".format(self.keyval)

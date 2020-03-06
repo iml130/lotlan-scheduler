@@ -6,8 +6,8 @@ __maintainer__ = "Maximilian Hörstrup"
 from transport.CompleteProgram import CompleteProgram, ContextObject
 from transport.Template import Template
 from transport.Instance import Instance
-from transport.TaskInfo import TaskInfo
-from transport.TransportOrderStep import TransportOrderStep, TransportOrder
+from transport.TaskInfo import TaskInfo, TransportOrder
+from transport.TransportOrderStep import TransportOrderStep
 
 class SemanticValidator:
     def __init__(self, filePath, templates, usedInExtension):
@@ -56,8 +56,8 @@ class SemanticValidator:
             else:
                 instanceNameCounts[instance.name.value] = 1
 
-            templateName = instance.templateName.value
-            template = self.getTemplate(givenTree, templateName)
+            templateName = instance.templateName
+            template = self.getTemplate(givenTree, templateName.value)
 
             # check if the corresponding template exists
             if template == None:
@@ -144,6 +144,7 @@ class SemanticValidator:
             self.checkRepeat(task)
             self.checkExpressions(task.triggeredBy, task)
             self.checkExpressions(task.finishedBy, task)
+            self.checkExpressions
 
     def checkTransportOrders(self, task, givenTree):
         if len(task.transportOrders) > 1:
@@ -194,16 +195,17 @@ class SemanticValidator:
             else:
                 self.checkBinaryOperation(expression, context)
 
+
     def checkSingleExpression(self, expression, context):
-        # there is only an event instance check if its type is boolean
-        if self.isEventInstance(expression) == True:
+        if self.isTemplateInstance(expression, "Event") == True:
             instance = self.getInstance(expression)
             if self.hasInstanceType(instance, "Boolean") == False:
                 msg = "'" + expression + "' has no booelan type so it cant get parsed as single statement"
                 self.printError(msg, context.start.line, context.start.column, 1)
-        elif self.isTimeInstance(expression) == False:
+        elif self.isTemplateInstance(expression, "Time") == False:
             msg = "The given expression is not related to a time or event instance"
             self.printError(msg, context.start.line, context.start.column, 1)
+
 
     def checkUnaryOperation(self, expression, context):
         if self.isBooleanExpression(expression["value"]) == False:
@@ -236,12 +238,14 @@ class SemanticValidator:
                 else:
                     return (self.isBooleanExpression(expression["left"]) and self.isBooleanExpression(expression["right"]))
 
-    # Check if the given expression is a condition, event instances are interpreted as booleans
+    # Check if the given expression is a condition, event instances are interpreted as booleans 
     def isCondition(self, expression):
-        return  (self.isEventInstance(expression) 
+        return  (self.isTemplateInstance(expression, "Event")
+                or self.isTemplateInstance(expression, "Constraint")
                 or self.strIsInt(expression)
                 or self.strIsFloat(expression) 
                 or expression in ["True", "true", "False", "false"])
+
 
 
     # Help Functions
@@ -260,17 +264,9 @@ class SemanticValidator:
                 return instance
         return None
 
-    # Returns false if its not a time instance or an instance at all
-    def isTimeInstance(self, instanceName):
+    def isTemplateInstance(self, instanceName, templateName):
         instance = self.getInstance(instanceName)
-        if instance != None and instance.templateName.value == "Time": 
-            return True
-        return False
-
-    # Returns false if its not a Event instance or an instance at all
-    def isEventInstance(self, instanceName):
-        instance = self.getInstance(instanceName)
-        if instance != None and instance.templateName.value == "Event":
+        if instance != None and instance.templateName.value == templateName:
             return True
         return False
 
