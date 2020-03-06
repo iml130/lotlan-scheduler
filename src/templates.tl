@@ -11,3 +11,7 @@ End
 Template Time
     timing = ""
 End
+
+Template Constraint
+    type = ""
+End
