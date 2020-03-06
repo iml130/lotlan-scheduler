@@ -49,7 +49,8 @@ optTosStatement:
     eventStatement | onDoneStatement;
 
 eventStatement:
-    INDENTATION (TRIGGERED_BY | FINISHED_BY) expression E_NL_IN_EXPRESSION NEW_LINE*;
+    INDENTATION TRIGGERED_BY expression NEW_LINE+
+    | INDENTATION FINISHED_BY expression NEW_LINE+;
 
 onDoneStatement:
     INDENTATION ON_DONE STARTS_WITH_LOWER_C_STR NEW_LINE+;
@@ -71,7 +72,7 @@ taskStatement:
     | constraintsStatement;
 
 constraintsStatement:
-    INDENTATION CONSTRAINTS expression E_NL_IN_EXPRESSION NEW_LINE*;
+    INDENTATION CONSTRAINTS expression NEW_LINE+;
 
 // transport from to 
 transportOrder:
@@ -84,10 +85,10 @@ parameters:
     | value COMMA parameters;
 
 repeatStatement:
-    INDENTATION REPEAT REPEAT_TIMES NEW_LINE+;
+    INDENTATION REPEAT INTEGER NEW_LINE+;
 
 expression:
-    E_ATTRIBUTE
+    STARTS_WITH_LOWER_C_STR
     | E_LEFT_PARENTHESIS expression E_RIGHT_PARENTHESIS
     | expression binOperation expression
     | unOperation expression
@@ -109,5 +110,5 @@ unOperation:
 con:
     E_TRUE 
     | E_FALSE
-    | E_INTEGER
-    | E_FLOAT;
+    | INTEGER
+    | FLOAT;

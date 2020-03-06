@@ -10,65 +10,57 @@ COMMENT: '#' ~[\n]* -> skip;
 
 mode BLOCK;
 
-NEW_LINE: WHITESPACE_BLOCK '\n';
-
+NEW_LINE: '\n';
 INDENTATION: ('    ' | '\t');
 
-COMMENT_IN_BLOCK : WHITESPACE_BLOCK '#' ~[\n]+  -> channel(HIDDEN);
+COMMENT_IN_BLOCK : '#' ~[\n]+  -> channel(HIDDEN);
 COMMENT_LINE_IN_BLOCK : INDENTATION '#' ~[\n]+ '\n'-> channel(HIDDEN);
 
-EQUAL: WHITESPACE_BLOCK '=' WHITESPACE_BLOCK;
+
 END_IN_BLOCK: 'End' -> popMode;
 
 // Only For TransportOrderStep
-LOCATION: 'Location' WHITESPACE_BLOCK;
-PARAMETER: 'Parameter' WHITESPACE_BLOCK;
+LOCATION: 'Location';
+PARAMETER: 'Parameter';
 
 // Only For Task
-REPEAT: 'Repeat' WHITESPACE_BLOCK;
-REPEAT_TIMES: [0-9]+ WHITESPACE_BLOCK;
-CONSTRAINTS: 'Constraints' WHITESPACE_BLOCK -> pushMode(EXPRESSION);
+REPEAT: 'Repeat';
+CONSTRAINTS: 'Constraints';
 
 TRANSPORT: 'Transport';
-FROM: 'From' WHITESPACE_BLOCK;
-TO: 'To' WHITESPACE_BLOCK;
+FROM: 'From';
+TO: 'To';
 
 // Used in both TOS and Task
-ON_DONE: 'OnDone' WHITESPACE_BLOCK;
-TRIGGERED_BY: 'TriggeredBy' WHITESPACE_BLOCK -> pushMode(EXPRESSION);
-FINISHED_BY: 'FinishedBy' WHITESPACE_BLOCK -> pushMode(EXPRESSION);
+ON_DONE: 'OnDone';
+TRIGGERED_BY: 'TriggeredBy';
+FINISHED_BY: 'FinishedBy';
 
-COMMA: WHITESPACE_BLOCK ',' WHITESPACE_BLOCK;
+EQUAL: '=';
+COMMA: ',';
 
-STARTS_WITH_LOWER_C_STR: [a-z][a-zA-Z0-9_]*;
-STARTS_WITH_UPPER_C_STR: [A-Z][a-zA-Z0-9_]*;
-
-STRING_VALUE: WHITESPACE_BLOCK '"' [a-zA-Z0-9_]+ '"' WHITESPACE_BLOCK;
-NUMERIC_VALUE: WHITESPACE_BLOCK '"'['*'' ''/'0-9]+ '"' WHITESPACE_BLOCK;
-EMPTY_VALUE: WHITESPACE_BLOCK '""' WHITESPACE_BLOCK;
-
-INTEGER: WHITESPACE_BLOCK [0-9]+ WHITESPACE_BLOCK;
-FLOAT: WHITESPACE_BLOCK [0-9]+( '.' [0-9]+) WHITESPACE_BLOCK;
-
-fragment WHITESPACE_BLOCK: [ \t\r]*;
-
-mode EXPRESSION;
 E_LEFT_PARENTHESIS: '(';
 E_RIGHT_PARENTHESIS: ')';
 E_LESS_THAN: '<';
 E_LESS_THAN_OR_EQUAL: '<=';
 E_GREATER_THAN: '>';
 E_GREATER_THAN_OR_EQUAL: '>=';
-E_EQUAL: '==' | '=';
+E_EQUAL: '==';
 E_NOT_EQUAL: '!=';
 E_BOOLEAN_AND: 'and';
 E_BOOLEAN_OR: 'or';
 E_BOOLEAN_NOT: '!';
-E_ATTRIBUTE: [a-z][a-zA-Z0-9_]*;
 E_TRUE: 'True' | 'TRUE';
 E_FALSE: 'False' | 'FALSE';
-E_INTEGER: [0-9]+;
-E_FLOAT: [0-9]+( '.' [0-9]+);
-E_WS: [ \r\t]  -> skip;
-E_COMMENT: '#' ~[\n]+ -> skip;
-E_NL_IN_EXPRESSION: [\n] -> popMode;
+
+STARTS_WITH_LOWER_C_STR: [a-z][a-zA-Z0-9_]*;
+STARTS_WITH_UPPER_C_STR: [A-Z][a-zA-Z0-9_]*;
+
+STRING_VALUE: '"' [a-zA-Z0-9_]+ '"';
+NUMERIC_VALUE: '"' ['*'' ''/'0-9]+ '"';
+EMPTY_VALUE: '""';
+
+INTEGER: [0-9]+;
+FLOAT: [0-9]+( '.' [0-9]+);
+
+WHITESPACE_BLOCK: [ \t\r]+ -> channel(HIDDEN);

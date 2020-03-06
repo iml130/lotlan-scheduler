@@ -229,7 +229,7 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         return to
 
     def visitRepeatStatement(self, ctx):
-        return ContextObject(ctx.REPEAT_TIMES().getText(), ctx)
+        return ContextObject(ctx.INTEGER().getText(), ctx)
 
     # Visit a parse tree produced by TaskParser#expression.
     def visitExpression(self, ctx):
