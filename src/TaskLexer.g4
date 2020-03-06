@@ -13,16 +13,14 @@ mode BLOCK;
 NEW_LINE:  [ \t]* '\n';
 INDENTATION: ('    ' | '\t');
 
-
 COMMENT_IN_BLOCK : '#' ~[\n]+  -> channel(HIDDEN);
 COMMENT_LINE_IN_BLOCK : INDENTATION '#' ~[\n]+ '\n'-> channel(HIDDEN);
-
 
 END_IN_BLOCK: 'End' -> popMode;
 
 // Only For TransportOrderStep
 LOCATION: 'Location';
-PARAMETER: 'Parameter';
+PARAMETERS: 'Parameters';
 
 // Only For Task
 REPEAT: 'Repeat';

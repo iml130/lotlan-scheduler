@@ -12,8 +12,8 @@ from TaskParser import TaskParser
 from transport.CompleteProgram import CompleteProgram, ContextObject
 from transport.Template import Template
 from transport.Instance import Instance
-from transport.TaskInfo import TaskInfo
-from transport.TransportOrderStep import TransportOrderStep, TransportOrder
+from transport.TaskInfo import TaskInfo, TransportOrder
+from transport.TransportOrderStep import TransportOrderStep
 
 
 # Enum to set the type of the optional statement when returned
@@ -46,32 +46,6 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
                     self.cp.transportOrderSteps[TempOrInstOrTaskOrTOS.name] = (TempOrInstOrTaskOrTOS)
 
         return self.cp
-
-    def printProgram(self):
-        for template in self.cp.templates.values():
-            print("Template Name:", template.name.value)
-            print("Keyval:", template.keyval.value)
-            print("\n")
-        for instance in self.cp.instances.values():
-            print("Template Name:", instance.templateName.value)
-            print("Instance Name:", instance.name.value)
-            print("Keyval:", instance.keyval)
-            print("\n")
-        for tos in self.cp.transportOrderSteps.values():
-            print("TransportOrderStepName:", tos.name.value)
-            print("Location:", tos.location.value)
-            print("Triggered By:", tos.triggeredBy)
-            print("Finished By:", tos.finishedBy)
-            print("OnDone:", tos.onDone)
-            print("\n")
-        for task in self.cp.taskInfos.values():
-            print("TaskName:", task.name.value)
-            print("Transport Order:", task.transportOrders)
-            print("Triggered By:", task.triggeredBy)
-            print("Finished By:", task.finishedBy)
-            print("OnDone:", task.onDone)
-            print("Repeat:", task.repeat)
-            print("\n")
 
     # Visit a parse tree produced by TaskParser#template.
     def visitTemplate(self, ctx):
@@ -164,7 +138,16 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
         elif ctx.locationStatement():
             location = self.visitLocationStatement(ctx.locationStatement())
             tos.locations.append(ContextObject(location, ctx.locationStatement()))
+        elif ctx.parameterStatement():
+            parameters = self.visitParameterStatement(ctx.parameterStatement())
+            tos.parameters = parameters
     
+    def visitParameterStatement(self, ctx):
+        parameters = []
+        for parameter in ctx.STARTS_WITH_LOWER_C_STR():
+            parameters.append(ContextObject(parameter.getText(), ctx))
+        return parameters
+
     # Visit a parse tree produced by TaskParser#Location Statement.
     def visitLocationStatement(self, ctx):
         return ctx.STARTS_WITH_LOWER_C_STR().getText()
@@ -218,15 +201,41 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
     # Visit a parse tree produced by TaskParser#transportOrder.
     def visitTransportOrder(self, ctx):
-        to = TransportOrder()
+        transportOrder = TransportOrder()
 
         childs = ctx.children
         for i in range(len(childs)):
-            if childs[i] == ctx.FROM():
-                to.pickupFrom = ContextObject(childs[i+1].getText(), ctx.FROM())
-            elif childs[i] == ctx.TO():
-                to.deliverTo = ContextObject(childs[i+1].getText(), ctx.TO())
-        return to
+            if childs[i] == ctx.fromStatement():
+                self.visitFromStatement(ctx.fromStatement(), transportOrder)
+            elif childs[i] == ctx.toStatement():
+                self.visitToStatement(ctx.toStatement(), transportOrder)
+        return transportOrder
+
+    def visitFromStatement(self, ctx, transportOrder):
+        transportOrder.pickupFrom = ContextObject(ctx.STARTS_WITH_LOWER_C_STR().getText(), ctx.STARTS_WITH_LOWER_C_STR())
+        parameters = ctx.parameters()
+        if parameters != None:
+            for parameter in parameters.children:
+                if parameter.getText() != ",":
+                    transportOrder.fromParameters.append(parameter.getText())
+                    print(parameter.getText())
+
+    def visitToStatement(self, ctx, transportOrder):
+        transportOrder.deliverTo = ContextObject(ctx.STARTS_WITH_LOWER_C_STR().getText(), ctx.STARTS_WITH_LOWER_C_STR())
+        parameters = ctx.parameters()
+        if parameters != None:
+            for parameter in parameters.children:
+                if parameter.getText() != ",":
+                    transportOrder.toParameters.append(parameter.getText())
+                    print(parameter.getText())
+
+    def visitParameters(self, ctx):
+        parameters = []
+        if len(ctx) > 0:
+            for parameter in ctx:
+                parameters.append(ContextObject(parameter.getText(), ctx))
+                print(parameter.getText())
+        return parameters
 
     def visitRepeatStatement(self, ctx):
         return ContextObject(ctx.INTEGER().getText(), ctx)

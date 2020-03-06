@@ -56,7 +56,7 @@ onDoneStatement:
     INDENTATION ON_DONE STARTS_WITH_LOWER_C_STR NEW_LINE+;
 
 parameterStatement:
-    INDENTATION PARAMETER (STARTS_WITH_LOWER_C_STR COMMA)* STARTS_WITH_LOWER_C_STR NEW_LINE+;
+    INDENTATION PARAMETERS (STARTS_WITH_LOWER_C_STR COMMA)* STARTS_WITH_LOWER_C_STR NEW_LINE+;
     
 // Task Layout
 task:
@@ -76,8 +76,14 @@ constraintsStatement:
 
 // transport from to 
 transportOrder:
-    INDENTATION TRANSPORT NEW_LINE
-    INDENTATION FROM STARTS_WITH_LOWER_C_STR parameters? NEW_LINE
+    INDENTATION TRANSPORT NEW_LINE 
+    fromStatement 
+    toStatement;
+    
+fromStatement:
+    INDENTATION FROM STARTS_WITH_LOWER_C_STR parameters? NEW_LINE;
+
+toStatement:
     INDENTATION TO STARTS_WITH_LOWER_C_STR parameters? NEW_LINE+;
 
 parameters:
