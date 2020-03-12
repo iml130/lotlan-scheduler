@@ -144,7 +144,6 @@ class SemanticValidator:
             self.checkRepeat(task)
             self.checkExpressions(task.triggeredBy, task)
             self.checkExpressions(task.finishedBy, task)
-            self.checkExpressions
 
     def checkTransportOrders(self, task, givenTree):
         if len(task.transportOrders) > 1:
@@ -155,11 +154,22 @@ class SemanticValidator:
             if self.checkIfTosIsPresent(givenTree, task.transportOrders[0].value.pickupFrom.value) == False:
                 msg = "Task '{}' refers to an unknown TransportOrderStep in 'from': '{}' ".format(task.name.value, task.transportOrders[0].value.pickupFrom.value)
                 self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.transportOrders[0].value.pickupFrom.value))
-            
+            else:
+                tos = self.getTransportOrderStep(task.transportOrders[0].value.pickupFrom.value)
+                if len(task.transportOrders[0].value.fromParameters) != len(tos.parameters):
+                    msg = "From has not the same amount of parameters as the transport order step!"
+                    self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.transportOrders[0].value.pickupFrom.value))
+
             # To check
             if self.checkIfTosIsPresent(givenTree, task.transportOrders[0].value.deliverTo.value) == False:
                 msg = "Task '{}' refers to an unknown TransportOrderStep in 'to' '{}'".format(task.name.value, task.transportOrders[0].value.deliverTo.value)
                 self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.transportOrders[0].value.deliverTo.value))
+            else:
+                tos = self.getTransportOrderStep(task.transportOrders[0].value.deliverTo.value)
+                if len(task.transportOrders[0].value.toParameters) != len(tos.parameters):
+                    msg = "To has not the same amount of parameters as the transport order step!"
+                    self.printError(msg, task.name.context.start.line, task.name.context.start.column, len(task.transportOrders[0].value.pickupFrom.value))
+
 
     def checkRepeat(self, task):
         if len(task.repeat) > 1:
@@ -173,7 +183,7 @@ class SemanticValidator:
         elif len(taskOrTos.onDone) == 1 and self.checkIfTaskIsPresent(givenTree, taskOrTos.onDone[0].value) == False:
             msg = "The task name '{}' in the OnDone statement refers to an unknown Task".format(taskOrTos.onDone[0].value)
             self.printError(msg, taskOrTos.onDone[0].context.start.line, taskOrTos.onDone[0].context.start.column, len(taskOrTos.onDone[0].value)) 
-
+            
     def checkRepeatOrOnDone(self, task):
         if len(task.repeat) > 0 and len(task.onDone) > 0:
             msg = "The task '{}' has both OnDone and Repeat statements. It is only allowed to have either of them".format(task.name.value)
@@ -262,6 +272,12 @@ class SemanticValidator:
         for instance in self.givenTree.instances.values():
             if instanceName == instance.name.value:
                 return instance
+        return None
+
+    def getTransportOrderStep(self, tosName):
+        for tos in self.givenTree.transportOrderSteps.values():
+            if tosName == tos.name.value:
+                return tos
         return None
 
     def isTemplateInstance(self, instanceName, templateName):
