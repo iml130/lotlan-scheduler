@@ -53,7 +53,7 @@ The following documentation of *LoTLan* utilizes the example of a production hal
 
 <div style="text-align:center">
 
-![Example introduction](./doc/pics/1-introduction_new.png)
+![Example introduction](./doc/img/1-introduction_new.png)
 
 *Figure 1: Example floor plan with AGV and production & warehouse area*
 </div>
@@ -160,7 +160,7 @@ Speaking of the example introduced in the [introduction](#Logistic-Task-Language
 
 <div style="text-align:center">
 
-![Example instance](./doc/pics/2-instances_new.png)
+![Example instance](./doc/img/2-instances_new.png)
 
 *Figure 2: Floor plan with Locations **goodsPallet** and **warehousePos1***
 </div>
@@ -240,7 +240,7 @@ In terms of the introduced example production hall this *Task* looks like depict
 
 <div style="text-align:center">
 
-![Example task](./doc/pics/3-tasks_new.png)
+![Example task](./doc/img/3-tasks_new.png)
 
 *Figure 3: Floor plan with Task **TransportGoodsPallet***
 </div>
@@ -272,7 +272,7 @@ In terms of the introduced example production hall this *Task* looks like depict
 
 <div style="text-align:center">
 
-![Example trigger task](./doc/pics/4-tasks_new.png)
+![Example trigger task](./doc/img/4-tasks_new.png)
 
 *Figure 3: Floor plan with Task **transportGoodsPallet_2***
 </div>
@@ -315,7 +315,7 @@ In terms of the introduced example production hall this *Task* looks like depict
 
 <div style="text-align:center">
 
-![Example on done task](./doc/pics/5-tasks_new.png)
+![Example on done task](./doc/img/5-tasks_new.png)
 
 *Figure 3: Floor plan with Task **transportGoodsPallet_3** & **refill***
 </div>
