@@ -20,4 +20,4 @@ class ContextObject(object):
         self.context = context
 
     def __repr__(self):
-        return self.value
+        return self.value.__repr__()

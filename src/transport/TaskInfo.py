@@ -14,8 +14,8 @@ class TaskInfo(object):
         self.context = None
 
     def __repr__(self):
-        return (("TriggeredBy: {} \n FinishedBy: {} \n TransportOrder: \n OnDone: {} \n Repeat: {} \n Constraints: {} \n ")
-                .format(self.triggeredBy, self.finishedBy, self.onDone, self.repeat, self.constraints))
+        return (("TriggeredBy: {} \n FinishedBy: {} \n TransportOrder: {} \n OnDone: {} \n Repeat: {} \n Constraints: {} \n ")
+                .format(self.triggeredBy, self.finishedBy, self.transportOrders, self.onDone, self.repeat, self.constraints))
 
 class TransportOrder(object):
     def __init__(self):

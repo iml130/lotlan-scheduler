@@ -218,7 +218,6 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
             for parameter in parameters.children:
                 if parameter.getText() != ",":
                     transportOrder.fromParameters.append(parameter.getText())
-                    print(parameter.getText())
 
     def visitToStatement(self, ctx, transportOrder):
         transportOrder.deliverTo = ContextObject(ctx.STARTS_WITH_LOWER_C_STR().getText(), ctx.STARTS_WITH_LOWER_C_STR())
@@ -227,14 +226,12 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
             for parameter in parameters.children:
                 if parameter.getText() != ",":
                     transportOrder.toParameters.append(parameter.getText())
-                    print(parameter.getText())
 
     def visitParameters(self, ctx):
         parameters = []
         if len(ctx) > 0:
             for parameter in ctx:
                 parameters.append(ContextObject(parameter.getText(), ctx))
-                print(parameter.getText())
         return parameters
 
     def visitRepeatStatement(self, ctx):
