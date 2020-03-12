@@ -62,72 +62,98 @@ This example shown in the figure above will be expanded in the course of time to
 
 ## Primitives
 
-A *Primitive* can contain multiple member variables, like pallets/storage places, multiple conveyer belts, or like sensors with the same capabilities. Therefore, a *Primitive* summarizes and specifies a set of *Instances*.
 
-In the domain of logistics such a *Primitive* could be a location. Defining such a location is done via the *__template syntax__*:
+A *Primitive* summarizes and specifies a set of *Instances*. All *Instances* have the same member variables as their corresponding Primitive. \
+Primitives are declared in an additional template file and should not be changed by the user.
+Currently there are 4 Primitves implemented:
+* Location
+* Event
+* Time 
+* Constraint
+
+The Location *Primitive* is definied as followed:
 
 ```text
 template Location
     type = ""
     name = ""
-end
+End
 ```
 
-The *Primitive* *Location* has two member variables, a *type* and a *value*. These attributes can be later on accessed inside the instances.
+*Location* specifies two member variables, a *type* and a *value*. These attributes can be later on accessed inside the instances. Every TransportOrderStep needs to provide a *Location* Instance.
 
-The *Primitives* *Event* and *Time* could be defined as following:
+The *Primitives* *Event* and *Time* are defined as following:
 
 ```text
 template Event
     name = ""
     type = ""
-end
+End
 
 template Time
     timing = ""
-end
+End
 ```
 
-**Syntax**: It is important that the attributes inside an *template - end* definition begin with a lowercase character. The name has to start with an uppercase character. Each attribute also needs to be prefixed with four spaces (or a `\t`). Currently only the following 3 attributes are allowed: `name`, `type`, `timing`
+*Event* and *Time* instances can be used in TriggeredBy or FinisheredBy statements.
+
+And finally the Constraint Primitive:
+
+```text
+template Constraint
+    type = ""
+End
+```
+*Constraint* instances can be used in Tasks
+
+
+Currently only the following 3 attributes are used in primitives: `name`, `type`, `timing`
 
 ## Instances
 
-An *Instance* is the concrete object of a previously declared *Primitive*. Such set of *Instances* do not share any data other than the definition of their attributes.
+An *Instance* is the concrete object of a *Primitive*. Such set of *Instances* can be declared by the user and do not share any data other than the definition of their attributes.
 
-As an example, two *Instances* of locations could be initiated out of the previously made *Primitive* (see [Primitives section](#Primitives)):
+As an example, two *Instances* of *Location* could be initiated out of the *Primitive* *Location* (see [Primitives section](#Primitives)):
 
 ```text
 Location goodsPallet
     type = "pallet"
     name = "productionArea_palletPlace"
-end
+End
 
 Location warehousePos1
     type = "pallet"
     name = "warehouseArea_pos1"
-end
+End
 ```
 
 The *Instance* *goodsPallet* has two member variables, a *type* and a *value*. The *type* attribute states *what item is located there* and the *value* the *logical name of this location*.
 
-The *Instances* *Event* and *Time* could be defined as following:
+The *Instances* of an *Event* and *Time* *Primitive* could be defined as following:
 
 ```text
 Event agvLoadedAtGoodsPallet
     type = "Boolean"
     name = "LightBarrier"
-end
+End
 
 Event agvLoadedAtWarehousePos1
     type = "Boolean"
     name = "LightBarrier"
-end
+End
 
 Time lunchBreak
     timing = "30 12 * * *"  # Cron format
-end
+End
 ```
 
+Constraint:
+
+```text
+Constraint costs
+    type = "Integer"
+End
+```
 **Syntax**: The syntax of *Primitives* introduced here is complemented by assigning values to the attributes. These values must be enclosed by `"`. The name has to start with a lowercase character. Each attribute also needs to be prefixed with four spaces (or a `\t`).
 
 Speaking of the example introduced in the [introduction](#Logistic-Task-Language), the formerly shown *Location* *Instances* each define a specific location inside the two areas.
@@ -143,7 +169,7 @@ The figure shows those locations inside the two areas *Warehouse* and *Productio
 
 ## TransportOrderSteps
 
-A *TransportOrderStep* is a *Task*-fragment that contains only a Location and optionally a TriggeredBy, FinishedBy or OnDone statement. It can be used by a *Task* as a from/to value.
+A *TransportOrderStep* is a *Task*-fragment that contains only a Location and optionally a TriggeredBy, FinishedBy, OnDone or Parameters statement. It can be used by a *Task* as a from/to value.
 
 ```text
 TransportOrderStep {name}
@@ -151,7 +177,8 @@ TransportOrderStep {name}
     TriggeredBy {none|event|time}
     OnDone      {none|followUpTask}
     FinishedBy  {none|event|time}
-end
+    Parameters  { param1, param2, ...}
+End
 ```
 
 As an example, two *TransportOrderSteps* are created, both describing a short process:
@@ -160,23 +187,27 @@ As an example, two *TransportOrderSteps* are created, both describing a short pr
 TransportOrderStep loadGoodsPallet
     Location    goodsPallet
     FinishedBy  agvLoadedAtGoodsPallet == True
-end
+    Parameters  liftHeight, unloadDirection
+End
 
 TransportOrderStep unloadGoodsPallet
     Location    warehousePos1
     FinishedBy  agvLoadedAtWarehousePos1 == False
-end
+    Parameters  unloadDirection
+End
 ```
 
-The *TransportOrderStep* *loadGoodsPallet* defines picking up from the *Location* *goodsPallet*, which is finished when the *Event* *agvLoadedAtGoodsPallet* is True. For the the optional statements TriggeredBy, FinishedBy and OnDone see [Tasks section](#Tasks).
+The *TransportOrderStep* *loadGoodsPallet* defines picking up from the *Location* *goodsPallet*, which is finished when the *Event* *agvLoadedAtGoodsPallet* is True. In the task the user can specify the liftHeight and the unloadDirection at the location. A possible situation could be two storage racks with different layers on different heights. The Task passes over the height and whether the charge should be unloaded left or right.
 
-**Syntax**: It is important that the values inside an *TransportOrderStep - end* definition begin with a lowercase character. Each value also needs to be prefixed with four spaces (or a `\t`). The name has to start with an lowercase character. Currently only the following 3 attributes are allowed: `Location`, `TriggeredBy`, `FinishedBy`, `OnDone`
+For the the optional statements TriggeredBy, FinishedBy and OnDone see [Tasks section](#Tasks).
+
+**Syntax**: It is important that the values inside an *TransportOrderStep - End* definition begin with a uppercase character. Each value also needs to be prefixed with four spaces (or a `\t`). The name has to start with an lowercase character. Currently only the following 5 attributes are allowed: `Location`, `TriggeredBy`, `FinishedBy`, `OnDone`, `Parameters`
 
 ## Tasks
 
 A *Task* orchestrates different *Instances* via operations to result in a logical process flow. Such a *Task* does not need to describe who is going to transport an item - it is important that the item will be transported.
 
-Generally speaking a *Task* in *LoTLan* describes that a amount of items should be picked up at some location\*s and be delivered to an\*other location\*s. The *Task* can optionally be triggered by an event or by time, can optionally issue a follow up *Task*, can optionally be finished by an event and can optionally be repeated:
+Generally speaking a *Task* in *LoTLan* describes that a amount of items should be picked up at some location\*s and be delivered to an\*other location\*s. The *Task* can optionally be triggered by an event or by time, can optionally issue a follow up *Task* or be repeated, can optionally be finished by an event and have to meet constraints if given
 
 ```text
 Task {name}
@@ -187,7 +218,8 @@ Task {name}
     OnDone      {none|followUpTask}
     FinishedBy  {none|event|time}
     Repeat      {none = once|1, ..., n|0 = forever}
-end
+    Constraints {none|constraint}
+End
 ```
 
 To simplify this down in the following the simplest structure of a *Task* is build and later on extended with optional functionality.
@@ -197,11 +229,11 @@ To simplify this down in the following the simplest structure of a *Task* is bui
 In the simplest form a *Task* in *LoTLan* just describes that an item should be picked up at some location and be delivered to another location:
 
 ```text
-Task TransportGoodsPallet
+Task transportGoodsPallet
     Transport
     From        loadGoodsPallet
     To          unloadGoodsPallet
-end
+End
 ```
 
 In terms of the introduced example production hall this *Task* looks like depicted in the following figure.
@@ -213,7 +245,7 @@ In terms of the introduced example production hall this *Task* looks like depict
 *Figure 3: Floor plan with Task **TransportGoodsPallet***
 </div>
 
-This *Task* *TransportGoodsPallet* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area.
+This *Task* *transportGoodsPallet* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area.
 
 ### Example TriggeredBy Task
 
@@ -224,17 +256,17 @@ A *Task* can be extended with a *TriggeredBy* statement that activates that *Tas
 Event buttonPallet
     name = "A_Unique_Name_for_a_Button"
     type = "Boolean"
-end
+End
 
-Task TransportGoodsPallet_2
+Task transportGoodsPallet_2
     Transport
     From        loadGoodsPallet
     To          unloadGoodsPallet
     TriggeredBy buttonPallet == True
-end
+End
 ```
 
-In this example, the *Task* *TransportGoodsPallet_2* will be triggered by the event if the value is equal (*== True*).
+In this example, the *Task* *transportGoodsPallet_2* will be triggered by the event if the value is equal (*== True*).
 
 In terms of the introduced example production hall this *Task* looks like depicted in the following figure.
 
@@ -242,10 +274,10 @@ In terms of the introduced example production hall this *Task* looks like depict
 
 ![Example trigger task](./doc/pics/4-tasks_new.png)
 
-*Figure 3: Floor plan with Task **TransportGoodsPallet_2***
+*Figure 3: Floor plan with Task **transportGoodsPallet_2***
 </div>
 
-This *Task* *TransportGoodsPallet_2* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area, when the button *buttonPallet* is pressed.
+This *Task* *transportGoodsPallet_2* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area, when the button *buttonPallet* is pressed.
 
 ### Example OnDone Task
 
@@ -255,29 +287,29 @@ A *Task* can be extended with a *OnDone* statement that activates another *Task*
 TransportOrderStep loadEmptyPallet
     Location    warehousePos1
     FinishedBy  agvLoadedAtWarehousePos1 == True
-end
+End
 
 TransportOrderStep unloadEmptyPallet
     Location    goodsPallet
     FinishedBy  agvLoadedAtGoodsPallet == False
-end
+End
 
-Task Refill
+Task refill
     Transport
     From        loadEmptyPallet
     To          unloadEmptyPallet
-end
+End
 
-Task TransportGoodsPallet_3
+Task transportGoodsPallet_3
     Transport
     From        loadGoodsPallet
     To          unloadGoodsPallet
     TriggeredBy buttonPallet == True
-    OnDone      Refill
-end
+    OnDone      refill
+End
 ```
 
-In this example another *Task* is introduced. This *Task* *Refill* is the same transport as the formerly introduced *TransportGoodsPallet*, just the other way around. On the other hand, *TransportGoodsPallet_3* here shows now the *OnDone* statement that points to *Refill* an runs that *Task* if done. That means a concatenation of *Tasks* is allowed. Exploiting this behaviour infinite *Tasks* can be managed by pointing to each other. So *Refill* could also point to *TransportGoodsPallet_3* in a *OnDone* statement.
+In this example another *Task* is introduced. This *Task* *refill* is the same transport as the formerly introduced *transportGoodsPallet*, just the other way around. On the other hand, *transportGoodsPallet_3* here shows now the *OnDone* statement that points to *refill* an runs that *Task* if done. That means a concatenation of *Tasks* is allowed. Exploiting this behaviour infinite *Tasks* can be managed by pointing to each other. So *refill* could also point to *transportGoodsPallet_3* in a *OnDone* statement.
 
 In terms of the introduced example production hall this *Task* looks like depicted in the following figure.
 
@@ -285,80 +317,70 @@ In terms of the introduced example production hall this *Task* looks like depict
 
 ![Example on done task](./doc/pics/5-tasks_new.png)
 
-*Figure 3: Floor plan with Task **TransportGoodsPallet_3** & **Refill***
+*Figure 3: Floor plan with Task **transportGoodsPallet_3** & **refill***
 </div>
 
-This *Task* *TransportGoodsPallet_3* could be done by an AGV, that picks up a pallet **from** *goodsPallet* inside the production area and delivers it **to** the *warehousePos1* in the warehouse area, when the button *buttonPallet* is pressed. After that the AGV executes the *Task* *Refill* and so, it picks up a empty pallet **from** the *warehousePos1* and delivers it **to** the *goodsPallet* location.
+This *Task* *transportGoodsPallet_3* could be done by an AGV, that picks up a pallet **From** *goodsPallet* inside the production area and delivers it **To** the *warehousePos1* in the warehouse area, when the button *buttonPallet* is pressed. After that the AGV executes the *Task* *refill* and so, it picks up a empty pallet **From** the *warehousePos1* and delivers it **To** the *goodsPallet* location.
 
 ## Comments
 
 A comment starts with a hash character (`#`) that is not part of a string literal, and ends at the end of the physical line. That means a comment can appear on its own or at the end of a statement. In-line comments are not supported.
 
+This example shows a mimicked multi-line comment that consists of three `#` that are joined together:
+
 ```text
 ###
 # This task shows the usage of comments in LoTLan
 ###
-Task TransportPalletTask
+Task transportPalletTask
     # Comment inside a task
     Transport
     From        loadGoodsPallet  # A pallet
     To          unloadGoodsPallet
     TriggeredBy buttonPallet == True  # More comments
-    OnDone      Refill
+    OnDone      refill
     Repeat      5  # Repeat it 5 times!
-end
+End
 ```
-
-This example shows a mimicked multi-line comment that consists of three `#` that are joined together.
 
 ## Full Example
 
 ```text
-###
-# Defining a Primitive Location with the two attributes type and value
-###
-template Location
-    type = ""
-    name = ""
-end
-
-template Event
-    name = ""
-    type = ""
-end
-
-template Location
-    name = ""
-    type = ""
-end
-
 ###
 # Initiation of the two Locations goodsPallet, warehousePos1 and the three Events agvLoadedAtGoodsPallet, agvLoadedAtWarehousePos1, buttonPallet.
 ###
 Location goodsPallet  # Using the Primitive Location
     type = "pallet"
     name = "productionArea_palletPlace"
-end
+End
 
 Location warehousePos1
     type = "pallet"
     name = "warehouseArea_pos1"
-end
+End
 
 Event agvLoadedAtGoodsPallet
     type = "Boolean"
     name = "LightBarrier"
-end
+End
 
 Event agvLoadedAtWarehousePos1
     type = "Boolean"
     name = "LightBarrier"
-end
+End
 
 Event buttonPallet
     name = "A_Unique_Name_for_a_Button"
     type = "Boolean"
-end
+End
+
+Constraint costs
+    type = "Integer"
+End
+
+Constraint emission
+    type = "Double"
+End
 
 ###
 # Creation of the TransportOrderSteps loadGoodsPallet and unloadGoodsPallet
@@ -366,58 +388,62 @@ end
 TransportOrderStep loadGoodsPallet
     Location    goodsPallet
     FinishedBy  agvLoadedAtGoodsPallet == True
-end
+    Parameters  liftHeight, unloadDirection
+End
 
 TransportOrderStep unloadGoodsPallet
     Location    warehousePos1
     FinishedBy  agvLoadedAtWarehousePos1 == False
-end
+    Parameters  unloadDirection
+End
 
 TransportOrderStep loadEmptyPallet
     Location    warehousePos1
     FinishedBy  agvLoadedAtWarehousePos1 == True
-end
+End
 
 TransportOrderStep unloadEmptyPallet
     Location    goodsPallet
     FinishedBy  agvLoadedAtGoodsPallet == False
-end
+End
 
 ###
 # Creation of a Task that transports from goodsPallet to warehousePos1
 ###
-Task TransportGoodsPallet
+Task transportGoodsPallet
     Transport
-    From        loadGoodsPallet
-    To          unloadGoodsPallet
-end
+    From        loadGoodsPallet 10, "right"
+    To          unloadGoodsPallet "left"
+End
 
 ###
 # Creation of a Task that is triggered if agvLoadedAtGoodsPallet occurs
 ###
-Task TransportGoodsPallet_2
+Task transportGoodsPallet_2
     Transport
-    From        loadGoodsPallet
-    To          unloadGoodsPallet
+    From        loadGoodsPallet 5, "right"
+    To          unloadGoodsPallet "right"
     TriggeredBy buttonPallet == True
-end
+End
 
 ###
 # Creation of a Task that will call Refill when done
 ###
-Task Refill
+Task refill
     Transport
     From        loadEmptyPallet
     To          unloadEmptyPallet
-end
+    Constraints emission <= 100
+End
 
-Task TransportGoodsPallet_3
+Task transportGoodsPallet_3
     Transport
-    From        loadGoodsPallet
-    To          unloadGoodsPallet
+    From        loadGoodsPallet 0, "left"
+    To          unloadGoodsPallet "right"
     TriggeredBy buttonPallet == True
-    OnDone      Refill  # If this Task is done, call Refill
-end
+    OnDone      refill  # If this Task is done, call Refill
+    Constraints (costs <= 100) and (emission <= 50)
+End
 ```
 ___
 
@@ -473,7 +499,7 @@ Valid Program:
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 ```
 
 Invalid Program:
@@ -481,12 +507,12 @@ Invalid Program:
 Location PickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 
 Location pickup-item
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 ```
 
 ### Member Variables
@@ -501,7 +527,7 @@ Valid Program:
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 ```
 
 Invalid Program:
@@ -509,18 +535,22 @@ Invalid Program:
 Location pickupItem
     name = s1_pickup
     type = "SmallLoad Carrier"
-end
+End
 
 Location pickupItem2
     name = "s1_pickup**"
     type = "SmallLoadCarrier"
-end
+End
 ```
 
 ### TransportOrderStep
-A *TransportOrderStep* contains the statements *Location*, *Triggered By* or *Finished By*. The *Instance* names should match the corresponding *Instance* so they are *Lowercase Strings* too. \
-With the *OnDone* Keyword you define a follow up *Task* so the task name should match the corresponding *Task* which is an *Lowercase String*. \
-*TriggeredBy* and *FinishedBy* use expressions. To learn more about valid expressions goto [this section](#expressions)
+A *TransportOrderStep* contains the statements *Location* and optionally *Triggered By*,  *Finished By* or *Parameters*.
+The *Instance* names should match the corresponding *Instance* so they are *Lowercase Strings* too.
+
+With the *OnDone* Keyword you define a follow up *Task* so the task name should match the corresponding *Task* which is an *Lowercase String*. 
+*TriggeredBy*, *FinishedBy* use expressions. To learn more about valid expressions goto [this section](#expressions)
+
+*Parameters*:
 
 #### Examples
 
@@ -529,9 +559,9 @@ Valid Program:
 TransportOrderStep t1
     Location testitest
     TriggeredBy mitarbeiterButtonDasErFertigIst
-    FinishedBy abc == bce < 5
+    FinishedBy abc == (bce < 5)
     OnDone task
-end
+End
 ```
 
 Invalid Program:
@@ -539,21 +569,21 @@ Invalid Program:
 TransportOrderStep t1
     MyLocation testitest
     TriggeredBy mitarbeiterButtonDasErFertigIst
-    FinishedBy abc == bce < 5
+    FinishedBy abc == (bce < 5)
     OnDone task
-end
+End
 
 TransportOrderStep t2
     Location Location1
     TriggeredBy mitarbeiterButtonDasErFertigIst
-    FinishedBy abc == bce < 5
-    onDone test
-end
+    FinishedBy abc == (bce < 5)
+    OnDone test
+End
 ```
 
 ### Task
 *Transport*, *From* and *To* are fixed Keywords. The names of the locations (*From* and *To*) need to be the same as the corresponding locations so they are *Uppercase Strings*.
-There are the same optional statements as in TransportOrderStep (Triggeredby, ...)
+There are the same optional statements as in TransportOrderStep (TriggeredBy, ...)
 
 #### Examples
 
@@ -601,7 +631,7 @@ An expression can be definied in multiple ways:
 Regex:
 
 Attribute: ``` [a-z][a-zA-Z0-9_]+ ``` \
-Binary Operation: ``` ['<''>''<=''>=''&&''||''==''='] ``` \
+Binary Operation: ``` ['<''>''<=''>=''and''or''==''='] ``` \
 Unary Operation: ```! ``` \
 Condition Statements: ``` ['True''False''TRUE''FALSE''[0-9]+''[0-9]+( '.' [0-9]+)'] ```
 
@@ -610,23 +640,22 @@ Condition Statements: ``` ['True''False''TRUE''FALSE''[0-9]+''[0-9]+( '.' [0-9]+
 
 Valid Program:
 ```
-task Transport_Task
-	TriggeredBy	palette_1Full == TRUE
-	TriggeredBy	palette_2Full == FALSE
-	TriggeredBy	palette_3Full == !12 || 42.42 <= 42.31
-end
+Task transport_Task
+    TriggeredBy	palette_3Full == True or 42.42 <= 42.31
+    FinishedBy	palette_2Full == FALSE and 40 > 30
+End
 ```
 
 Invalid Program:
 ```
-task Transport_Task
-	TriggeredBy	palette_1Full = TRUE
-end
+Task transport_Task
+    TriggeredBy	palette_1Full = TRUE
+End
 
-task Transport_Task2
-	TriggeredBy	palette_2Full == true
-	TriggeredBy	palette_3Full == "TRUE"
-end
+Task transport_Task2
+    TriggeredBy	palette_2Full == true
+    FinishedBy palette_3Full == "TRUE"
+End
 ```
 
 
@@ -643,7 +672,7 @@ Valid Program:
 Location pickupItem
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 ```
 
 Invalid Program:
@@ -651,12 +680,12 @@ Invalid Program:
 Location pickupItem
                     name = "s1_pickup"
         type = "SmallLoadCarrier"
-end
+End
 
     Location pickupItem2
     name = "s1_pickup"
     type = "SmallLoadCarrier"
-end
+End
 ```
 
 ___
@@ -669,14 +698,14 @@ First: generate Python-Files via:
 > java -jar antlr-4.7.2-complete.jar -Dlanguage=Python3 -visitor TaskLexer.g4 TaskParser.g4
 
 Then just simply execute:
-> python checkGrammarTreeCreation.py
+> python TaskLanguage.py {path to your file}
 
-to test the examples.txt 
+to test a given file
 
 or
 
-> python checkGrammarTreeCreation.py --test
+> python TaskLanguageTest.py (optional) --log
 
 if you want to test *all* Testfiles in the test folder
 
-If the testfiles contain an error, `checkGrammarTreeCreation` will write it in a log file in the logs folder (which will happen if you test the files in the invalid folder)
+If the testfiles contain an error it will be printed in the console or in a log file in the logs folder (if --log is given)
