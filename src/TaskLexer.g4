@@ -11,29 +11,31 @@ COMMENT: '#' ~[\n]* -> skip;
 mode BLOCK;
 
 NEW_LINE:  [ \t]* '\n';
-INDENTATION: ('    ' | '\t');
+fragment INDENTATION: ('    ' | '\t');
 
 COMMENT_IN_BLOCK : '#' ~[\n]+  -> channel(HIDDEN);
 COMMENT_LINE_IN_BLOCK : INDENTATION '#' ~[\n]+ '\n'-> channel(HIDDEN);
 
 END_IN_BLOCK: 'End' -> popMode;
 
+ASSIGNMENT: INDENTATION STARTS_WITH_LOWER_C_STR [ \t\r]* EQUAL [ \t\r]*;
+
 // Only For TransportOrderStep
-LOCATION: 'Location';
-PARAMETERS: 'Parameters';
+LOCATION: INDENTATION 'Location';
+PARAMETERS: INDENTATION 'Parameters';
 
 // Only For Task
-REPEAT: 'Repeat';
-CONSTRAINTS: 'Constraints';
+REPEAT: INDENTATION 'Repeat';
+CONSTRAINTS: INDENTATION 'Constraints';
 
-TRANSPORT: 'Transport';
-FROM: 'From';
-TO: 'To';
+TRANSPORT: INDENTATION 'Transport';
+FROM: INDENTATION 'From';
+TO: INDENTATION 'To';
 
 // Used in both TOS and Task
-ON_DONE: 'OnDone';
-TRIGGERED_BY: 'TriggeredBy';
-FINISHED_BY: 'FinishedBy';
+ON_DONE: INDENTATION 'OnDone';
+TRIGGERED_BY: INDENTATION 'TriggeredBy';
+FINISHED_BY: INDENTATION 'FinishedBy';
 
 EQUAL: '=';
 COMMA: ',';

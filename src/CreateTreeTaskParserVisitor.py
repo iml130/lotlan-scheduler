@@ -15,6 +15,7 @@ from transport.Instance import Instance
 from transport.TaskInfo import TaskInfo, TransportOrder
 from transport.TransportOrderStep import TransportOrderStep
 
+import re
 
 # Enum to set the type of the optional statement when returned
 class OptType(Enum):
@@ -93,10 +94,15 @@ class CreateTreeTaskParserVisitor(TaskParserVisitor):
 
     # Visit a parse tree produced by TaskParser#memberVariable.
     def visitMemberVariable(self, ctx):
-        variableName = ContextObject(ctx.STARTS_WITH_LOWER_C_STR().getText(), ctx)
+        assignmentStr = ctx.ASSIGNMENT().getText()
+
+        p = re.compile('\w+')
+        assignmentStr = p.search(assignmentStr).group(0)
+        variableName = ContextObject(assignmentStr, ctx)
         value = ContextObject(self.visitValue(ctx.value()), ctx)
 
         return (variableName, value)
+
 
     # Visit a parse tree produced by TaskParser#value.
     def visitValue(self, ctx):

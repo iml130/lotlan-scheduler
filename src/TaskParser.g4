@@ -22,7 +22,7 @@ instanceStart:
     INSTANCE STARTS_WITH_LOWER_C_STR NEW_LINE+;
 
 memberVariable:
-    INDENTATION STARTS_WITH_LOWER_C_STR EQUAL value NEW_LINE+;
+    ASSIGNMENT value NEW_LINE+;
 
 value:
     STRING_VALUE
@@ -42,21 +42,21 @@ tosStatement:
     optTosStatement | locationStatement | parameterStatement;
 
 locationStatement:
-    INDENTATION LOCATION STARTS_WITH_LOWER_C_STR NEW_LINE+;
+    LOCATION STARTS_WITH_LOWER_C_STR NEW_LINE+;
 
 // optional to extend functionality
 optTosStatement:
     eventStatement | onDoneStatement;
 
 eventStatement:
-    INDENTATION TRIGGERED_BY expression NEW_LINE+
-    | INDENTATION FINISHED_BY expression NEW_LINE+;
+    TRIGGERED_BY expression NEW_LINE+
+    | FINISHED_BY expression NEW_LINE+;
 
 onDoneStatement:
-    INDENTATION ON_DONE STARTS_WITH_LOWER_C_STR NEW_LINE+;
+    ON_DONE STARTS_WITH_LOWER_C_STR NEW_LINE+;
 
 parameterStatement:
-    INDENTATION PARAMETERS (STARTS_WITH_LOWER_C_STR COMMA)* STARTS_WITH_LOWER_C_STR NEW_LINE+;
+    PARAMETERS (STARTS_WITH_LOWER_C_STR COMMA)* STARTS_WITH_LOWER_C_STR NEW_LINE+;
     
 // Task Layout
 task:
@@ -72,26 +72,26 @@ taskStatement:
     | constraintsStatement;
 
 constraintsStatement:
-    INDENTATION CONSTRAINTS expression NEW_LINE+;
+    CONSTRAINTS expression NEW_LINE+;
 
 // transport from to 
 transportOrder:
-    INDENTATION TRANSPORT NEW_LINE 
+    TRANSPORT NEW_LINE 
     fromStatement 
     toStatement;
     
 fromStatement:
-    INDENTATION FROM STARTS_WITH_LOWER_C_STR parameters? NEW_LINE;
+    FROM STARTS_WITH_LOWER_C_STR parameters? NEW_LINE;
 
 toStatement:
-    INDENTATION TO STARTS_WITH_LOWER_C_STR parameters? NEW_LINE+;
+    TO STARTS_WITH_LOWER_C_STR parameters? NEW_LINE+;
 
 parameters:
     value 
     | value COMMA parameters;
 
 repeatStatement:
-    INDENTATION REPEAT INTEGER NEW_LINE+;
+    REPEAT INTEGER NEW_LINE+;
 
 expression:
     STARTS_WITH_LOWER_C_STR
