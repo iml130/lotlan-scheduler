@@ -4,15 +4,15 @@
 
 # Basic TransportOrderStep-structure
 TransportOrderStep moldingPalette
-    Location moldingPalette_location     # Only one Location can be defined!
+	Location moldingPalette_location     # Only one Location can be defined!
     FinishedBy workerPressedButtonAtMoldingPalette
 end
 
-
 TransportOrderStep warehouse
-    Location warehouse_location
+	Location warehouse_location
     FinishedBy workerPressedButtonAtWarehouse
 end
+
 TransportOrderStep t1#should work
 	Location testitest
 	TriggeredBy mitarbeiterButtonDasErFertigIst
@@ -38,15 +38,13 @@ end
 
 Container container
 	name = ""
-    type = "Container"
+	type = "Container"
 end
 
 Container room
 	name = ""
     type = "Supply_Room"
 end
-
-
 
 
 # Basic Instance structure
@@ -81,24 +79,16 @@ PaletteSensor palette_3Full
 end
 
 
-task Reset_Task
-	Transport 
-    from 		t1
-    to 			moldingPalette
-end 
-
-
 # Basic Task structure
 task Transport_Task
     # Transport something from A to B
 	Transport 
     from 		t1
     to 			warehouse
-    
 	TriggeredBy	palette_1Full == TRUE
 	TriggeredBy	palette_2Full == FALSE
 	TriggeredBy	palette_3Full == !12 || 42.42 <= 42.31
-    
+	
 	OnDone		Reset_Task
 end
 
@@ -133,9 +123,6 @@ Position thisPos
 	type = "pallet"
     
 	name = "thisPos" # Values can also be set inside "
-    
-    
-    
 end
 
 
@@ -158,9 +145,9 @@ end####### End of Task
 
 
 
-
-
-
+task Reset_Task
+	TriggeredBy palette_1Full == TRUE
+end
 
 Position emptyPallet   # Another Comment
 	type = "pallet"
@@ -206,7 +193,7 @@ task Refill
 	to moldingPalette
 end
 
-task Transport_Palette_Task
+task Transport_Palette_Task1
 	Transport 
     from t1 # All Pallets!
 	to warehouse
@@ -215,7 +202,7 @@ task Transport_Palette_Task
 end
 
 
-task Transport_Palette_Task
+task Transport_Palette_Task2
 	Transport 
     from t1 # All Pallets!
 	to warehouse
@@ -223,7 +210,7 @@ task Transport_Palette_Task
 	OnDone Refill
 end
 
-task Transport_Palette_Task
+task Transport_Palette_Task3
 	Transport 
     from warehouse # All Pallets!
 	to t1
@@ -233,7 +220,7 @@ task Transport_Palette_Task
 end
 
 
-task Transport_Palette_Task
+task Transport_Palette_Task4
 	Transport 
     from warehouse # All Pallets!
 	to t1
@@ -251,7 +238,7 @@ end
 
 
 
-template Time
+template Time2
     # As in Cron
     timing = "* * * * */10"
 end
@@ -260,7 +247,7 @@ end
 
 
 
-template Time
+template Time3
     # As in Cron
     timing = "* * *  * */10"
 end
@@ -295,16 +282,12 @@ Event sensorTest
     name = "LightBarrier"
 end
 
-
-
 task Pickup
     FinishedBy sensorTest == True # manual loading 
 end
 
 
  # TASKS
-
-
 task Transport_Palette_Task 
 	TriggeredBy mitarbeiterButtonDasErFertigIst
     Transport 
@@ -312,5 +295,3 @@ task Transport_Palette_Task
     to warehouse 
 	Repeat 3
 end
-
-
