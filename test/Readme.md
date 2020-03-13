@@ -7,24 +7,50 @@ Valid:
 - NewLinesBetweenStatements
 - Comments
 - Expressions
+- Parameters
+- Constraints
+
 
 Invalid:
-- Missing Location
-- Missing TransportOrderStep
-- Wrong Indentation
-- WrongSpelledEvent
-- WrongSpelled Location
-- WrongSpelled TransportOrderStep
-- Wrong Spelled OnDone Task (OnDone DAS)
-- Missing Event
-- Missing OnDone Task (OnDone )
-- LowerCase/UpperCase Erros
-- Naming Error
-- Invalid Characters for Names of Location/Event/TransportOrderSteps/Time/Task
-- Invalid expressions
-- Statement between Transport Order Statements
-- Event given as Location
-- Multiple Repeat
-- Multiple Transport Orders
+- Syntax:
+  - CommaAfterLastParameter
+  - InvalidCharsForNames
+  - LowerUpperCaseErrors
+  - MissingEnd
+  - MissingEvent
+  - MissingLocation
+  - MissingOnDone
+  - MissingTOS
+  - NamingError
+  - NoCommaBetweenParameters
+  - StatementBetweenParameters
+  - WrongIndentation
+  - WrongSpelledLocation
+  - WrongSpelledOnDone
+  - WrongSpelledTOS
 
-What else to test:
+- Semantic:
+  - BinaryOperationLeftSideIsNotAnEvent 
+  - BinaryOperationRightSideIsNotABoolean
+  - SingleExpressionEventIsNotABoolean
+  - SingleExpressionNoEventAnNoTime
+  - UnaryOperationExpressionIsNotABoolean
+  - InstanceDupilcate
+  - MultipleRepeats
+  - MultipleTransportOders
+  - OnDoneAndRepeat
+  - ParameterAmountDoesntMatch
+  - TaskDuplicate
+  - TaskMultipleOnDone
+  - TaskUnknwonOnDoneTask
+  - TempAttributeDoesntExist
+  - TempAttributeNotDefinied
+  - TosDuplicate
+  - TosLocationHasOtherType
+  - TosLocationNotAnInstance
+  - TosMultipleLocations
+  - TosMultipleOnDone
+  - TosUnknownOnDoneTask
+  - UnknownTaskInFrom
+  - UnknownTaskInTo 
+  - UnknownTemplate
