@@ -2,9 +2,8 @@ image: "ubuntu:latest"
 
 before_script:
   - apt update
-  - apt-get install -y python-dev 
-  - python3 --version
-  - pip3 install -r requirements.txt --upgrade
+  - apt-get install -y python-dev
+  - pip install -r requirements.txt --upgrade
   - cd src/
   - java -jar antlr-4.7.2-complete.jar -Dlanguage=Python3 -visitor TaskLexer.g4 TaskParser.g4
 
@@ -15,6 +14,6 @@ test:
   stage: test
   script:
     - export PYTHONIOENCODING=utf-8
-    - python3 TaskLanguageTest.py
+    - python TaskLanguageTest.py
   tags:
     - asprunner
