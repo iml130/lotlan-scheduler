@@ -1,8 +1,8 @@
-image: "ubuntu:latest"
+image: python:latest
 
 before_script:
   - apt update
-  - apt-get install -y python-dev
+  - python -V
   - pip install -r requirements.txt --upgrade
   - cd src/
   - java -jar antlr-4.7.2-complete.jar -Dlanguage=Python3 -visitor TaskLexer.g4 TaskParser.g4
