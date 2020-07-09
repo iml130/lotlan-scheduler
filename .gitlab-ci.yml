@@ -4,6 +4,7 @@ before_script:
   - apt update
   - python -V
   - pip install -r requirements.txt --upgrade
+  - apt-get install default-jdk
   - cd src/
   - java -jar antlr-4.7.2-complete.jar -Dlanguage=Python3 -visitor TaskLexer.g4 TaskParser.g4
 
