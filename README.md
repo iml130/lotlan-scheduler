@@ -1,4 +1,4 @@
-# Logistic Task Language
+# LoTLan Schedular
 
 Schedular for LoTLan tasks. Parses LoTLan files and accepts events defined in the files to schedule.
 
@@ -18,28 +18,35 @@ import sys
 from lotlan_schedular.schedular import LotlanSchedular
 from lotlan_schedular.api.event import Event
 
-
+# gets called for each materialflow that is waiting for
+# the triggeredBy condition to be satisfied
+# event information contains info about the events in tb
 def cb_triggered_by(mf_uuid, _uuid, event_information):
     print("cb_triggered_by from mf: " + str(mf_uuid))
     print("UUID: " + str(_uuid), "Event_Info: " + str(event_information))
     # foreach event in event_information
 
-
+# gets called when triggeredBy condition is satisfied
+# transport_orders contains the next transport orders which 
+# can be executed
 def cb_next_to(mf_uuid, transport_orders):
     print("cb_next_to from mf: " + str(mf_uuid))
     print(str(transport_orders))
 
-
+# gets called for each materialflow that is waiting for
+# the finishedBy condition to be satisfied
+# event information contains info about the events in fb
 def cb_finished_by(mf_uuid, _uuid, event_information):
     print("cb_finished_by from mf: " + str(mf_uuid))
     print("UUID: " + str(_uuid), "Event_Info: " + str(event_information))
 
-
+# gets called if a task with the id _uuid has finished
 def cb_task_finished(mf_uuid, _uuid):
     print("cb_task_finished from mf: " + str(mf_uuid))
     print("task with uuid " + str(_uuid) + " finished")
 
-
+# gets called if every task is finished
+# will never be called if the LoTLan file contains a cycle
 def cb_all_finished(mf_uuid):
     print("cb_all_finished from mf: " + str(mf_uuid))
 
@@ -97,19 +104,7 @@ if __name__ == '__main__':
 ```
 
 ## License
-Copyright [2020] [Fraunhofer IML]
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+LoTLan Schedular is licensed under the terms of the Apache license. See [LICENCSE](./LICENSE) for more information.
 
 ## Contributors
 Peter Detzner, Maximilian Hoerstrup, Dominik Lux
