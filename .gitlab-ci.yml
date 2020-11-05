@@ -1,20 +1,17 @@
-image: python:latest
-
-before_script:
-  - apt update
-  - python -V
-  - pip install -r requirements.txt --upgrade
-  - apt-get install default-jdk
-  - cd src/
-  - java -jar antlr-4.7.2-complete.jar -Dlanguage=Python3 -visitor TaskLexer.g4 TaskParser.g4
-
+image: registry.gitlab.cc-asp.fraunhofer.de:4567/iml/oe130/software/sola/logistic-tasklanguage/lotlan_schedular:latest
 stages:
   - test
-  
-test:
+
+unittest:
   stage: test
   script:
     - export PYTHONIOENCODING=utf-8
-    - python TaskLanguageTest.py
+    - python -m xmlrunner discover -s /builds/iml/oe130/software/sola/logistic-tasklanguage/lotlan_schedular/tests -v -o ./tmp/build/junit-reports
+  artifacts:
+      when: always
+      reports:
+        junit:
+            - ./tmp/build/junit-reports/*.xml
+      expire_in: 1 week
   tags:
-    - asprunner
+      - asprunner

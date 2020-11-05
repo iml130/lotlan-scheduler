@@ -1,0 +1,32 @@
+site_name: LoTLan
+site_description: LoTLan
+docs_dir: doc/
+site_dir: html
+markdown_extensions: [toc, fenced_code]
+use_directory_urls: true 
+theme:
+    name: readthedocs
+
+nav:    
+    - Home: index.md
+    - Getting Started: start.md
+    - User & Programmers Manual: 
+        - Introduction: user/introduction.md 
+        - Transport: user/transport.md
+        - Primitives: user/primitives.md
+        - Instances: user/instances.md
+        - TransportOrderSteps: user/transportordersteps.md
+        - Tasks: user/tasks.md
+        - Comments: user/comments.md
+        - Allowed Characters: user/allowedchars.md
+    - Installation & Administration:
+        - Introduction: install/introduction.md
+        - Installation: install/install.md
+        - Extension: install/extension.md
+        - Configuration: install/configuration-files.md 
+        - Deinstallation: install/deinstall.md
+        - Upgrading from previous versions: install/upgrade.md
+    - Usage: usage.md
+    - Deprecated Functionality: deprecated.md
+    - Removed Functionality: removed.md
+    - Roadmap: roadmap.md
