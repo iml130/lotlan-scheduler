@@ -21,6 +21,7 @@ class SemanticValidator:
 
     # Instance Check
     def check_instances(self):
+        error_found = False
         for instance in self.tree.instances.values():
             template_name = instance.template_name
             template = self.get_template(self.tree, template_name)
@@ -31,10 +32,13 @@ class SemanticValidator:
                 context_start = instance.context.start
                 self.error_listener.print_error(msg, context_start.line, context_start.column,
                                                 len(instance.name), False)
+                error_found = True
             # check if the instance variables match with the corresponding template
             else:
-                self.check_if_template_attribute_exists(template, instance)
-                self.check_if_template_attribute_definied(template, instance)
+                if (not self.check_if_template_attribute_exists(template, instance) or
+                    not self.check_if_template_attribute_definied(template, instance)):
+                    error_found = True
+        return not error_found
 
     # check if all attributes in the given instance are definied in the template
     def check_if_template_attribute_exists(self, template, instance):
@@ -50,6 +54,8 @@ class SemanticValidator:
                 variable_context = instance.context_dict[instance_attribute]
                 self.error_listener.print_error(msg, variable_context.start.line, variable_context.start.column,
                                                 len(instance_attribute), False)
+                return False
+        return True
 
     # check if all attributes definied in the template are set in instance
     def check_if_template_attribute_definied(self, template, instance):
@@ -63,19 +69,25 @@ class SemanticValidator:
                     template_attribute, instance.name)
                 self.error_listener.print_error(msg, instance.context.start.line, instance.context.start.column,
                                                 len(template_attribute), False)
+                return False
+        return True
 
     # TransportOrderStep Check
     def check_transport_order_steps(self):
+        error_found = False
         for tos in self.tree.transport_order_steps.values():
             context_dict = tos.context_dict
 
-            self.check_locations(tos)
-            self.check_on_done(tos)
+            if not self.check_locations(tos) or not self.check_on_done(tos):
+                error_found = True
 
             if TRIGGERED_BY_KEY in context_dict:
-                self.check_expression(tos.triggered_by_statements, context_dict[TRIGGERED_BY_KEY])
+                if not self.check_expression(tos.triggered_by_statements, context_dict[TRIGGERED_BY_KEY]):
+                    error_found = True
             if FINISHED_BY_KEY in context_dict:
-                self.check_expression(tos.finished_by_statements, context_dict[FINISHED_BY_KEY])
+                if not self.check_expression(tos.finished_by_statements, context_dict[FINISHED_BY_KEY]):
+                    error_found = True
+        return not error_found
 
     def check_locations(self, tos):
         context_dict = tos.context_dict
@@ -90,25 +102,34 @@ class SemanticValidator:
                        location.logical_name, tos.name)
                 self.error_listener.print_error(msg, location_context.start.line, location_context.start.column,
                                                 len(location.logical_name), False)
+                return False
             elif locationInstance.template_name != "Location":
-                msg = ("The instance '{}' in TransportOrderStep '{}' is"
+                msg = ("The instance '{}' in TransportOrderStep '{}' is "
                        "not a 'Location' instance but a '{}' instance").format(
                         location.logical_name, tos.name, locationInstance.template_name)
                 self.error_listener.print_error(msg, location_context.start.line, location_context.start.column,
                                                 len(location.logical_name), False)
+                return False
+
+        return True
 
     # Task Check
     def check_tasks(self):
+        error_found = False
         for task in self.tree.tasks.values():
             context_dict = task.context_dict
 
-            self.check_transport_orders(task)
-            self.check_repeat_or_on_done(task)
-            self.check_on_done(task)
+            if (not self.check_transport_orders(task) or
+                not self.check_repeat_or_on_done(task) or
+                not self.check_on_done(task)):
+                error_found = True
             if TRIGGERED_BY_KEY in task.context_dict:
-                self.check_expression(task.triggered_by, context_dict[TRIGGERED_BY_KEY])
+                if not self.check_expression(task.triggered_by, context_dict[TRIGGERED_BY_KEY]):
+                    error_found = True
             if FINISHED_BY_KEY in task.context_dict:
-                self.check_expression(task.finished_by, context_dict[FINISHED_BY_KEY])
+                if self.check_expression(task.finished_by, context_dict[FINISHED_BY_KEY]):
+                    error_found = True
+        return not error_found
 
     def check_transport_orders(self, task):
         if task.transport_order is not None:
@@ -118,33 +139,40 @@ class SemanticValidator:
                     task.name, task.transport_order.to_step_from.name)
                 self.error_listener.print_error(msg, task.context.start.line, task.context.start.column,
                                                 len(task.transport_order.to_step_from.name), False)
+                return False               
             else:
                 tos = self.get_transport_order_step(task.transport_order.to_step_from.name)
                 if len(task.transport_order.from_parameters) != len(tos.parameters):
                     msg = "From has not the same amount of parameters as the transport order step!"
                     self.error_listener.print_error(msg, task.context.start.line, task.context.start.column,
                                                     len(task.transport_order.to_step_from.name), False)
-
+                    return False
             # To check
             if self.check_if_tos_is_present(task.transport_order.to_step_to.name) is False:
                 msg = "Task '{}' refers to an unknown TransportOrderStep in 'to' '{}'".format(
                     task.name, task.transport_order.to_step_to.name)
                 self.error_listener.print_error(msg, task.context.start.line, task.context.start.column,
                                                 len(task.transport_order.to_step_to.name), False)
+                return False                        
             else:
                 tos = self.get_transport_order_step(task.transport_order.to_step_to.name)
                 if len(task.transport_order.to_parameters) != len(tos.parameters):
                     msg = "To has not the same amount of parameters as the transport order step!"
                     self.error_listener.print_error(msg, task.context.start.line, task.context.start.column,
                                                     len(task.transport_order.to_step_from.name), False)
+                    return False
+        return True
 
     def check_on_done(self, task_or_tos):
         context_dict = task_or_tos.context_dict
+        error_found = False
         for onDoneTask in task_or_tos.on_done:
             if self.check_if_task_is_present(onDoneTask) is False:
                 msg = "The task name '{}' in the OnDone statement refers to an unknown Task".format(onDoneTask)
                 self.error_listener.print_error(msg, context_dict[ON_DONE_KEY].start.line,
                                                 context_dict[ON_DONE_KEY].start.column, len(onDoneTask), False)
+                error_found = True
+        return not error_found
 
     def check_repeat_or_on_done(self, task):
         if task.repeat and task.on_done:
@@ -152,23 +180,33 @@ class SemanticValidator:
                    "It is only allowed to have either of them").format(task.name)
             self.error_listener.print_error(msg, task.context.start.line, task.context.start.column,
                                             len(task.name), False)
+            return False
+        return True
 
     def check_expressions(self, expressions, task_or_tos):
         if len(expressions) > 1:
             msg = "There is more than one TriggeredBy or FinishedBy Statement in '{}'".format(task_or_tos.name)
             self.error_listener.print_error(msg, task_or_tos.context.start.line, task_or_tos.context.start.column,
                                             len(task_or_tos.name), False)
+            return False
         elif len(expressions) == 1:
-            self.check_expression(expressions[0].value, expressions[0].context)
+            if not self.check_expression(expressions[0].value, expressions[0].context):
+                return False
+        return True
+
 
     def check_expression(self, expression, context):
         if type(expression) == str:
-            self.check_single_expression(expression, context)
+            if not self.check_single_expression(expression, context):
+                return False
         elif type(expression) == dict:
             if len(expression) == 2:
-                self.check_unary_operation(expression, context)
+                if not self.check_unary_operation(expression, context):
+                    return False
             else:
-                self.check_binary_operation(expression, context)
+                if not self.check_binary_operation(expression, context):
+                    return False
+        return True
 
     def check_single_expression(self, expression, context):
         if self.is_template_instance(expression, "Event") is True:
@@ -176,15 +214,21 @@ class SemanticValidator:
             if self.has_instance_type(instance, "Boolean") is False:
                 msg = "'" + expression + "' has no booelan type so it cant get parsed as single statement"
                 self.error_listener.print_error(msg, context.start.line, context.start.column, 1, False)
+                return False
         elif self.is_template_instance(expression, "Time") is False:
-            msg = "The given expression is not related to a time or event instance"
-            self.error_listener.print_error(msg, context.start.line, context.start.column, 1, False)
+            if expression not in ["True", "true", "False", "false"]:
+                msg = "The given expression is not related to a time or event instance"
+                self.error_listener.print_error(msg, context.start.line, context.start.column, 1, False)
+                return False
+        return True
 
     def check_unary_operation(self, expression, context):
         if self.is_boolean_expression(expression["value"]) is False:
             msg = "The given expression couldnt be resolved to a boolean so it cant get parsed as a single statement"
             self.error_listener.print_error(msg, context.start.line, context.start.column,
                                             len(expression["value"]), False)
+            return False
+        return True
 
     def check_binary_operation(self, expression, context):
         # check if the left side of the expression is an event instance
@@ -196,13 +240,17 @@ class SemanticValidator:
                 msg = "The task given in the expression is not defined"
                 self.error_listener.print_error(msg, context.start.line,
                                                 context.start.column, len(expression["left"]), False)
+                return False
         else:
             if self.is_boolean_expression(right) is False:
                 msg = "The right side is not a boolean expression "
                 self.error_listener.print_error(msg, context.start.line, context.start.column, len(right), False)
+                return False
             if self.is_boolean_expression(left) is False:
                 msg = "The left side is not a boolean expression"
                 self.error_listener.print_error(msg, context.start.line, context.start.column, len(left), False)
+                return False
+        return True
 
     # Check if the given expression can be resolved to a boolean expression
     def is_boolean_expression(self, expression):
