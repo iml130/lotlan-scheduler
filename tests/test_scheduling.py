@@ -7,9 +7,6 @@ from lotlan_schedular.api.event import Event
 from lotlan_schedular.schedular import LotlanSchedular
 from snakes.nets import Marking, MultiSet
 
-
-from test_api_classes import ApiClassTest
-
 from os import walk
 from os.path import splitext, join
 import subprocess as su
