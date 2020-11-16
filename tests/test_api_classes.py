@@ -48,9 +48,8 @@ Task helloTask
 End
 """
 
-class ApiClassTest(unittest.TestCase):
+class TestApiClasses(unittest.TestCase):
 
-    @classmethod
     def setUp(self):
         lotlan_logic = LotlanSchedular(test_string, True)
         material_flow = lotlan_logic.get_materialflows()[0]

@@ -1,16 +1,21 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath('../lotlan_schedular'))
+
 from lotlan_schedular.api.event import Event
 from lotlan_schedular.schedular import LotlanSchedular
 from snakes.nets import Marking, MultiSet
-import sys
-import os
+
+
+from test_api_classes import ApiClassTest
+
 from os import walk
 from os.path import splitext, join
 import subprocess as su
 import unittest
 import unittest
 import xmlrunner
-
-sys.path.append(os.path.abspath('../lotlan_schedular'))
 
 
 # uninstall possible old lotlan_schedular packages
@@ -32,7 +37,7 @@ def get_file_names(path):
     return file_names
 
 
-class SchedulingTest(unittest.TestCase):
+class TestScheduling(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -47,7 +52,6 @@ class SchedulingTest(unittest.TestCase):
 
             for material_flow in material_flows[i]:
                 material_flow.start()
-                petri_net = material_flow.petri_net_generator.petri_nets[0]
             f.close()
         cls.lotlan_logic = lotlan_logic
         cls.material_flows = material_flows
@@ -225,8 +229,7 @@ class SchedulingTest(unittest.TestCase):
         material_flow.fire_event("0", Event(
             "buttonPressed", "", "Boolean", value=False))
         marking_after_triggered_by_passed = Marking(task_started=MultiSet([1]))
-        self.assertEqual(petri_net.get_marking(),
-                         marking_after_triggered_by_passed)
+        self.assertEqual(petri_net.get_marking(),marking_after_triggered_by_passed)
 
         material_flow.fire_event("0", Event(
             "to_done", "", "Boolean", value=True))
@@ -372,8 +375,7 @@ class SchedulingTest(unittest.TestCase):
             "to_done", "", "Boolean", value=True))  # should not be accepted
         material_flow_1.fire_event("0", Event(
             "to_done", "", "Boolean", value=True))
-        material_flow_2.fire_event("0", Event(
-            "to_done", "", "Boolean", value=True))
+        material_flow_2.fire_event("0", Event("to_done", "", "Boolean", value=True))
 
         marking_after_to_done_m1_1 = Marking(task_finished=MultiSet([1]))
         marking_after_to_done_m1_2 = Marking(task_started=MultiSet([1]))
@@ -601,7 +603,7 @@ class SchedulingTest(unittest.TestCase):
         self.assertEqual(petri_net.get_marking(), finished_marking)
 
     def get_material_flows(self, test_number):
-        return SchedulingTest.material_flows[test_number]
+        return TestScheduling.material_flows[test_number]
 
 
 if __name__ == '__main__':
