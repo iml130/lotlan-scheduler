@@ -1,15 +1,17 @@
+""" Contains unit tests for the API classes """
+
+# standard libraries
 import sys
 import os
-sys.path.append(os.path.abspath('../lotlan_schedular'))
-
-from lotlan_schedular.api.event import Event
-from lotlan_schedular.api.location import Location
-from lotlan_schedular.schedular import LotlanSchedular
-
-import subprocess as su
 import unittest
 
+# 3rd party packages
 import xmlrunner
+
+sys.path.append(os.path.abspath("../lotlan_schedular"))
+
+# local sources
+from lotlan_schedular.schedular import LotlanSchedular
 
 # uninstall possible old lotlan_schedular packages
 # so current code is used not old one
@@ -49,7 +51,10 @@ End
 """
 
 class TestApiClasses(unittest.TestCase):
-
+    """
+        Tests if objects of api classes contains the correct attribute values
+        while scheduling
+    """
     def setUp(self):
         lotlan_logic = LotlanSchedular(test_string, True)
         material_flow = lotlan_logic.get_materialflows()[0]
@@ -61,13 +66,16 @@ class TestApiClasses(unittest.TestCase):
     def test_location(self):
         self.assertEqual(len(self.transport_order_steps), 2)
 
-        self.assertEqual(self.transport_order_steps["loadStorage"].location.logical_name, "pickupItem")
-        self.assertEqual(self.transport_order_steps["loadStorage"].location.physical_name, "s1_pickup")
-        self.assertEqual(self.transport_order_steps["loadStorage"].location.location_type, "SmallLoadCarrier")
-        self.assertEqual(self.transport_order_steps["unloadWorkstation1"].location.logical_name, "dropoffItem")
-        self.assertEqual(self.transport_order_steps["unloadWorkstation1"].location.physical_name, "ws1_dropoff")
-        self.assertEqual(self.transport_order_steps["unloadWorkstation1"].location.location_type, "SmallLoadCarrier")
-        
+        load_storage_location = self.transport_order_steps["loadStorage"].location
+        unload_workstation_location = self.transport_order_steps["unloadWorkstation1"].location
+
+        self.assertEqual(load_storage_location.logical_name, "pickupItem")
+        self.assertEqual(load_storage_location.physical_name, "s1_pickup")
+        self.assertEqual(load_storage_location.location_type, "SmallLoadCarrier")
+        self.assertEqual(unload_workstation_location.logical_name, "dropoffItem")
+        self.assertEqual(unload_workstation_location.physical_name, "ws1_dropoff")
+        self.assertEqual(unload_workstation_location.location_type, "SmallLoadCarrier")
+
     def test_triggered_by(self):
         self.assertEqual(len(self.transport_order_steps), 2)
         triggered_by_events = self.transport_order_steps["loadStorage"].triggered_by
@@ -80,7 +88,6 @@ class TestApiClasses(unittest.TestCase):
         self.assertEqual(tb_event.event_type, "Boolean")
         self.assertEqual(tb_event.comparator, "==")
         self.assertEqual(tb_event.value, True)
-       
 
     def test_finished_by(self):
         self.assertEqual(len(self.transport_order_steps), 2)
@@ -96,6 +103,6 @@ class TestApiClasses(unittest.TestCase):
         self.assertEqual(fb_event.value, True)
 
 
-if __name__ == '__main__':
-    unittest.main(
-        testRunner=xmlrunner.XMLTestRunner(output='test-reports'), failfast=False, buffer=False, catchbreak=False)
+if __name__ == "__main__":
+    unittest.main(testRunner=xmlrunner.XMLTestRunner(output="test-reports"),
+                  failfast=False, buffer=False, catchbreak=False)

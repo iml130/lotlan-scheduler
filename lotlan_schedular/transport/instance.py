@@ -1,3 +1,5 @@
+""" Contains Instance class """
+
 class Instance(object):
     '''
         Represents an Instance and all its data
