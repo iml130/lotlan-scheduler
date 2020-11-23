@@ -1,3 +1,5 @@
+""" Contains CompleteProgram class """
+
 class CompleteProgram(object):
     '''
         Holds information about all building blocks of the TaskLanguage

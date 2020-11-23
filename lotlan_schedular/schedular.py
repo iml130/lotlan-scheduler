@@ -1,14 +1,20 @@
+""" Contains LotlanSchedular class """
+
+# standard libraries
 import uuid
+
+# 3rd party packages
 import networkx as nx
 
+# local sources
 from lotlan_schedular.api.materialflow import MaterialFlow
 
-from lotlan_schedular.TaskLanguageTest import test_string
+from lotlan_schedular.task_language_test import test_string
 
 from lotlan_schedular.defines import TEMPLATE_STRING
 
-
 class LotlanSchedular:
+    """ Scheduling class """
     def __init__(self, lotlan_string, test_flag=False):
         self.lotlan_structure = None
         self.test_flag = test_flag
@@ -18,20 +24,24 @@ class LotlanSchedular:
     # just validates lotlan string and returns
     # true if valid
     def validate(self, lotlan_string):
-        lotlan_structure, error_information, error_list = test_string(lotlan_string, TEMPLATE_STRING, False)
-        if error_information.syntax_error_count == 0 and error_information.semantic_error_count == 0:
+        lotlan_structure, error_information, error_list = test_string(lotlan_string,
+                                                                      TEMPLATE_STRING, False)
+        if (error_information.syntax_error_count == 0 and 
+            error_information.semantic_error_count == 0):
             return True
         raise ValueError(error_list)
 
     def init(self, lotlan_string):
-        lotlan_structure, error_information, error_list = test_string(lotlan_string, TEMPLATE_STRING, False)
+        lotlan_structure, error_information, error_list = test_string(lotlan_string,
+                                                                      TEMPLATE_STRING, False)
         self.lotlan_structure = lotlan_structure
 
-        if error_information.syntax_error_count != 0 or error_information.semantic_error_count != 0:
+        if (error_information.syntax_error_count != 0 or
+            error_information.semantic_error_count != 0):
             raise ValueError(error_list)
-        else:
-            graph = self.create_graph(lotlan_structure.tasks)
-            self.material_flows = self.find_materialflows(graph, lotlan_structure.tasks)
+
+        graph = self.create_graph(lotlan_structure.tasks)
+        self.material_flows = self.find_materialflows(graph, lotlan_structure.tasks)
 
     def create_graph(self, tasks):
         call_graph = nx.Graph()
@@ -42,6 +52,9 @@ class LotlanSchedular:
         return call_graph
 
     def find_materialflows(self, graph, tasks):
+        """
+            With help of a call graph find all materialflows
+        """
         materialflows = []
         tasks_reached = []
 
@@ -54,7 +67,8 @@ class LotlanSchedular:
                     tasks_in_mf.append(self.lotlan_structure.tasks[task_name])
                     tasks_reached.append(task_name)
 
-                materialflow = MaterialFlow(uuid.uuid4(), self.lotlan_structure, tasks_in_mf, self.test_flag)
+                materialflow = MaterialFlow(uuid.uuid4(), self.lotlan_structure,
+                                            tasks_in_mf, self.test_flag)
                 materialflows.append(materialflow)
         return materialflows
 

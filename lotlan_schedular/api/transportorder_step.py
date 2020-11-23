@@ -1,8 +1,11 @@
-from lotlan_schedular.api.event import Event
-from lotlan_schedular.api.location import Location
-
+""" Contains TransportOrderStep class """
 
 class TransportOrderStep:
+    """
+        Represents a TransportOrderStep in lotlan code
+        as well as in scheduling
+    """
+
     def __init__(self):
         self.name = ""
         self.location = ""

@@ -1,12 +1,14 @@
+""" Contains LotlanTreeVisitor """
+
 # standard libraries
 from enum import Enum
 import re
 
 # local sources
-from lotlan_schedular.transport.CompleteProgram import CompleteProgram
-from lotlan_schedular.transport.Template import Template
-from lotlan_schedular.transport.Instance import Instance
-from lotlan_schedular.transport.Task import Task
+from lotlan_schedular.transport.complete_program import CompleteProgram
+from lotlan_schedular.transport.template import Template
+from lotlan_schedular.transport.instance import Instance
+from lotlan_schedular.transport.task import Task
 
 from lotlan_schedular.api.transportorder_step import TransportOrderStep
 from lotlan_schedular.api.transportorder import TransportOrder
@@ -15,7 +17,7 @@ from lotlan_schedular.api.event import Event
 
 # globals defines
 from lotlan_schedular.defines import (TRIGGERED_BY_KEY, FINISHED_BY_KEY, REPEAT_KEY,
-                     ON_DONE_KEY, TRANSPORT_ORDER_KEY, LOCATION_KEY, ANTLR_COMMAND)
+                     ON_DONE_KEY, TRANSPORT_ORDER_KEY, LOCATION_KEY)
 
 from lotlan_schedular.parser.LoTLanParserVisitor import LoTLanParserVisitor
 
@@ -28,7 +30,7 @@ class OptionaStatement(Enum):
     ON_DONE = 3
 
 
-class CreateTreeTaskParserVisitor(LoTLanParserVisitor):
+class LotlanTreeVisitor(LoTLanParserVisitor):
     '''
         Uses visitor pattern from antlr to traverse the parse tree
         and store program information in a CompleteProgram object

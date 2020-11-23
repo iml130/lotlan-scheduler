@@ -1,8 +1,9 @@
+""" """
 # standard libraries
 import argparse
 
 # local sources
-from lotlan_schedular.TaskLanguageTest import test_file, test_string
+from lotlan_schedular.task_language_test import test_file, test_string
 
 # globals defines
 from lotlan_schedular.defines import TEMPLATES_PATH
@@ -14,7 +15,9 @@ def main():
 
     parser_2.add_argument("--file", help="lotlan file", type=str)
     parser_2.add_argument("--string", help="", type=str)
-    parser.add_argument("--ext", help="output of test is used in extension for error highlighting", type=str)
+    parser.add_argument("--ext",
+                        help="output of test is used in extension for error highlighting",
+                        type=str)
 
     args = parser.parse_args()
     arg_dict = {"file": args.file, "string": args.string}
@@ -29,5 +32,5 @@ def main():
         test_string(arg_dict["string"], templates_path, args.ext is not None)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

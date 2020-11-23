@@ -1,7 +1,13 @@
+""" Contains TransportOrder class """
+
+# local sources
 from lotlan_schedular.api.transportorder_step import TransportOrderStep
 
-
 class TransportOrder:
+    """
+        Represents a TransportOrder in lotlan code
+        as well as in scheduling
+    """
     def __init__(self):
         self.uuid = ""
         self.to_step_from = TransportOrderStep()

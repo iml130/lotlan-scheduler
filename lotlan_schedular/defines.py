@@ -1,10 +1,10 @@
-TEST_FOLDER_PATH = "etc/test/"
+""" Global defines """
+
+TEST_FOLDER_PATH = "etc/tests/"
 LOG_PATH = "logs/log.txt"
 TEMPLATES_PATH = "lotlan_schedular/templates"
 
 LOTLAN_FILE_ENDING = ".tl"
-
-ANTLR_COMMAND = "java -jar antlr-4.7.2-complete.jar -Dlanguage=Python3 -visitor TaskLexer.g4 TaskParser.g4"
 
 SYMBOLIC_NAMES = {
     "TEMPLATE": "a template",
@@ -69,7 +69,6 @@ Template Time
 End
 """
 
-
 TRIGGERED_BY_KEY = "TriggeredBy"
 FINISHED_BY_KEY = "FinishedBy"
 ON_DONE_KEY = "OnDone"
@@ -79,9 +78,8 @@ PARAMETER_KEY = "Parameter"
 LOCATION_KEY = "Location"
 
 # Petri Net Generation
-
-
 class PetriNetConstants:
+    """ Constants that are used in PetriNetGeneration """
     PETRI_NET_NAME = "Petri_Net"
     IMAGE_ENDING = ".png"
     TRIGGERED_BY = "triggered_by"
@@ -99,6 +97,7 @@ class PetriNetConstants:
 
 
 class DrawConstants:
+    """ Constants that are used in PetriNetDrawing """
     NODE_SEP_VALUE = 3
 
     PLACE_SHAPE = "circle"
@@ -125,6 +124,7 @@ class DrawConstants:
 
 
 class LogicConstants:
+    """ Constants that are used in the control logic of the schedular """
     TRIGGERED_BY_PASSED_MSG = "t_by"
     TO_DONE_MSG = "t_done"
     TASK_FINISHED_MSG = "t_finished"
