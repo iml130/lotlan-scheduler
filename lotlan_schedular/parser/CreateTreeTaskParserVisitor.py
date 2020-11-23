@@ -7,8 +7,11 @@ from lotlan_schedular.transport.CompleteProgram import CompleteProgram
 from lotlan_schedular.transport.Template import Template
 from lotlan_schedular.transport.Instance import Instance
 from lotlan_schedular.transport.Task import Task
-from lotlan_schedular.transport.TransportOrder import TransportOrder
-from lotlan_schedular.transport.TransportOrderStep import TransportOrderStep
+
+from lotlan_schedular.api.transportorder_step import TransportOrderStep
+from lotlan_schedular.api.transportorder import TransportOrder
+from lotlan_schedular.api.location import Location
+from lotlan_schedular.api.event import Event
 
 # globals defines
 from lotlan_schedular.defines import (TRIGGERED_BY_KEY, FINISHED_BY_KEY, REPEAT_KEY,
@@ -77,36 +80,48 @@ class CreateTreeTaskParserVisitor(LoTLanParserVisitor):
             to = task.transport_order
             if to is not None:
                 try:
-                    to.tos_from = self.cp.transport_order_steps[to.pickup_from]
-                    to.tos_to = self.cp.transport_order_steps[to.deliver_to]
+                    to.to_step_from = self.cp.transport_order_steps[to.to_step_from.name]
+                    to.to_step_to = self.cp.transport_order_steps[to.to_step_to.name]
                 except KeyError:
                     pass
 
         for tos in self.cp.transport_order_steps.values():
-            self.get_events_from_tos(tos.triggered_by, tos.triggered_by_events)
-            self.get_events_from_tos(tos.finished_by, tos.finished_by_events)
+            event_instances = {}
+            for instance in self.cp.instances.values():
+                if instance.template_name == "Event":
+                    event_instances[instance.name] = instance
+
+            self.get_events_from_tos(tos.triggered_by_statements, event_instances, tos.triggered_by)
+            self.get_events_from_tos(tos.finished_by_statements, event_instances, tos.finished_by)
 
         return self.cp
 
-    def get_events_from_tos(self, expression, event_list, value=None, comparator=None):
-        if type(expression) == str:
+    def get_events_from_tos(self, expression, events, event_list, value=None, comparator=None):
+        if type(expression) == str and expression != "" and expression in events:
             if value is None:
-                event_list.append((expression, True, "=="))
-            else:
-                event_list.append((expression, value, comparator))
+                value = True
+            if comparator is None:
+                comparator = "=="
+
+            logical_name = expression
+            physical_name = events[logical_name].keyval["name"]
+            event_type = events[logical_name].keyval["type"]
+    
+            event_list.append(Event(logical_name, physical_name, event_type, comparator, value))
+
         elif type(expression) == dict:
             if len(expression) == 2:
-                self.get_events_from_tos(expression["value"], event_list, value=False, comparator="!")
+                self.get_events_from_tos(expression["value"], events, event_list, value=False, comparator="!")
             elif len(expression) == 3:
                 if expression["binOp"] == ".":
-                    self.get_events_from_tos(str(expression["left"] + "." + str(expression["right"])), event_list)
+                    self.get_events_from_tos(str(expression["left"] + "." + str(expression["right"])), events, event_list)
                 elif type(expression["right"]) == str:
-                    self.get_events_from_tos(str(expression["left"]), event_list, value=expression["right"], comparator=expression["binOp"])
+                    self.get_events_from_tos(str(expression["left"]), events, event_list, value=expression["right"], comparator=expression["binOp"])
                 elif expression["left"] == "(" and expression["right"] == ")":
-                    self.get_events_from_tos(expression["binOp"], event_list)
+                    self.get_events_from_tos(expression["binOp"], events, event_list)
                 else:
-                    self.get_events_from_tos(expression["left"], event_list)
-                    self.get_events_from_tos(expression["right"], event_list)
+                    self.get_events_from_tos(expression["left"], events, event_list)
+                    self.get_events_from_tos(expression["right"], events, event_list)
 
     # Visit a parse tree produced by TaskParser#template
     def visitTemplate(self, ctx):
@@ -208,14 +223,14 @@ class CreateTreeTaskParserVisitor(LoTLanParserVisitor):
 
             if values[1] == OptionaStatement.TRIGGERED_BY:
                 if TRIGGERED_BY_KEY not in context_dict:
-                    tos.triggered_by = values[0]
+                    tos.triggered_by_statements = values[0]
                     context_dict[TRIGGERED_BY_KEY] = context
                 else:
                     msg = "TriggeredBy is definied multiple times"
                     self.error_listener.print_error(msg, context.start.line, context.start.column, len("TriggeredBy"))
             elif values[1] == OptionaStatement.FINISHED_BY:
                 if FINISHED_BY_KEY not in context_dict:
-                    tos.finished_by = values[0]
+                    tos.finished_by_statements = values[0]
                     context_dict[FINISHED_BY_KEY] = context
                 else:
                     msg = "FinishedBy is definied multiple times"
@@ -247,7 +262,8 @@ class CreateTreeTaskParserVisitor(LoTLanParserVisitor):
 
     # Visit a parse tree produced by TaskParser#Location Statement.
     def visitLocationStatement(self, ctx):
-        return ctx.STARTS_WITH_LOWER_C_STR().getText()
+        location = Location(ctx.STARTS_WITH_LOWER_C_STR().getText(), "", "")
+        return location
 
     # Visit a parse tree produced by TaskParser#optTosStatement.
     def visitOptTosStatement(self, ctx):
@@ -344,7 +360,7 @@ class CreateTreeTaskParserVisitor(LoTLanParserVisitor):
         return transport_order
 
     def visitFromStatement(self, ctx, transport_order):
-        transport_order.pickup_from = ctx.STARTS_WITH_LOWER_C_STR().getText()
+        transport_order.to_step_from.name = ctx.STARTS_WITH_LOWER_C_STR().getText()
         parameters = ctx.parameters()
         if parameters is not None:
             for parameter in parameters.children:
@@ -352,7 +368,7 @@ class CreateTreeTaskParserVisitor(LoTLanParserVisitor):
                     transport_order.from_parameters.append(parameter.getText())
 
     def visitToStatement(self, ctx, transport_order):
-        transport_order.deliver_to = ctx.STARTS_WITH_LOWER_C_STR().getText()
+        transport_order.to_step_to.name = ctx.STARTS_WITH_LOWER_C_STR().getText()
         parameters = ctx.parameters()
         if parameters is not None:
             for parameter in parameters.children:

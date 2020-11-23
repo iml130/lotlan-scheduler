@@ -73,29 +73,29 @@ class SemanticValidator:
             self.check_on_done(tos)
 
             if TRIGGERED_BY_KEY in context_dict:
-                self.check_expression(tos.triggered_by, context_dict[TRIGGERED_BY_KEY])
+                self.check_expression(tos.triggered_by_statements, context_dict[TRIGGERED_BY_KEY])
             if FINISHED_BY_KEY in context_dict:
-                self.check_expression(tos.finished_by, context_dict[FINISHED_BY_KEY])
+                self.check_expression(tos.finished_by_statements, context_dict[FINISHED_BY_KEY])
 
     def check_locations(self, tos):
         context_dict = tos.context_dict
 
         if LOCATION_KEY in context_dict:
             location = tos.location
-            locationInstance = self.get_instance(location)
+            locationInstance = self.get_instance(location.logical_name)
             location_context = context_dict[LOCATION_KEY]
 
             if locationInstance is None:
                 msg = "The location instance '{}' in TransportOrderStep '{}' could not be found".format(
-                       location, tos.name)
+                       location.logical_name, tos.name)
                 self.error_listener.print_error(msg, location_context.start.line, location_context.start.column,
-                                                len(location), False)
+                                                len(location.logical_name), False)
             elif locationInstance.template_name != "Location":
                 msg = ("The instance '{}' in TransportOrderStep '{}' is"
                        "not a 'Location' instance but a '{}' instance").format(
-                        location, tos.name, locationInstance.template_name)
+                        location.logical_name, tos.name, locationInstance.template_name)
                 self.error_listener.print_error(msg, location_context.start.line, location_context.start.column,
-                                                len(location), False)
+                                                len(location.logical_name), False)
 
     # Task Check
     def check_tasks(self):
@@ -113,30 +113,30 @@ class SemanticValidator:
     def check_transport_orders(self, task):
         if task.transport_order is not None:
             # From check
-            if self.check_if_tos_is_present(task.transport_order.pickup_from) is False:
+            if self.check_if_tos_is_present(task.transport_order.to_step_from.name) is False:
                 msg = "Task '{}' refers to an unknown TransportOrderStep in 'from': '{}' ".format(
-                    task.name, task.transport_order.pickup_from)
+                    task.name, task.transport_order.to_step_from.name)
                 self.error_listener.print_error(msg, task.context.start.line, task.context.start.column,
-                                                len(task.transport_order.pickup_from), False)
+                                                len(task.transport_order.to_step_from.name), False)
             else:
-                tos = self.get_transport_order_step(task.transport_order.pickup_from)
+                tos = self.get_transport_order_step(task.transport_order.to_step_from.name)
                 if len(task.transport_order.from_parameters) != len(tos.parameters):
                     msg = "From has not the same amount of parameters as the transport order step!"
                     self.error_listener.print_error(msg, task.context.start.line, task.context.start.column,
-                                                    len(task.transport_order.pickup_from), False)
+                                                    len(task.transport_order.to_step_from.name), False)
 
             # To check
-            if self.check_if_tos_is_present(task.transport_order.deliver_to) is False:
+            if self.check_if_tos_is_present(task.transport_order.to_step_to.name) is False:
                 msg = "Task '{}' refers to an unknown TransportOrderStep in 'to' '{}'".format(
-                    task.name, task.transport_order.deliver_to)
+                    task.name, task.transport_order.to_step_to.name)
                 self.error_listener.print_error(msg, task.context.start.line, task.context.start.column,
-                                                len(task.transport_order.deliver_to), False)
+                                                len(task.transport_order.to_step_to.name), False)
             else:
-                tos = self.get_transport_order_step(task.transport_order.deliver_to)
+                tos = self.get_transport_order_step(task.transport_order.to_step_to.name)
                 if len(task.transport_order.to_parameters) != len(tos.parameters):
                     msg = "To has not the same amount of parameters as the transport order step!"
                     self.error_listener.print_error(msg, task.context.start.line, task.context.start.column,
-                                                    len(task.transport_order.pickup_from), False)
+                                                    len(task.transport_order.to_step_from.name), False)
 
     def check_on_done(self, task_or_tos):
         context_dict = task_or_tos.context_dict

@@ -122,6 +122,20 @@ class MaterialFlow():
             self.tasks_done[task.name] = False
             self.not_done_parents[task.name] = 0
 
+            transport_order = task.transport_order
+            transport_order.uuid = _uuid
+            tos_from = transport_order.to_step_from
+            tos_to = transport_order.to_step_to
+
+            for instance in self.lotlan_structure.instances.values():
+                if instance.template_name == "Location":
+                    if tos_from.location.logical_name == instance.name:
+                        tos_from.location.physical_name = instance.keyval["name"]
+                        tos_from.location.location_type = instance.keyval["type"]
+                    elif tos_to.location.logical_name == instance.name:
+                        tos_to.location.physical_name = instance.keyval["name"]
+                        tos_to.location.location_type = instance.keyval["type"]
+
     # out of the event names create a list with
     # api event objects for control
     def create_event_information_list(self):
@@ -156,12 +170,7 @@ class MaterialFlow():
             transport_orders = {}
             for task in task_info:
                 uid = self.ids[task.name]
-                locations = {}
-                for instance in self.lotlan_structure.instances.values():
-                    if instance.template_name == "Location":
-                        locations[instance.name] = instance
-                to_api = TransportOrder.create_to(uid, task, self.event_instances, locations)
-                transport_orders[uid] = to_api
+                transport_orders[uid] = task.transport_order
 
                 self.petri_net_generator.awaited_events[task.name] = [Event("to_done", "", "Boolean", comparator="", value=True)]
                 self.petri_net_generator.petri_net_state[task.name] = PetriNetState.wait_for_to_done 
