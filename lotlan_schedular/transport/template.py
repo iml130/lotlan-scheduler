@@ -1,3 +1,5 @@
+""" Contains Template class """
+
 class Template(object):
     '''
         Represents a Template and all its data

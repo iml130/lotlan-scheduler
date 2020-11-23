@@ -1,3 +1,5 @@
+""" Contains Task class """
+
 class Task(object):
     '''
         Represents a Task and all its data

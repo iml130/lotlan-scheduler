@@ -1,17 +1,21 @@
+""" Contains Materialflow class """
+
+# standard libraries
 import uuid
 import networkx as nx
 import matplotlib.pyplot as plt
 
+# local sources
 from lotlan_schedular.api.event import Event
-from lotlan_schedular.api.transportorder import TransportOrder
 
-from lotlan_schedular.PetriNetGenerator import PetriNetState
-from lotlan_schedular.PetriNetGenerator import PetriNetGenerator
+from lotlan_schedular.petri_net_generator import PetriNetState
+from lotlan_schedular.petri_net_generator import PetriNetGenerator
 
+# globals defines
 from lotlan_schedular.defines import PetriNetConstants, LogicConstants
 
-
 class MaterialFlow():
+    """ Represents an abstract materialflow """
     def __init__(self, _uuid, lotlan_structure, tasks_in_mf, test_flag=False):
         self._uuid = _uuid
         self.name = ""
@@ -21,8 +25,7 @@ class MaterialFlow():
         self.next_to_cb = []
         self.task_finished_cb = []
         self.all_finished_cb = []
-        self.tasks_in_mf = tasks_in_mf  # list of tasks in this material flow
-        self.petri_net_generator = None
+        self.tasks_in_mf = tasks_in_mf
         self.lotlan_structure = lotlan_structure
         self.tasks = {}
         self.ids = {}
@@ -33,7 +36,8 @@ class MaterialFlow():
         self.tasks_done = {}
         self.test_flag = test_flag
         self.parent_count = {}
-        self.petri_net_generator = PetriNetGenerator(tasks_in_mf, self.event_instances, test_flag=test_flag)
+        self.petri_net_generator = PetriNetGenerator(tasks_in_mf, self.event_instances,
+                                                     test_flag=test_flag)
 
         self.initialize_tasks(self.tasks_in_mf)
 
@@ -60,16 +64,25 @@ class MaterialFlow():
         self.start_tasks(self.startable_tasks)
 
     def start_tasks(self, tasks):
+        """
+            Starts scheduling of the given tasks
+
+            if a task has a triggeredBy statement it waits for incoming events
+            otherwise the transport_order can be executed and so next_to is called
+        """
         next_tos = []
-        for i, task in enumerate(tasks):
-            uuid = self.ids[task.name]
+        for task in tasks:
+            uuid_ = self.ids[task.name]
             if self.triggered_by_events[task.name]:
-                self.petri_net_generator.awaited_events[task.name] = self.triggered_by_events[task.name]
+                tb_events_of_task = self.triggered_by_events[task.name]
+                self.petri_net_generator.awaited_events[task.name] = tb_events_of_task
                 self.petri_net_generator.petri_net_state[task.name] = PetriNetState.wait_for_tb
-                self.wait_for_triggered_by(uuid, self.triggered_by_events[task.name])
+                self.wait_for_triggered_by(uuid_, self.triggered_by_events[task.name])
             else:
-                self.petri_net_generator.awaited_events[task.name] = [Event("task_started", "", "Boolean", comparator="", value=True)]
-                self.fire_event(uuid, Event(PetriNetConstants.TASK_STARTED_PLACE, "", "Boolean", comparator="", value=True))
+                task_started_event = Event(PetriNetConstants.TASK_STARTED_PLACE, "", "Boolean",
+                                           comparator="", value=True)
+                self.petri_net_generator.awaited_events[task.name] = [task_started_event]
+                self.fire_event(uuid_, task_started_event)
                 next_tos.append(task)
 
         self.next_to(next_tos)
@@ -85,11 +98,13 @@ class MaterialFlow():
 
     def save_call_graph_img(self, filename):
         nx.draw(self.call_graph, with_labels=True)
-        plt.savefig(filename, dpi=300, bbox_inches='tight')
+        plt.savefig(filename, dpi=300, bbox_inches="tight")
 
-    # find tasks that can be started:
-    # a task with no incoming edges in graph
     def find_startable_tasks(self, graph, tasks):
+        """
+            Finds tasks that can be started:
+            task with no incoming edges in graph
+        """
         startable_tasks = []
         for task in tasks:
             incoming_edges = 0
@@ -107,23 +122,24 @@ class MaterialFlow():
         return startable_tasks
 
     # fire event to petri net corresponding to task of uuid
-    def fire_event(self, _uuid, event):
-        task = self.tasks[str(_uuid)]
+    def fire_event(self, uuid_, event):
+        task = self.tasks[str(uuid_)]
         self.petri_net_generator.fire_event(task, event, self.on_petri_net_response)
 
     def initialize_tasks(self, tasks):
+        """ Adds information for api classes to tasks and init dicts """
         for i, task in enumerate(tasks):
             if self.test_flag:
-                _uuid = i
+                uuid_ = i
             else:
-                _uuid = uuid.uuid4()
-            self.tasks[str(_uuid)] = task
-            self.ids[task.name] = _uuid
+                uuid_ = uuid.uuid4()
+            self.tasks[str(uuid_)] = task
+            self.ids[task.name] = uuid_
             self.tasks_done[task.name] = False
             self.not_done_parents[task.name] = 0
 
             transport_order = task.transport_order
-            transport_order.uuid = _uuid
+            transport_order.uuid = uuid_
             tos_from = transport_order.to_step_from
             tos_to = transport_order.to_step_to
 
@@ -136,9 +152,8 @@ class MaterialFlow():
                         tos_to.location.physical_name = instance.keyval["name"]
                         tos_to.location.location_type = instance.keyval["type"]
 
-    # out of the event names create a list with
-    # api event objects for control
     def create_event_information_list(self):
+        """ Create a list of events objects out of the event names """
         for task in self.tasks_in_mf:
             triggered_by = []
             for event_name in task.triggered_by_events:
@@ -156,7 +171,7 @@ class MaterialFlow():
                 finished_by.append(Event(logical_name, physical_name, event_type, None, None))
             self.finished_by_events[task.name] = finished_by
 
-    # Petri net response
+    # petri net response
     def on_petri_net_response(self, msg, task):
         if msg == LogicConstants.TRIGGERED_BY_PASSED_MSG:
             self.next_to([task])
@@ -166,26 +181,39 @@ class MaterialFlow():
             self.on_task_finished(task)
 
     def next_to(self, task_info):
+        """ Notifies listeners about the next transport orders and set petri net state """
         if task_info:
             transport_orders = {}
             for task in task_info:
                 uid = self.ids[task.name]
                 transport_orders[uid] = task.transport_order
 
-                self.petri_net_generator.awaited_events[task.name] = [Event("to_done", "", "Boolean", comparator="", value=True)]
-                self.petri_net_generator.petri_net_state[task.name] = PetriNetState.wait_for_to_done 
+                to_done_event = Event("to_done", "", "Boolean",
+                                      comparator="", value=True)
+                self.petri_net_generator.awaited_events[task.name] = [to_done_event]
+                petri_net_state = self.petri_net_generator.petri_net_state
+                petri_net_state[task.name] = PetriNetState.wait_for_to_done
 
             for callback in self.next_to_cb:
                 callback(self._uuid, transport_orders)
 
     def on_to_done(self, task_info):
+        """
+            Gets called when transport order is done by agv 
+            set petri net state (wait for possible FinishedBy events)
+        """
         uid = self.ids[task_info.name]
         if self.finished_by_events[task_info.name]:
-            self.petri_net_generator.awaited_events[task_info.name] = self.finished_by_events[task_info.name]
+            finished_by_events = self.finished_by_events[task_info.name]
+            self.petri_net_generator.awaited_events[task_info.name] = finished_by_events
             self.petri_net_generator.petri_net_state[task_info.name] = PetriNetState.wait_for_fb
             self.wait_for_finished_by(uid, self.finished_by_events[task_info.name])
 
     def on_task_finished(self, task_info):
+        """
+            Gets called when task is finished
+            starts possible onDone tasks and set petri net state
+        """
         uid = self.ids[task_info.name]
         self.task_finished(uid)
         self.tasks_done[task_info.name] = True
@@ -209,6 +237,9 @@ class MaterialFlow():
             self.all_finished()
 
     def all_tasks_done(self):
+        """
+            Returns true if all tasks are done
+        """
         if self.cycle_in_call_graph is False:
             for task_done in self.tasks_done.values():
                 if task_done is False:
@@ -216,17 +247,17 @@ class MaterialFlow():
             return True
         return False
 
-    def wait_for_triggered_by(self, _uuid, event_information):
+    def wait_for_triggered_by(self, uuid_, event_information):
         for callback in self.triggered_by_cb:
-            callback(self._uuid, _uuid, event_information)
+            callback(self._uuid, uuid_, event_information)
 
-    def wait_for_finished_by(self, _uuid, event_information):
+    def wait_for_finished_by(self, uuid_, event_information):
         for callback in self.finished_by_cb:
-            callback(self._uuid, _uuid,  event_information)
+            callback(self._uuid, uuid_,  event_information)
 
-    def task_finished(self, _uuid):
+    def task_finished(self, uuid_):
         for callback in self.task_finished_cb:
-            callback(self._uuid, _uuid)
+            callback(self._uuid, uuid_)
 
     def all_finished(self):
         for callback in self.all_finished_cb:
