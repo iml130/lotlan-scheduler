@@ -128,3 +128,60 @@ class LogicConstants:
     TRIGGERED_BY_PASSED_MSG = "t_by"
     TO_DONE_MSG = "t_done"
     TASK_FINISHED_MSG = "t_finished"
+
+class SQLCommands:
+    DATABASE_PATH = "transport_order_logger.db"
+
+    """ SQL Commands to create SQL tables for TransportOrder logger """
+    CREATE_MATERIALFLOW_TABLE = """
+    CREATE TABLE "materialflow" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "lotlan"	TEXT UNIQUE,
+        "hash"	TEXT UNIQUE,
+        PRIMARY KEY("id")
+    )
+    """
+
+    CREATE_MATERIALFLOW_INSTANCE_TABLE = """
+    CREATE TABLE "materialflow_instance" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "materialflow_id"	INTEGER,
+        "uuid"	TEXT,
+        "timestamp"	INTEGER,
+        PRIMARY KEY("id" AUTOINCREMENT),
+        FOREIGN KEY("materialflow_id") REFERENCES "materialflow"("id")
+    )
+    """
+
+    CREATE_TRANSPORT_ORDER_TABLE = """
+    CREATE TABLE "transport_order" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "materialflow_id"	INTEGER,
+        "timestap"	INTEGER,
+        "state"	INTEGER,
+        "pickup_id"	INTEGER,
+        "delivery_id"	INTEGER,
+        FOREIGN KEY("materialflow_id") REFERENCES "materialflow_instance"("id"),
+        FOREIGN KEY("delivery_id") REFERENCES "location"("id"),
+        PRIMARY KEY("id" AUTOINCREMENT),
+        FOREIGN KEY("pickup_id") REFERENCES "location"("id")
+    )
+    """
+
+    CREATE_TRANSPORT_ORDER_IDS_TABLE = """
+    CREATE TABLE "transport_order_ids" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "uuid"	TEXT UNIQUE,
+        PRIMARY KEY("id" AUTOINCREMENT)
+    )
+    """
+
+    CREATE_LOCATION_TABLE = """
+    CREATE TABLE "location" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "logical_name"	TEXT,
+        "physical_name"	TEXT,
+        "location_type"	TEXT,
+        PRIMARY KEY("id" AUTOINCREMENT)
+    )
+    """
