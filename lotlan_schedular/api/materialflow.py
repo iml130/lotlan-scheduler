@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 
 # local sources
 from lotlan_schedular.api.event import Event
+from lotlan_schedular.api.transportorder import TransportOrder
 
 from lotlan_schedular.petri_net_generator import PetriNetState
 from lotlan_schedular.petri_net_generator import PetriNetGenerator
@@ -16,7 +17,7 @@ from lotlan_schedular.defines import PetriNetConstants, LogicConstants
 
 class MaterialFlow():
     """ Represents an abstract materialflow """
-    def __init__(self, _uuid, lotlan_structure, tasks_in_mf, test_flag=False):
+    def __init__(self, _uuid, lotlan_structure, tasks_in_mf, logger, test_flag=False):
         self._uuid = _uuid
         self.name = ""
         self._is_running = True
@@ -38,6 +39,7 @@ class MaterialFlow():
         self.parent_count = {}
         self.petri_net_generator = PetriNetGenerator(tasks_in_mf, self.event_instances,
                                                      test_flag=test_flag)
+        self.logger = logger
 
         self.initialize_tasks(self.tasks_in_mf)
 
@@ -73,11 +75,18 @@ class MaterialFlow():
         next_tos = []
         for task in tasks:
             uuid_ = self.ids[task.name]
+            transport_order = task.transport_order
+            pickup = transport_order.to_step_from.location
+            delivery = transport_order.to_step_to.location
+
             if self.triggered_by_events[task.name]:
                 tb_events_of_task = self.triggered_by_events[task.name]
                 self.petri_net_generator.awaited_events[task.name] = tb_events_of_task
                 self.petri_net_generator.petri_net_state[task.name] = PetriNetState.wait_for_tb
                 self.wait_for_triggered_by(uuid_, self.triggered_by_events[task.name])
+
+                state = TransportOrder.TransportOrderState.WAIT_FOR_TRIGGERED_BY
+                self.logger.insert_transport_order(self._uuid, uuid_, state, pickup, delivery)
             else:
                 task_started_event = Event(PetriNetConstants.TASK_STARTED_PLACE, "", "Boolean",
                                            comparator="", value=True)
@@ -186,7 +195,15 @@ class MaterialFlow():
             transport_orders = {}
             for task in task_info:
                 uid = self.ids[task.name]
-                transport_orders[uid] = task.transport_order
+                
+                # logger
+                transport_order = task.transport_order
+                pickup = transport_order.to_step_from.location
+                delivery = transport_order.to_step_to.location
+                state = TransportOrder.TransportOrderState.TRANSPORT_ORDER_STARTED
+                self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
+
+                transport_orders[uid] = transport_order
 
                 to_done_event = Event("to_done", "", "Boolean",
                                       comparator="", value=True)
@@ -204,6 +221,13 @@ class MaterialFlow():
         """
         uid = self.ids[task_info.name]
         if self.finished_by_events[task_info.name]:
+            # logger
+            transport_order = task_info.transport_order
+            pickup = transport_order.to_step_from.location
+            delivery = transport_order.to_step_to.location
+            state = TransportOrder.TransportOrderState.WAIT_FOR_FINISHED_BY
+            self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
+
             finished_by_events = self.finished_by_events[task_info.name]
             self.petri_net_generator.awaited_events[task_info.name] = finished_by_events
             self.petri_net_generator.petri_net_state[task_info.name] = PetriNetState.wait_for_fb
@@ -219,6 +243,13 @@ class MaterialFlow():
         self.tasks_done[task_info.name] = True
 
         self.petri_net_generator.awaited_events[task_info.name] = [None]
+
+        # logger
+        transport_order = task_info.transport_order
+        pickup = transport_order.to_step_from.location
+        delivery = transport_order.to_step_to.location
+        state = TransportOrder.TransportOrderState.FINISHED
+        self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
 
         if task_info.on_done:
             startable_tasks = []
