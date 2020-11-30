@@ -81,13 +81,13 @@ class TestSQLLogger(unittest.TestCase):
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0].transport_uuid, 1)
         self.assertEqual(result[0].state, state_1)
-        self.assertEqual(result[0].pickup_id, 1)
-        self.assertEqual(result[0].delivery_id, 2)
+        self.assertEqual(result[0].location_id_pickup, 1)
+        self.assertEqual(result[0].location_id_delivery, 2)
 
         self.assertEqual(result[1].transport_uuid, 1)
         self.assertEqual(result[1].state, state_2)
-        self.assertEqual(result[1].pickup_id, 1)
-        self.assertEqual(result[1].delivery_id, 2)
+        self.assertEqual(result[1].location_id_pickup, 1)
+        self.assertEqual(result[1].location_id_delivery, 2)
 
     def test_get_transport_uuid(self):
         to_uuid_1 = self.logger.get_transport_uuid("to_uuid")

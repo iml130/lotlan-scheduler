@@ -85,8 +85,8 @@ class SQLLogger():
                          timestamp=now,
                          transport_uuid=transport_uuid,
                          state=state,
-                         pickup_id=pickup_id,
-                         delivery_id =delivery_id)
+                         location_id_pickup=pickup_id,
+                         location_id_delivery =delivery_id)
 
     def get_transport_uuid(self, to_uuid):
         """

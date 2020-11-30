@@ -160,13 +160,13 @@ class SQLCommands:
         "timestamp"	INTEGER,
         "transport_uuid" INTEGER,
         "state"	INTEGER,
-        "pickup_id"	INTEGER,
-        "delivery_id"	INTEGER,
+        "location_id_pickup"	INTEGER,
+        "location_id_delivery"	INTEGER,
         FOREIGN KEY("materialflow_id") REFERENCES "materialflow_instance"("id"),
         FOREIGN KEY("transport_uuid") REFERENCES "transport_order_ids"("id"),
-        FOREIGN KEY("delivery_id") REFERENCES "location"("id"),
+        FOREIGN KEY("location_id_delivery") REFERENCES "location"("id"),
         PRIMARY KEY("id" AUTOINCREMENT),
-        FOREIGN KEY("pickup_id") REFERENCES "location"("id")
+        FOREIGN KEY("location_id_pickup") REFERENCES "location"("id")
     )
     """
 
