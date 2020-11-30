@@ -19,8 +19,8 @@ class TransportOrder:
 
     def __init__(self):
         self.uuid = ""
-        self.to_step_from = TransportOrderStep()
-        self.to_step_to = TransportOrderStep()
+        self.pickup_tos = TransportOrderStep()
+        self.delivery_tos = TransportOrderStep()
         self.from_parameters = []
         self.to_parameters = []
         self.task_name = ""
@@ -28,8 +28,8 @@ class TransportOrder:
 
     def __str__(self):
         return (("\n UUID: {}\n To_Step_From: \t\t {} \n To_Step_To: \t\t {} \n\t")
-                .format(self.uuid, self.to_step_from, self.to_step_to))
+                .format(self.uuid, self.pickup_tos, self.delivery_tos))
 
     def __repr__(self):
         return (("\n UUID: {}\n To_Step_From: \t\t {} \n To_Step_To: \t\t {} \n\t")
-                .format(self.uuid, self.to_step_from, self.to_step_to))
+                .format(self.uuid, self.pickup_tos, self.delivery_tos))

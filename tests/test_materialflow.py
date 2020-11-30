@@ -33,14 +33,14 @@ class TestMaterialflow(unittest.TestCase):
         material_flow = schedular.get_materialflows()[0]
 
         transport_order = TransportOrder()
-        tos_from = TransportOrderStep()
-        tos_to = TransportOrderStep()
+        pickup_tos = TransportOrderStep()
+        delivery_tos = TransportOrderStep()
 
-        tos_from.location = Location("pickupItem", "", "")
-        tos_to.location = Location("dropoffItem", "", "")
+        pickup_tos.location = Location("pickupItem", "", "")
+        delivery_tos.location = Location("dropoffItem", "", "")
 
-        transport_order.to_step_from = tos_from
-        transport_order.to_step_to = tos_to
+        transport_order.pickup_tos = pickup_tos
+        transport_order.delivery_tos = delivery_tos
 
         task = Task()
         task.name = "Task"
@@ -52,10 +52,10 @@ class TestMaterialflow(unittest.TestCase):
         self.assertEqual(len(material_flow.ids), 2)
         self.assertEqual(len(material_flow.tasks_done), 2)
         self.assertEqual(len(material_flow.not_done_parents), 2)
-        self.assertEqual(tos_from.location.physical_name, "s1_pickup")
-        self.assertEqual(tos_from.location.location_type, "SmallLoadCarrier")
-        self.assertEqual(tos_to.location.physical_name, "ws1_dropoff")
-        self.assertEqual(tos_to.location.location_type, "SmallLoadCarrier")
+        self.assertEqual(pickup_tos.location.physical_name, "s1_pickup")
+        self.assertEqual(pickup_tos.location.location_type, "SmallLoadCarrier")
+        self.assertEqual(delivery_tos.location.physical_name, "ws1_dropoff")
+        self.assertEqual(delivery_tos.location.location_type, "SmallLoadCarrier")
 
         lotlan_file.close()
 

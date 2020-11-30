@@ -82,8 +82,8 @@ class LotlanTreeVisitor(LoTLanParserVisitor):
             to = task.transport_order
             if to is not None:
                 try:
-                    to.to_step_from = self.cp.transport_order_steps[to.to_step_from.name]
-                    to.to_step_to = self.cp.transport_order_steps[to.to_step_to.name]
+                    to.pickup_tos = self.cp.transport_order_steps[to.pickup_tos.name]
+                    to.delivery_tos = self.cp.transport_order_steps[to.delivery_tos.name]
                 except KeyError:
                     pass
 
@@ -362,7 +362,7 @@ class LotlanTreeVisitor(LoTLanParserVisitor):
         return transport_order
 
     def visitFromStatement(self, ctx, transport_order):
-        transport_order.to_step_from.name = ctx.STARTS_WITH_LOWER_C_STR().getText()
+        transport_order.pickup_tos.name = ctx.STARTS_WITH_LOWER_C_STR().getText()
         parameters = ctx.parameters()
         if parameters is not None:
             for parameter in parameters.children:
@@ -370,7 +370,7 @@ class LotlanTreeVisitor(LoTLanParserVisitor):
                     transport_order.from_parameters.append(parameter.getText())
 
     def visitToStatement(self, ctx, transport_order):
-        transport_order.to_step_to.name = ctx.STARTS_WITH_LOWER_C_STR().getText()
+        transport_order.delivery_tos.name = ctx.STARTS_WITH_LOWER_C_STR().getText()
         parameters = ctx.parameters()
         if parameters is not None:
             for parameter in parameters.children:

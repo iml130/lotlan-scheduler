@@ -76,8 +76,8 @@ class MaterialFlow():
         for task in tasks:
             uuid_ = self.ids[task.name]
             transport_order = task.transport_order
-            pickup = transport_order.to_step_from.location
-            delivery = transport_order.to_step_to.location
+            pickup = transport_order.pickup_tos.location
+            delivery = transport_order.delivery_tos.location
 
             if self.triggered_by_events[task.name]:
                 tb_events_of_task = self.triggered_by_events[task.name]
@@ -149,17 +149,17 @@ class MaterialFlow():
 
             transport_order = task.transport_order
             transport_order.uuid = uuid_
-            tos_from = transport_order.to_step_from
-            tos_to = transport_order.to_step_to
+            pickup_tos = transport_order.pickup_tos
+            delivery_tos = transport_order.delivery_tos
 
             for instance in self.lotlan_structure.instances.values():
                 if instance.template_name == "Location":
-                    if tos_from.location.logical_name == instance.name:
-                        tos_from.location.physical_name = instance.keyval["name"]
-                        tos_from.location.location_type = instance.keyval["type"]
-                    elif tos_to.location.logical_name == instance.name:
-                        tos_to.location.physical_name = instance.keyval["name"]
-                        tos_to.location.location_type = instance.keyval["type"]
+                    if pickup_tos.location.logical_name == instance.name:
+                        pickup_tos.location.physical_name = instance.keyval["name"]
+                        pickup_tos.location.location_type = instance.keyval["type"]
+                    elif delivery_tos.location.logical_name == instance.name:
+                        delivery_tos.location.physical_name = instance.keyval["name"]
+                        delivery_tos.location.location_type = instance.keyval["type"]
 
     def create_event_information_list(self):
         """ Create a list of events objects out of the event names """
@@ -198,8 +198,8 @@ class MaterialFlow():
                 
                 # logger
                 transport_order = task.transport_order
-                pickup = transport_order.to_step_from.location
-                delivery = transport_order.to_step_to.location
+                pickup = transport_order.pickup_tos.location
+                delivery = transport_order.delivery_tos.location
                 state = TransportOrder.TransportOrderState.TRANSPORT_ORDER_STARTED
                 self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
 
@@ -223,8 +223,8 @@ class MaterialFlow():
         if self.finished_by_events[task_info.name]:
             # logger
             transport_order = task_info.transport_order
-            pickup = transport_order.to_step_from.location
-            delivery = transport_order.to_step_to.location
+            pickup = transport_order.pickup_tos.location
+            delivery = transport_order.delivery_tos.location
             state = TransportOrder.TransportOrderState.WAIT_FOR_FINISHED_BY
             self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
 
@@ -246,8 +246,8 @@ class MaterialFlow():
 
         # logger
         transport_order = task_info.transport_order
-        pickup = transport_order.to_step_from.location
-        delivery = transport_order.to_step_to.location
+        pickup = transport_order.pickup_tos.location
+        delivery = transport_order.delivery_tos.location
         state = TransportOrder.TransportOrderState.FINISHED
         self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
 
