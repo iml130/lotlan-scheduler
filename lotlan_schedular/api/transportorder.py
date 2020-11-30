@@ -12,10 +12,11 @@ class TransportOrder:
     """
 
     class TransportOrderState(IntEnum):
-        WAIT_FOR_TRIGGERED_BY = 0
-        TRANSPORT_ORDER_STARTED = 1
-        WAIT_FOR_FINISHED_BY = 2
-        FINISHED = 3
+        TASK_STARTED = 0
+        WAIT_FOR_TRIGGERED_BY = 1
+        TRANSPORT_ORDER_STARTED = 2
+        WAIT_FOR_FINISHED_BY = 3
+        FINISHED = 4
 
     def __init__(self):
         self.uuid = ""

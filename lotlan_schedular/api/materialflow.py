@@ -79,6 +79,9 @@ class MaterialFlow():
             pickup = transport_order.pickup_tos.location
             delivery = transport_order.delivery_tos.location
 
+            state = TransportOrder.TransportOrderState.TASK_STARTED
+            self.logger.insert_transport_order(self._uuid, uuid_, state, pickup, delivery)
+
             if self.triggered_by_events[task.name]:
                 tb_events_of_task = self.triggered_by_events[task.name]
                 self.petri_net_generator.awaited_events[task.name] = tb_events_of_task
