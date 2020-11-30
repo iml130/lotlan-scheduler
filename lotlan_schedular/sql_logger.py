@@ -3,7 +3,7 @@
 # standard libraries
 from pathlib import Path
 import hashlib
-import datetime
+import time
 
 # 3rd party packages
 from sqlalchemy import create_engine, MetaData, Table
@@ -55,7 +55,7 @@ class SQLLogger():
             materialflow_id = result.id
 
         if materialflow_id is not None:
-            now = datetime.datetime.now()
+            now = int(time.time()) # time in utc
             materialflow_instance_table = Table("materialflow_instance",
                                                 self.metadata, autoload=True)
             result = self.con.execute(materialflow_instance_table.insert(),
@@ -71,7 +71,7 @@ class SQLLogger():
             Inserts a TransportOrder state into the database
             pickup and delivery have to be Location objects
         """
-        now = datetime.datetime.now()
+        now = int(time.time()) # time in utc
 
         # Get foreign keys in transport_order table
         transport_uuid = self.get_transport_uuid(to_uuid)
