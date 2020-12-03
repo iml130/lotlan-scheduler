@@ -18,12 +18,10 @@ class SQLLogger():
     """
     def __init__(self, dabase_path = SQLCommands.DATABASE_PATH):
         init_lock = threading.Lock()
+        database_file = Path(dabase_path)
+        create_tables = True
 
         with init_lock:
-           
-            database_file = Path(dabase_path)
-
-            create_tables = True
             # check if db file is already there
             if database_file.is_file():
                 create_tables = False
@@ -55,7 +53,7 @@ class SQLLogger():
 
         if result is None:
             result = self.con.execute(materialflow_table.insert(),
-                                      lotlan=lotlan_string, hash=lotlan_hash)
+                                    lotlan=lotlan_string, hash=lotlan_hash)
             materialflow_id = result.lastrowid
         else:
             materialflow_id = result.id
@@ -65,9 +63,9 @@ class SQLLogger():
             materialflow_instance_table = Table("materialflow_instance",
                                                 self.metadata, autoload=True)
             result = self.con.execute(materialflow_instance_table.insert(),
-                                 materialflow_id=materialflow_id,
-                                 uuid=str(mf_uuid),
-                                 timestamp=now)
+                                materialflow_id=materialflow_id,
+                                uuid=str(mf_uuid),
+                                timestamp=now)
             materialflow_instance_id = result.lastrowid
 
             self.mf_uuid_to_mf_instance_id[mf_uuid] = materialflow_instance_id
@@ -81,7 +79,8 @@ class SQLLogger():
 
         # Get foreign keys in transport_order table
         transport_uuid = self.get_transport_uuid(to_uuid)
-        pickup_id, delivery_id = self.get_location_ids(pickup, delivery)
+        pickup_id = self.get_location_id(pickup)
+        delivery_id = self.get_location_id(delivery)
 
         mf_instance_id = self.mf_uuid_to_mf_instance_id[mf_uuid]
 
@@ -114,38 +113,28 @@ class SQLLogger():
 
         return transport_uuid
 
-    def get_location_ids(self, pickup, delivery):
+    def get_location_id(self, location):
         """
-            Searches for foreign key for given pickup and delivery
+            Searches for foreign key for given location
             If no entry is found a new one is inserted.
+
+            Returns the foreign key if no error occured and location object is defined
+            Returns None otherwise
         """
+        location_id = None
+        if location:
+            location_table = Table("location", self.metadata, autoload=True)
 
-        location_table = Table("location", self.metadata, autoload=True)
+            select_stmt = location_table.select(location_table.c.logical_name==location.logical_name)
+            result = select_stmt.execute().first()
 
-        select_stmt = location_table.select(location_table.c.logical_name==pickup.logical_name)
-        pickup_result = select_stmt.execute().first()
+            if result is None:
+                insert_result = self.con.execute(location_table.insert(),
+                                                 logical_name=location.logical_name,
+                                                 physical_name=location.physical_name,
+                                                 location_type=location.location_type)
+                location_id = insert_result.lastrowid
+            else:
+                location_id = result.id
 
-        select_stmt = location_table.select(location_table.c.logical_name==delivery.logical_name)
-        delivery_result = select_stmt.execute().first()
-
-        pickup_id = None
-        delivery_id = None
-
-        if pickup_result is None:
-            result = self.con.execute(location_table.insert(),
-                                      logical_name=pickup.logical_name,
-                                      physical_name=pickup.physical_name,
-                                      location_type=pickup.location_type)
-            pickup_id = result.lastrowid
-        else:
-            pickup_id = pickup_result.id
-        if delivery_result is None:
-            result = self.con.execute(location_table.insert(),
-                                      logical_name=delivery.logical_name,
-                                      physical_name=delivery.physical_name,
-                                      location_type=delivery.location_type)
-            delivery_id = result.lastrowid
-        else:
-            delivery_id = delivery_result.id
-
-        return (pickup_id, delivery_id)
+        return location_id
