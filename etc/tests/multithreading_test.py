@@ -27,6 +27,10 @@ def main():
     threads.append(threading.Thread(target=test_sqlite_connection, args=[0, "test", "uuid_2", 1, pickup_1, delivery_2]))
     threads.append(threading.Thread(target=test_sqlite_connection, args=[1, "test2", "uuid_3", 0, delivery_2, pickup_1]))
     threads.append(threading.Thread(target=test_sqlite_connection, args=[2, "test3", "uuid_4", 1, pickup_2, delivery_2]))
+    threads.append(threading.Thread(target=test_sqlite_connection, args=[3, "test", "uuid_5", 2, pickup_1, delivery_1]))
+    threads.append(threading.Thread(target=test_sqlite_connection, args=[3, "test4", "uuid_6", 1, pickup_1, delivery_1]))
+    threads.append(threading.Thread(target=test_sqlite_connection, args=[4, "test", "uuid_7", 3, pickup_1, delivery_1]))
+    threads.append(threading.Thread(target=test_sqlite_connection, args=[5, "test3", "uuid_8", 4, pickup_1, delivery_1]))
 
     for thread in threads:
         thread.start()
