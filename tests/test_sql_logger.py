@@ -108,7 +108,8 @@ class TestSQLLogger(unittest.TestCase):
         pickup = Location("pickup", "pickup_physical", "pickup_type")
         delivery = Location("delivery", "delivery_physical", "delivery_type")
 
-        pickup_id, delivery_id = self.logger.get_location_ids(pickup, delivery)
+        pickup_id = self.logger.get_location_id(pickup)
+        delivery_id = self.logger.get_location_id(delivery)
         self.assertEqual(pickup_id, 1)
         self.assertEqual(delivery_id, 2)
 
