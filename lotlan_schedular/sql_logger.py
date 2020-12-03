@@ -12,16 +12,20 @@ from sqlalchemy import create_engine, MetaData, Table
 # globals defines
 from lotlan_schedular.defines import SQLCommands
 
+init_lock = threading.Lock()
+mf_lock = threading.Lock()
+to_lock = threading.Lock()
+location_lock = threading.Lock()
+
 class SQLLogger():
     """
         Establishes a SQLite connection and inserts logging data
     """
     def __init__(self, dabase_path = SQLCommands.DATABASE_PATH):
-        init_lock = threading.Lock()
-        database_file = Path(dabase_path)
-        create_tables = True
-
         with init_lock:
+            database_file = Path(dabase_path)
+            create_tables = True
+
             # check if db file is already there
             if database_file.is_file():
                 create_tables = False
@@ -47,16 +51,18 @@ class SQLLogger():
         materialflow_table = Table("materialflow", self.metadata, autoload=True)
         lotlan_hash = hashlib.md5(lotlan_string.encode()).hexdigest()
 
-        select_stmt = materialflow_table.select(materialflow_table.c.hash==lotlan_hash)
-        result = select_stmt.execute().first()
         materialflow_id = None
 
-        if result is None:
-            result = self.con.execute(materialflow_table.insert(),
-                                    lotlan=lotlan_string, hash=lotlan_hash)
-            materialflow_id = result.lastrowid
-        else:
-            materialflow_id = result.id
+        with mf_lock:
+            select_stmt = materialflow_table.select(materialflow_table.c.hash==lotlan_hash)
+            result = select_stmt.execute().first()
+
+            if result is None:
+                result = self.con.execute(materialflow_table.insert(),
+                                        lotlan=lotlan_string, hash=lotlan_hash)
+                materialflow_id = result.lastrowid
+            else:
+                materialflow_id = result.id
 
         if materialflow_id is not None:
             now = int(time.time()) # time in utc
@@ -99,17 +105,17 @@ class SQLLogger():
             If no entry is found a new one is inserted.
         """
         transport_order_ids_table = Table("transport_order_ids", self.metadata, autoload=True)
-
-        select_stmt = transport_order_ids_table.select(transport_order_ids_table.c.uuid==to_uuid)
-        result = select_stmt.execute().first()
-
         transport_uuid = None
 
-        if result is None:
-            result = self.con.execute(transport_order_ids_table.insert(), uuid=to_uuid)
-            transport_uuid = result.lastrowid
-        else:
-            transport_uuid = result.id
+        with to_lock:
+            select_stmt = transport_order_ids_table.select(transport_order_ids_table.c.uuid==to_uuid)
+            result = select_stmt.execute().first()
+
+            if result is None:
+                result = self.con.execute(transport_order_ids_table.insert(), uuid=to_uuid)
+                transport_uuid = result.lastrowid
+            else:
+                transport_uuid = result.id
 
         return transport_uuid
 
@@ -125,16 +131,17 @@ class SQLLogger():
         if location:
             location_table = Table("location", self.metadata, autoload=True)
 
-            select_stmt = location_table.select(location_table.c.logical_name==location.logical_name)
-            result = select_stmt.execute().first()
+            with location_lock:
+                select_stmt = location_table.select(location_table.c.logical_name==location.logical_name)
+                result = select_stmt.execute().first()
 
-            if result is None:
-                insert_result = self.con.execute(location_table.insert(),
-                                                 logical_name=location.logical_name,
-                                                 physical_name=location.physical_name,
-                                                 location_type=location.location_type)
-                location_id = insert_result.lastrowid
-            else:
-                location_id = result.id
+                if result is None:
+                    insert_result = self.con.execute(location_table.insert(),
+                                                    logical_name=location.logical_name,
+                                                    physical_name=location.physical_name,
+                                                    location_type=location.location_type)
+                    location_id = insert_result.lastrowid
+                else:
+                    location_id = result.id
 
         return location_id
