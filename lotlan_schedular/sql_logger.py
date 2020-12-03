@@ -4,6 +4,7 @@
 from pathlib import Path
 import hashlib
 import time
+import threading
 
 # 3rd party packages
 from sqlalchemy import create_engine, MetaData, Table
@@ -16,22 +17,27 @@ class SQLLogger():
         Establishes a SQLite connection and inserts logging data
     """
     def __init__(self, dabase_path = SQLCommands.DATABASE_PATH):
-        database_file = Path(dabase_path)
-        create_tables = True
-         # check if db file is already there
-        if database_file.is_file():
-            create_tables = False
-        self.database_engine = create_engine("sqlite:///" + dabase_path, echo=False)
-        self.metadata = MetaData(bind=self.database_engine)
-        self.con = self.database_engine.connect()
-        self.mf_uuid_to_mf_instance_id = {}
+        init_lock = threading.Lock()
 
-        if create_tables:
-            self.database_engine.execute(SQLCommands.CREATE_MATERIALFLOW_TABLE)
-            self.database_engine.execute(SQLCommands.CREATE_MATERIALFLOW_INSTANCE_TABLE)
-            self.database_engine.execute(SQLCommands.CREATE_TRANSPORT_ORDER_TABLE)
-            self.database_engine.execute(SQLCommands.CREATE_TRANSPORT_ORDER_IDS_TABLE)
-            self.database_engine.execute(SQLCommands.CREATE_LOCATION_TABLE)
+        with init_lock:
+           
+            database_file = Path(dabase_path)
+
+            create_tables = True
+            # check if db file is already there
+            if database_file.is_file():
+                create_tables = False
+            self.database_engine = create_engine("sqlite:///" + dabase_path, echo=False)
+            self.metadata = MetaData(bind=self.database_engine)
+            self.con = self.database_engine.connect()
+            self.mf_uuid_to_mf_instance_id = {}
+
+            if create_tables:
+                self.database_engine.execute(SQLCommands.CREATE_MATERIALFLOW_TABLE)
+                self.database_engine.execute(SQLCommands.CREATE_MATERIALFLOW_INSTANCE_TABLE)
+                self.database_engine.execute(SQLCommands.CREATE_TRANSPORT_ORDER_TABLE)
+                self.database_engine.execute(SQLCommands.CREATE_TRANSPORT_ORDER_IDS_TABLE)
+                self.database_engine.execute(SQLCommands.CREATE_LOCATION_TABLE)
 
     def insert_materialflow_in_sql(self, mf_uuid, lotlan_string):
         """
