@@ -181,7 +181,7 @@ class SQLCommands:
     CREATE_LOCATION_TABLE = """
     CREATE TABLE "location" (
         "id"	INTEGER NOT NULL UNIQUE,
-        "logical_name"	TEXT,
+        "logical_name"	TEXT UNIQUE,
         "physical_name"	TEXT,
         "location_type"	TEXT,
         PRIMARY KEY("id" AUTOINCREMENT)
