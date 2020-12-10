@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 from lotlan_schedular.api.event import Event
 from lotlan_schedular.api.transportorder import TransportOrder
 
-from lotlan_schedular.petri_net_generator import PetriNetState
 from lotlan_schedular.petri_net_generator import PetriNetGenerator
 
 # globals defines
@@ -37,7 +36,8 @@ class MaterialFlow():
         self.tasks_done = {}
         self.test_flag = test_flag
         self.parent_count = {}
-        self.petri_net_generator = PetriNetGenerator(tasks_in_mf, self.event_instances,
+        self.petri_net_generator = PetriNetGenerator(tasks_in_mf,
+                                                     self.event_instances,
                                                      test_flag=test_flag)
         self.logger = logger
 
@@ -79,16 +79,18 @@ class MaterialFlow():
             pickup = transport_order.pickup_tos.location
             delivery = transport_order.delivery_tos.location
 
-            state = TransportOrder.TransportOrderState.TASK_STARTED
+            transport_order.state = TransportOrder.TransportOrderState.TASK_STARTED
+            state = transport_order.state
             self.logger.insert_transport_order(self._uuid, uuid_, state, pickup, delivery)
 
             if self.triggered_by_events[task.name]:
                 tb_events_of_task = self.triggered_by_events[task.name]
                 self.petri_net_generator.awaited_events[task.name] = tb_events_of_task
-                self.petri_net_generator.petri_net_state[task.name] = PetriNetState.wait_for_tb
+
                 self.wait_for_triggered_by(uuid_, self.triggered_by_events[task.name])
 
-                state = TransportOrder.TransportOrderState.WAIT_FOR_TRIGGERED_BY
+                transport_order.state = TransportOrder.TransportOrderState.WAIT_FOR_TRIGGERED_BY
+                state = transport_order.state
                 self.logger.insert_transport_order(self._uuid, uuid_, state, pickup, delivery)
             else:
                 task_started_event = Event(PetriNetConstants.TASK_STARTED_PLACE, "", "Boolean",
@@ -211,9 +213,8 @@ class MaterialFlow():
                 to_done_event = Event("to_done", "", "Boolean",
                                       comparator="", value=True)
                 self.petri_net_generator.awaited_events[task.name] = [to_done_event]
-                petri_net_state = self.petri_net_generator.petri_net_state
-                petri_net_state[task.name] = PetriNetState.wait_for_to_done
-
+                # ToDo: Start pickup tos
+                
             for callback in self.next_to_cb:
                 callback(self._uuid, transport_orders)
 
@@ -228,12 +229,12 @@ class MaterialFlow():
             transport_order = task_info.transport_order
             pickup = transport_order.pickup_tos.location
             delivery = transport_order.delivery_tos.location
-            state = TransportOrder.TransportOrderState.WAIT_FOR_FINISHED_BY
+            transport_order.state = TransportOrder.TransportOrderState.WAIT_FOR_FINISHED_BY
+            state = transport_order.state
             self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
 
             finished_by_events = self.finished_by_events[task_info.name]
             self.petri_net_generator.awaited_events[task_info.name] = finished_by_events
-            self.petri_net_generator.petri_net_state[task_info.name] = PetriNetState.wait_for_fb
             self.wait_for_finished_by(uid, self.finished_by_events[task_info.name])
 
     def on_task_finished(self, task_info):

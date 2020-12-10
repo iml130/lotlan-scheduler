@@ -8,7 +8,7 @@ import snakes.plugins as plugins
 
 # local sources
 from lotlan_schedular.petri_net_drawer import PetriNetDrawer
-
+from lotlan_schedular.api.transportorder import TransportOrder
 from lotlan_schedular.api.event import Event
 
 # global defines
@@ -17,12 +17,8 @@ from lotlan_schedular.defines import PetriNetConstants
 plugins.load(["labels", "gv"], "snakes.nets", "nets")
 from nets import PetriNet, Place, Transition, Inhibitor, Value, Marking
 
-class PetriNetState(Enum):
-    not_started = 0
-    wait_for_tb = 1
-    wait_for_to_done = 2
-    wait_for_fb = 3
-    finished = 4
+PICKUP_NET = 0
+DELIVERY_NET = 1
 
 class PetriNetGenerator:
     """
@@ -42,7 +38,6 @@ class PetriNetGenerator:
         self.triggered_by_passed = {}
         self.test_flag = test_flag
         self.awaited_events = {}
-        self.petri_net_state = {}
         self.transition_fired = {}
         self.event_dict = {}
         self.event_counter = 0
@@ -63,7 +58,6 @@ class PetriNetGenerator:
                 self.draw_petri_net(task.name + "_delivery", delivery_net)
 
             self.awaited_events[task.name] = []
-            self.petri_net_state[task.name] = PetriNetState.not_started
 
             task.transport_order.state = PetriNet
 
@@ -389,7 +383,16 @@ class PetriNetGenerator:
             adds a token to the corresponding place of the event in the petri net
             checks before if event is expected and can be fired
         """
-        petri_net = self.net_task_dict[task.name]
+
+        petri_net = None
+
+        current_state = task.transport_order.state
+        if current_state == TransportOrder.TransportOrderState.TRANSPORT_ORDER_STARTED:
+            petri_net = self.tos_petri_nets[task.name][PICKUP_NET]
+        elif current_state == TransportOrder.TransportOrderState.LOADED:
+            petri_net = self.tos_petri_nets[task.name][DELIVERY_NET]
+        else:
+            petri_net = self.net_task_dict[task.name]
 
         awaited_event = False
         for evt in self.awaited_events[task.name]:
@@ -402,11 +405,12 @@ class PetriNetGenerator:
                         tb_event = petri_net.place(event_uuid).label("tb_event")
 
                         can_be_fired = False
-                        if ((self.petri_net_state[task.name] == PetriNetState.wait_for_tb and
-                             tb_event)
-                             or
-                            (self.petri_net_state[task.name] == PetriNetState.wait_for_fb and
-                             not tb_event)):
+
+                        tb_state = TransportOrder.TransportOrderState.WAIT_FOR_TRIGGERED_BY
+                        fb_state = TransportOrder.TransportOrderState.WAIT_FOR_FINISHED_BY
+
+                        if ((current_state == tb_state and tb_event) or
+                            (current_state == fb_state and not tb_event)):
                             can_be_fired = True
                         if can_be_fired:
                             petri_net.place(event_uuid).label(initialized=True)
