@@ -12,11 +12,18 @@ class TransportOrder:
     """
 
     class TransportOrderState(IntEnum):
+        """ Represents the current state of the Transport Order """
         TASK_STARTED = 0
         WAIT_FOR_TRIGGERED_BY = 1
         TRANSPORT_ORDER_STARTED = 2
-        WAIT_FOR_FINISHED_BY = 3
-        FINISHED = 4
+        MOVED_TO_PICKUP = 3
+        WAIT_FOR_LOADING = 4
+        LOADED = 5
+        MOVED_TO_DELIVERY = 6
+        WAIT_FOR_UNLOADING = 7
+        UNLOADED = 8
+        WAIT_FOR_FINISHED_BY = 9
+        FINISHED = 10
 
     def __init__(self):
         self.uuid = ""
