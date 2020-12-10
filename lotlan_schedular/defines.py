@@ -95,6 +95,13 @@ class PetriNetConstants:
     TASK_STARTED_PLACE = "task_started"
     TO_DONE_PLACE = "task_done"
 
+    TOS_STARTED_PLACE = "tos_started"
+    TOS_DONE_PLACE = "tos_done"
+    TOS_WAIT_FOR_FINISH_PLACE = "wait_for_finish"
+    TOS_FINISHED_PLACE = "tos_finished"
+    TOS_FIRST_TRANSITION = "tos_first"
+    TOS_SECOND_TRANSITION = "tos_second"
+
 
 class DrawConstants:
     """ Constants that are used in PetriNetDrawing """

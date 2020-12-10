@@ -31,15 +31,11 @@ class PetriNetGenerator:
         For each task there is a png file generated
     """
 
-    def __init__(self, tasks, event_instances, file_folder=".",
+    def __init__(self, tasks, event_instances,
                  test_flag=False, simple_representation=False):
         self.petri_nets = []
-        for i in enumerate(tasks):
-            net = PetriNet(PetriNetConstants.PETRI_NET_NAME + str(i))
-            self.petri_nets.append(net)
-
+        self.tos_petri_nets = {} # petri nets for the tos for each task
         self.tasks = tasks
-        self.file_folder = file_folder
         self.petri_net_drawer = PetriNetDrawer()
         self.simple_representation = simple_representation
         self.net_task_dict = {}
@@ -54,36 +50,125 @@ class PetriNetGenerator:
 
     def generate_task_nets(self):
         """ generates a petri net for each task in tasks """
-        for i, task in enumerate(self.tasks):
-            petri_net = self.petri_nets[i]
-
-            self.net_task_dict[task.name] = petri_net
-            self.event_dict[task.name] =  {}
-
-            # generate task action
-            self.generate_task_operation(task.name, petri_net)
-
-            # generate places and transitions for TriggeredBy
-            task.triggered_by_events = self.generate_triggered_by(task, petri_net)
-
-            # generate places and transitions for FinishedBy
-            task.finished_by_events = self.generate_finished_by(task, petri_net)
-
-            self.triggered_by_passed[task.name] = False
+        for task in self.tasks:
+            task_net, pickup_net, delivery_net = self.generate_task_net(task)
+            self.petri_nets.append(task_net)
+            self.tos_petri_nets[task.name] = []
+            self.tos_petri_nets[task.name].append(pickup_net)
+            self.tos_petri_nets[task.name].append(delivery_net)
 
             if self.test_flag:
-                self.draw_petri_net(task.name, petri_net)
+                self.draw_petri_net(task.name, task_net)
+                self.draw_petri_net(task.name + "_pickup", pickup_net)
+                self.draw_petri_net(task.name + "_delivery", delivery_net)
 
             self.awaited_events[task.name] = []
             self.petri_net_state[task.name] = PetriNetState.not_started
 
-        for transition in petri_net._trans:
-            self.transition_fired[transition] = False
+            task.transport_order.state = PetriNet
+
+            for transition in task_net._trans:
+                self.transition_fired[transition] = False
 
         return self.petri_nets
 
+    def generate_task_net(self, task):
+        """ 
+            Generates a petri net the task and the TransportOrderSteps of the TransportOrders
+            Returns generated nets (Task, Pickup, Delivery)
+        """
+        task_net = PetriNet(task.name)
+        self.net_task_dict[task.name] = task_net
+
+        self.event_dict[task.name] =  {}
+
+        # generate task action
+        self.generate_task_operation(task.name, task_net)
+
+        # generate places and transitions for TriggeredBy
+        task.triggered_by_events = self.generate_triggered_by(task, task_net)
+
+        # generate places and transitions for FinishedBy
+        task.finished_by_events = self.generate_finished_by(task, task_net)
+
+        self.triggered_by_passed[task.name] = False
+
+        pickup_tos = task.transport_order.pickup_tos
+        delivery_tos = task.transport_order.delivery_tos
+
+        pickup_net = self.generate_tos_net(pickup_tos)
+        delivery_net = self.generate_tos_net(delivery_tos)
+
+        return (task_net, pickup_net, delivery_net)
+
+    def generate_tos_net(self, tos):
+        tos_net = PetriNet(tos.name)
+        self.generate_advanced_tos_operation(tos_net)
+        return tos_net
+    
+    def generate_task_operation(self, task_name, net):
+        if self.simple_representation is True:
+            self.generate_simple_task_operation(task_name, net)
+        else:
+            self.generate_advanced_task_operation(net)
+
+    def generate_simple_task_operation(self, task_name, net):
+        create_place(task_name, "action", net)
+
+    def generate_advanced_task_operation(self, net):
+        """
+            generates a advanced representation for a Task
+            contrary to the simple representation this one has
+            more places for each state in a Task
+        """
+        create_place(PetriNetConstants.TASK_STARTED_PLACE,
+                     PetriNetConstants.TASK_STARTED_PLACE, net)
+        create_place(PetriNetConstants.TO_DONE_PLACE, PetriNetConstants.TO_DONE_PLACE, net)
+        create_place("to_done", "to_done", net)
+        create_place("task_finished", "task_finished", net)
+
+        create_transition(PetriNetConstants.TASK_FIRST_TRANSITION,
+                               PetriNetConstants.TASK_FIRST_TRANSITION, net)
+        create_transition(PetriNetConstants.TASK_SECOND_TRANSITION,
+                               PetriNetConstants.TASK_SECOND_TRANSITION, net)
+
+        net.add_input(PetriNetConstants.TASK_STARTED_PLACE,
+                      PetriNetConstants.TASK_FIRST_TRANSITION, Value(1))
+        net.add_output(PetriNetConstants.TO_DONE_PLACE,
+                       PetriNetConstants.TASK_FIRST_TRANSITION, Value(1))
+        net.add_input("to_done", PetriNetConstants.TASK_FIRST_TRANSITION, Value(1))
+        net.add_input(PetriNetConstants.TO_DONE_PLACE,
+                      PetriNetConstants.TASK_SECOND_TRANSITION, Value(1))
+        net.add_output("task_finished", PetriNetConstants.TASK_SECOND_TRANSITION, Value(1))
+
+    def generate_advanced_tos_operation(self, net):
+        """
+            generates a advanced representation for a TransportOrderStep
+            contrary to the simple representation this one has
+            more places for each state in a Task
+        """
+        create_place(PetriNetConstants.TOS_STARTED_PLACE,
+                     PetriNetConstants.TOS_STARTED_PLACE, net)
+        create_place(PetriNetConstants.TOS_DONE_PLACE, PetriNetConstants.TOS_DONE_PLACE, net)
+        create_place(PetriNetConstants.TOS_WAIT_FOR_FINISH_PLACE, PetriNetConstants.TOS_WAIT_FOR_FINISH_PLACE, net)
+        create_place(PetriNetConstants.TOS_FINISHED_PLACE, PetriNetConstants.TOS_FINISHED_PLACE, net)
+
+        create_transition(PetriNetConstants.TOS_FIRST_TRANSITION,
+                               PetriNetConstants.TOS_FIRST_TRANSITION, net)
+        create_transition(PetriNetConstants.TOS_SECOND_TRANSITION,
+                               PetriNetConstants.TOS_SECOND_TRANSITION, net)
+
+        net.add_input(PetriNetConstants.TOS_STARTED_PLACE,
+                      PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
+        net.add_output(PetriNetConstants.TOS_WAIT_FOR_FINISH_PLACE,
+                       PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
+        net.add_input(PetriNetConstants.TOS_DONE_PLACE, PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
+        net.add_input(PetriNetConstants.TOS_WAIT_FOR_FINISH_PLACE,
+                      PetriNetConstants.TOS_SECOND_TRANSITION, Value(1))
+        net.add_output(PetriNetConstants.TOS_FINISHED_PLACE, PetriNetConstants.TOS_SECOND_TRANSITION, Value(1))
+
     def draw_petri_net(self, name, petri_net):
-        file_path = self.file_folder + "/" + name + PetriNetConstants.IMAGE_ENDING
+        file_path = "./" + name + PetriNetConstants.IMAGE_ENDING
         self.petri_net_drawer.draw_image(petri_net, file_path)
 
     def generate_triggered_by(self, task, net):
@@ -126,41 +211,6 @@ class PetriNetGenerator:
                                       finished_by_event_names, False, tb_event=False)
         return finished_by_event_names
 
-    def generate_task_operation(self, task_name, net):
-        if self.simple_representation is True:
-            self.generate_simple_task_operation(task_name, net)
-        else:
-            self.generate_advanced_task_operation(net)
-
-    def generate_simple_task_operation(self, task_name, net):
-        create_place(task_name, "action", net)
-
-    def generate_advanced_task_operation(self, net):
-        """
-            generates a advanced representation for a task
-            contrary to the simple representation this one has
-            more places for each state in a task
-        """
-        create_place(PetriNetConstants.TASK_STARTED_PLACE,
-                     PetriNetConstants.TASK_STARTED_PLACE, net)
-        create_place(PetriNetConstants.TO_DONE_PLACE, PetriNetConstants.TO_DONE_PLACE, net)
-        create_place("to_done", "to_done", net)
-        create_place("task_finished", "task_finished", net)
-
-        create_transition(PetriNetConstants.TASK_FIRST_TRANSITION,
-                               PetriNetConstants.TASK_FIRST_TRANSITION, net)
-        create_transition(PetriNetConstants.TASK_SECOND_TRANSITION,
-                               PetriNetConstants.TASK_SECOND_TRANSITION, net)
-
-        net.add_input(PetriNetConstants.TASK_STARTED_PLACE,
-                      PetriNetConstants.TASK_FIRST_TRANSITION, Value(1))
-        net.add_output(PetriNetConstants.TO_DONE_PLACE,
-                       PetriNetConstants.TASK_FIRST_TRANSITION, Value(1))
-        net.add_input("to_done", PetriNetConstants.TASK_FIRST_TRANSITION, Value(1))
-        net.add_input(PetriNetConstants.TO_DONE_PLACE,
-                      PetriNetConstants.TASK_SECOND_TRANSITION, Value(1))
-        net.add_output("task_finished", PetriNetConstants.TASK_SECOND_TRANSITION, Value(1))
-
     def generate_places_from_expression(self, expression, task_name, parent_transition, event_name_list, parent_is_not, tb_event, comparator="", value=None):
         """ extracts the single events from the expression and creates a place for each """
         net = self.net_task_dict[task_name]
@@ -189,6 +239,7 @@ class PetriNetGenerator:
                 net.add_input(place_name, parent_transition, Value(1))
 
             return expression + event_postfix
+
         elif isinstance(expression, dict):
             if len(expression) == 2:
                 new_parent_is_not = parent_is_not is not True
