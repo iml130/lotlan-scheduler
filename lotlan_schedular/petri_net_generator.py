@@ -12,7 +12,7 @@ from lotlan_schedular.api.transportorder import TransportOrder
 from lotlan_schedular.api.event import Event
 
 # global defines
-from lotlan_schedular.defines import PetriNetConstants
+from lotlan_schedular.defines import PetriNetConstants, LogicConstants
 
 plugins.load(["labels", "gv"], "snakes.nets", "nets")
 from nets import PetriNet, Place, Transition, Inhibitor, Value, Marking
@@ -61,8 +61,13 @@ class PetriNetGenerator:
 
             task.transport_order.state = PetriNet
 
+            self.transition_fired[task.name] = {}
             for transition in task_net._trans:
-                self.transition_fired[transition] = False
+                self.transition_fired[task.name][transition] = False
+            for transition in pickup_net._trans:
+                self.transition_fired[task.name][transition] = False
+            for transition in delivery_net._trans:
+                self.transition_fired[task.name][transition] = False
 
         return self.petri_nets
 
@@ -90,16 +95,16 @@ class PetriNetGenerator:
         pickup_tos = task.transport_order.pickup_tos
         delivery_tos = task.transport_order.delivery_tos
 
-        pickup_net = self.generate_tos_net(pickup_tos)
-        delivery_net = self.generate_tos_net(delivery_tos)
+        pickup_net = self.generate_tos_net(pickup_tos, task.name + "_pickup")
+        delivery_net = self.generate_tos_net(delivery_tos, task.name + "_delivery")
 
         return (task_net, pickup_net, delivery_net)
 
-    def generate_tos_net(self, tos):
-        tos_net = PetriNet(tos.name)
+    def generate_tos_net(self, tos, name):
+        tos_net = PetriNet(name)
         self.generate_advanced_tos_operation(tos_net)
         return tos_net
-    
+
     def generate_task_operation(self, task_name, net):
         if self.simple_representation is True:
             self.generate_simple_task_operation(task_name, net)
@@ -117,7 +122,7 @@ class PetriNetGenerator:
         """
         create_place(PetriNetConstants.TASK_STARTED_PLACE,
                      PetriNetConstants.TASK_STARTED_PLACE, net)
-        create_place(PetriNetConstants.TO_DONE_PLACE, PetriNetConstants.TO_DONE_PLACE, net)
+        create_place(PetriNetConstants.TASK_DONE_PLACE, PetriNetConstants.TASK_DONE_PLACE, net)
         create_place("to_done", "to_done", net)
         create_place("task_finished", "task_finished", net)
 
@@ -128,10 +133,10 @@ class PetriNetGenerator:
 
         net.add_input(PetriNetConstants.TASK_STARTED_PLACE,
                       PetriNetConstants.TASK_FIRST_TRANSITION, Value(1))
-        net.add_output(PetriNetConstants.TO_DONE_PLACE,
+        net.add_output(PetriNetConstants.TASK_DONE_PLACE,
                        PetriNetConstants.TASK_FIRST_TRANSITION, Value(1))
         net.add_input("to_done", PetriNetConstants.TASK_FIRST_TRANSITION, Value(1))
-        net.add_input(PetriNetConstants.TO_DONE_PLACE,
+        net.add_input(PetriNetConstants.TASK_DONE_PLACE,
                       PetriNetConstants.TASK_SECOND_TRANSITION, Value(1))
         net.add_output("task_finished", PetriNetConstants.TASK_SECOND_TRANSITION, Value(1))
 
@@ -326,7 +331,7 @@ class PetriNetGenerator:
             transition = transitions[index]
             transition_fired = False
 
-            if self.transition_fired[transition] is False:
+            if self.transition_fired[task.name][transition] is False:
                 input_arcs = petri_net.transition(transition).input()
                 input_arcs_initialized = True
                 for input_arc in input_arcs:
@@ -337,36 +342,14 @@ class PetriNetGenerator:
                 if input_arcs_initialized:
                     try:
                         petri_net.transition(transition).fire(Value(1))
-                        self.transition_fired[transition] = True
+                        self.transition_fired[task.name][transition] = True
                         transition_fired = True
                     except ValueError:
                         transition_fired = False
 
             if transition_fired:
-                if transition == PetriNetConstants.TRIGGERED_BY_TRANSITION:
-                    remove_all_tokens(petri_net)
+                work_to_do = self.handle_current_state(task, petri_net, transition, cb)
 
-                    if cb is not None:
-                        cb("t_by", task)
-                        self.triggered_by_passed[task.name] = True
-                    work_to_do = True
-                elif transition == PetriNetConstants.TASK_FIRST_TRANSITION:
-                    if cb is not None:
-                        cb("t_done", task)
-                    work_to_do = True
-                elif transition == PetriNetConstants.TASK_SECOND_TRANSITION:
-                    remove_all_tokens(petri_net)
-
-                    if cb is not None:
-                        cb("t_finished", task)
-                    # allow transition firing again to work with loops
-                    for trans in petri_net._trans:
-                        self.transition_fired[trans] = False
-
-                    work_to_do = False
-                    index = len(petri_net._trans)
-                else:
-                    work_to_do = True
             index = index + 1
 
             # restart loop if every transition was iterated but
@@ -376,7 +359,47 @@ class PetriNetGenerator:
                 work_to_do = False
 
         if self.test_flag:
-            self.draw_petri_net(task.name, petri_net)
+            self.draw_petri_net(petri_net.name, petri_net)
+
+    def handle_current_state(self, task, petri_net, transition, cb):
+        """
+            transition: the transition with was passed
+            checks which transition was passed and calls the given cb with the
+            message of the corresponding state
+            returns if evaulation is done so there is nothing more to do or if
+            there is still work to do
+        """
+        work_to_do = False
+
+        if transition == PetriNetConstants.TRIGGERED_BY_TRANSITION:
+            remove_all_tokens(petri_net)
+
+            if cb is not None:
+                cb(LogicConstants.TRIGGERED_BY_PASSED_MSG, task)
+                self.triggered_by_passed[task.name] = True
+            work_to_do = True
+        elif transition == PetriNetConstants.TASK_FIRST_TRANSITION:
+            if cb is not None:
+                cb(LogicConstants.TO_DONE_MSG, task)
+            work_to_do = True
+        elif transition == PetriNetConstants.TASK_SECOND_TRANSITION:
+            remove_all_tokens(petri_net)
+
+            if cb is not None:
+                cb(LogicConstants.TASK_FINISHED_MSG, task)
+            # allow transition firing again to work with loops
+            for trans in petri_net._trans:
+                self.transition_fired[task.name][trans] = False
+        elif transition == PetriNetConstants.TOS_SECOND_TRANSITION:
+            if cb is not None:
+                cb(LogicConstants.TOS_FINISHED_MSG, task)
+
+            for trans in petri_net._trans:
+                self.transition_fired[task.name][trans] = False
+        else:
+            work_to_do = True
+
+        return work_to_do
 
     def fire_event(self, task, event, cb=None):
         """
@@ -384,21 +407,21 @@ class PetriNetGenerator:
             checks before if event is expected and can be fired
         """
 
-        petri_net = None
-
+        petri_net = self.net_task_dict[task.name]
         current_state = task.transport_order.state
-        if current_state == TransportOrder.TransportOrderState.TRANSPORT_ORDER_STARTED:
+
+        if current_state == TransportOrder.TransportOrderState.PICKUP_STARTED:
             petri_net = self.tos_petri_nets[task.name][PICKUP_NET]
-        elif current_state == TransportOrder.TransportOrderState.LOADED:
+        elif current_state == TransportOrder.TransportOrderState.PICKUP_FINISHED:
             petri_net = self.tos_petri_nets[task.name][DELIVERY_NET]
         else:
             petri_net = self.net_task_dict[task.name]
 
-        awaited_event = False
+        is_awaited_event = False
         for evt in self.awaited_events[task.name]:
             if evt is not None and evt.logical_name == event.logical_name:
-                awaited_event = True
-        if awaited_event:
+                is_awaited_event = True
+        if is_awaited_event:
             if event.logical_name in self.event_dict[task.name]:
                 for event_uuid in self.event_dict[task.name][event.logical_name]:
                     if petri_net.has_place(event_uuid):
@@ -417,20 +440,20 @@ class PetriNetGenerator:
                             if isinstance(event.value, bool):
                                 if event.value is True:
                                     petri_net.place(event_uuid).add(1)
-                                    self.draw_petri_net(task.name, petri_net)
+                                    self.draw_petri_net(petri_net.name, petri_net)
                                 else:
                                     remove_token(petri_net, event_uuid)
                             elif is_value(event.value):
                                 event_from_place = petri_net.place(event_uuid).label("event")
                                 if parse_comparator_and_value(event_from_place, event):
                                     petri_net.place(event_uuid).add(1)
-                                    self.draw_petri_net(task.name, petri_net)
+                                    self.draw_petri_net(petri_net.name, petri_net)
                                 else:
                                     remove_token(petri_net, event_uuid)
             else:
                 if event.value is True:
                     petri_net.place(event.logical_name).add(1)
-                    self.draw_petri_net(task.name, petri_net)
+                    self.draw_petri_net(petri_net.name, petri_net)
                 else:
                     try:
                         petri_net.place(event.logical_name).remove(1)

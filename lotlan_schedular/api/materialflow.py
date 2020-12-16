@@ -189,6 +189,8 @@ class MaterialFlow():
     def on_petri_net_response(self, msg, task):
         if msg == LogicConstants.TRIGGERED_BY_PASSED_MSG:
             self.next_to([task])
+        elif msg == LogicConstants.TOS_FINISHED_MSG:
+            self.on_tos_finished(task)
         elif msg == LogicConstants.TO_DONE_MSG:
             self.on_to_done(task)
         elif msg == LogicConstants.TASK_FINISHED_MSG:
@@ -200,23 +202,61 @@ class MaterialFlow():
             transport_orders = {}
             for task in task_info:
                 uid = self.ids[task.name]
-                
-                # logger
+
                 transport_order = task.transport_order
-                pickup = transport_order.pickup_tos.location
-                delivery = transport_order.delivery_tos.location
-                state = TransportOrder.TransportOrderState.TRANSPORT_ORDER_STARTED
-                self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
+                transport_order.state = TransportOrder.TransportOrderState.PICKUP_STARTED
+
+                pickup_location = transport_order.pickup_tos.location
+                delivery_location = transport_order.delivery_tos.location
+
+                self.logger.insert_transport_order(self._uuid, uid, transport_order.state, pickup_location, delivery_location)
 
                 transport_orders[uid] = transport_order
 
                 to_done_event = Event("to_done", "", "Boolean",
                                       comparator="", value=True)
+
+
                 self.petri_net_generator.awaited_events[task.name] = [to_done_event]
-                # ToDo: Start pickup tos
-                
+
+                self.start_tos(task, transport_order.pickup_tos)
+
             for callback in self.next_to_cb:
                 callback(self._uuid, transport_orders)
+
+    def start_tos(self, task, tos):
+        if tos.triggered_by:
+            self.petri_net_generator.awaited_events[task.name] = tos.triggered_by
+        else:
+            tos_started_event = Event(PetriNetConstants.TOS_STARTED_PLACE, "", "Boolean", value=True)
+            tos_done_event = Event(PetriNetConstants.TOS_DONE_PLACE, "", "Boolean", True)
+            self.petri_net_generator.awaited_events[task.name] = [tos_started_event, tos_done_event]
+            self.petri_net_generator.fire_event(task, tos_started_event)
+
+    def on_tos_finished(self, task):
+        current_state = task.transport_order.state
+        tos = None
+
+        # check the current state and set the new one
+        if current_state == TransportOrder.TransportOrderState.PICKUP_STARTED:
+            task.transport_order.state = TransportOrder.TransportOrderState.PICKUP_FINISHED
+            tos = task.transport_order.pickup_tos
+            self.on_pickup_finished(task, tos)
+        elif current_state == TransportOrder.TransportOrderState.PICKUP_FINISHED:
+            task.transport_order.state = TransportOrder.TransportOrderState.DELIVERY_FINISHED
+            tos = task.transport_order.delivery_tos
+            self.on_delivery_finished(task, tos)
+        else:
+            print("Something went wrong!")
+
+    def on_pickup_finished(self, task, tos):
+        self.start_tos(task, tos)
+
+    def on_delivery_finished(self, task, tos):
+        task.transport_order.state = TransportOrder.TransportOrderState.WAIT_FOR_FINISHED_BY
+        to_done_event = Event("to_done", "", "Boolean", value=True) 
+        self.petri_net_generator.awaited_events[task.name] = [to_done_event]
+        self.petri_net_generator.fire_event(task, to_done_event, self.on_petri_net_response)
 
     def on_to_done(self, task_info):
         """

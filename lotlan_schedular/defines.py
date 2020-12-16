@@ -93,14 +93,16 @@ class PetriNetConstants:
     TASK_FIRST_TRANSITION = "finish_task"
     TASK_SECOND_TRANSITION = "exec_on_done"
     TASK_STARTED_PLACE = "task_started"
-    TO_DONE_PLACE = "task_done"
+    TASK_DONE_PLACE = "task_done"
 
     TOS_STARTED_PLACE = "tos_started"
     TOS_DONE_PLACE = "tos_done"
     TOS_WAIT_FOR_FINISH_PLACE = "wait_for_finish"
     TOS_FINISHED_PLACE = "tos_finished"
+    TOS_MOVED_TO_LOCATION_PLACE = "moved_to_location"
     TOS_FIRST_TRANSITION = "tos_first"
     TOS_SECOND_TRANSITION = "tos_second"
+    TOS_TRIGGERED_BY_TRANSITION = "triggered_by_t"
 
 
 class DrawConstants:
@@ -132,8 +134,9 @@ class DrawConstants:
 
 class LogicConstants:
     """ Constants that are used in the control logic of the schedular """
-    TRIGGERED_BY_PASSED_MSG = "t_by"
-    TO_DONE_MSG = "t_done"
+    TRIGGERED_BY_PASSED_MSG = "tb_by"
+    TOS_FINISHED_MSG = "pu_finished"
+    TO_DONE_MSG = "to_done"
     TASK_FINISHED_MSG = "t_finished"
 
 class SQLCommands:

@@ -15,15 +15,17 @@ class TransportOrder:
         """ Represents the current state of the Transport Order """
         TASK_STARTED = 0
         WAIT_FOR_TRIGGERED_BY = 1
-        TRANSPORT_ORDER_STARTED = 2
+        PICKUP_STARTED = 2
         MOVED_TO_PICKUP = 3
         WAIT_FOR_LOADING = 4
-        LOADED = 5
-        MOVED_TO_DELIVERY = 6
-        WAIT_FOR_UNLOADING = 7
-        UNLOADED = 8
-        WAIT_FOR_FINISHED_BY = 9
-        FINISHED = 10
+        PICKUP_FINISHED = 5
+        DELIVERY_STARTED = 6
+        MOVED_TO_DELIVERY = 7
+        WAIT_FOR_UNLOADING = 8
+        DELIVERY_FINISHED = 9
+        WAIT_FOR_FINISHED_BY = 10
+        FINISHED = 11
+
 
     def __init__(self):
         self.uuid = ""
