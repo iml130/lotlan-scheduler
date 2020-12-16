@@ -117,10 +117,10 @@ class LotlanTreeVisitor(LoTLanParserVisitor):
             elif len(expression) == 3:
                 if expression["binOp"] == ".":
                     self.get_events_from_tos(str(expression["left"] + "." + str(expression["right"])), events, event_list)
-                elif type(expression["right"]) == str:
-                    self.get_events_from_tos(str(expression["left"]), events, event_list, value=expression["right"], comparator=expression["binOp"])
                 elif expression["left"] == "(" and expression["right"] == ")":
                     self.get_events_from_tos(expression["binOp"], events, event_list)
+                elif type(expression["right"]) == str:
+                    self.get_events_from_tos(str(expression["left"]), events, event_list, value=expression["right"], comparator=expression["binOp"])
                 else:
                     self.get_events_from_tos(expression["left"], events, event_list)
                     self.get_events_from_tos(expression["right"], events, event_list)

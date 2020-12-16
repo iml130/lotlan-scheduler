@@ -276,38 +276,38 @@ class PetriNetGenerator:
                 self.generate_places_from_expression(expression["value"], task_name,
                                                      parent_transition,
                                                      event_name_list,
-                                                     new_parent_is_not, tb_event, tos_net)
+                                                     new_parent_is_not, tb_event, tos_net=tos_net)
             elif len(expression) == 3:
                 if expression["binOp"] == ".":
                     new_expression = str(expression["left"]) + "." + str(expression["right"])
                     self.generate_places_from_expression(new_expression, task_name, net,
                                                          parent_transition,
                                                          event_name_list,
-                                                         parent_is_not, tb_event, tos_net)
+                                                         parent_is_not, tb_event, tos_net=tos_net)
                 # case: expr == <True|False>
                 elif expression["right"] == "True":
                     if expression["binOp"] == "==":
                         self.generate_places_from_expression(expression["left"],
                                                              task_name, parent_transition,
-                                                             event_name_list, False, tb_event, tos_net)
+                                                             event_name_list, False, tb_event, tos_net=tos_net)
                     elif expression["binOp"] == "!=":
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              parent_transition,
-                                                             event_name_list, True, tb_event, tos_net)
+                                                             event_name_list, True, tb_event, tos_net=tos_net)
                 elif expression["right"] == "False":
                     if expression["binOp"] == "==":
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              parent_transition,
-                                                             event_name_list, True, tb_event, tos_net)
+                                                             event_name_list, True, tb_event, tos_net=tos_net)
                     elif expression["binOp"] == "!=":
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              parent_transition,
-                                                             event_name_list, False, tb_event, tos_net)
+                                                             event_name_list, False, tb_event, tos_net=tos_net)
                 elif expression["left"] == "(" and expression["right"] == ")":
                     return self.generate_places_from_expression(expression["binOp"], task_name,
                                                                 parent_transition,
                                                                 event_name_list, parent_is_not,
-                                                                tb_event, tos_net)
+                                                                tb_event, tos_net=tos_net)
                 elif expression["binOp"] == "and" or expression["binOp"] == "or":
                     composition = str(expression)
 
@@ -317,10 +317,10 @@ class PetriNetGenerator:
 
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              composition + "_t",
-                                                             event_name_list, False, tb_event, tos_net)
+                                                             event_name_list, False, tb_event, tos_net=tos_net)
                         self.generate_places_from_expression(expression["right"], task_name,
                                                              composition + "_t",
-                                                             event_name_list, False, tb_event, tos_net)
+                                                             event_name_list, False, tb_event, tos_net=tos_net)
 
                         net.add_output(composition + "_end", composition + "_t", Value(1))
 
@@ -335,10 +335,10 @@ class PetriNetGenerator:
 
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              composition + "_t1",
-                                                             event_name_list, False, tb_event, tos_net)
+                                                             event_name_list, False, tb_event, tos_net=tos_net)
                         self.generate_places_from_expression(expression["right"], task_name,
                                                              composition + "_t2",
-                                                             event_name_list, False, tb_event, tos_net)
+                                                             event_name_list, False, tb_event, tos_net=tos_net)
 
                     if parent_is_not is True:
                         net.add_input(composition + "_end", parent_transition, Inhibitor(Value(1)))
@@ -348,7 +348,7 @@ class PetriNetGenerator:
                     self.generate_places_from_expression(expression["left"], task_name,
                                                          parent_transition,
                                                          event_name_list, parent_is_not, tb_event,
-                                                         expression["binOp"], expression["right"], tos_net)
+                                                         expression["binOp"], expression["right"], tos_net=tos_net)
 
     def evaluate_petri_net(self, petri_net, task, cb=None):
         """ tries to fire every transition as long as all transitions
