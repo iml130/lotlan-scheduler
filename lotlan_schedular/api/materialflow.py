@@ -229,7 +229,7 @@ class MaterialFlow():
             self.petri_net_generator.awaited_events[task.name] = tos.triggered_by
         else:
             tos_started_event = Event(PetriNetConstants.TOS_STARTED_PLACE, "", "Boolean", value=True)
-            tos_done_event = Event(PetriNetConstants.TOS_DONE_PLACE, "", "Boolean", True)
+            tos_done_event = Event(PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE, "", "Boolean", True)
             self.petri_net_generator.awaited_events[task.name] = [tos_started_event, tos_done_event]
             self.petri_net_generator.fire_event(task, tos_started_event)
 

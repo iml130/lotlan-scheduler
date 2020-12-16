@@ -95,14 +95,16 @@ class PetriNetGenerator:
         pickup_tos = task.transport_order.pickup_tos
         delivery_tos = task.transport_order.delivery_tos
 
-        pickup_net = self.generate_tos_net(pickup_tos, task.name + "_pickup")
-        delivery_net = self.generate_tos_net(delivery_tos, task.name + "_delivery")
+        pickup_net = self.generate_tos_net(task, pickup_tos, task.name + "_pickup")
+        delivery_net = self.generate_tos_net(task, delivery_tos, task.name + "_delivery")
 
         return (task_net, pickup_net, delivery_net)
 
-    def generate_tos_net(self, tos, name):
+    def generate_tos_net(self, task, tos, name):
         tos_net = PetriNet(name)
         self.generate_advanced_tos_operation(tos_net)
+        self.generate_triggered_by_for_tos(task, tos, tos_net)
+        self.generate_finished_by_for_tos(task, tos, tos_net)
         return tos_net
 
     def generate_task_operation(self, task_name, net):
@@ -148,8 +150,8 @@ class PetriNetGenerator:
         """
         create_place(PetriNetConstants.TOS_STARTED_PLACE,
                      PetriNetConstants.TOS_STARTED_PLACE, net)
-        create_place(PetriNetConstants.TOS_DONE_PLACE, PetriNetConstants.TOS_DONE_PLACE, net)
-        create_place(PetriNetConstants.TOS_WAIT_FOR_FINISH_PLACE, PetriNetConstants.TOS_WAIT_FOR_FINISH_PLACE, net)
+        create_place(PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE, PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE, net)
+        create_place(PetriNetConstants.TOS_WAIT_FOR_ACTION_PLACE, PetriNetConstants.TOS_WAIT_FOR_ACTION_PLACE, net)
         create_place(PetriNetConstants.TOS_FINISHED_PLACE, PetriNetConstants.TOS_FINISHED_PLACE, net)
 
         create_transition(PetriNetConstants.TOS_FIRST_TRANSITION,
@@ -159,10 +161,10 @@ class PetriNetGenerator:
 
         net.add_input(PetriNetConstants.TOS_STARTED_PLACE,
                       PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
-        net.add_output(PetriNetConstants.TOS_WAIT_FOR_FINISH_PLACE,
+        net.add_output(PetriNetConstants.TOS_WAIT_FOR_ACTION_PLACE,
                        PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
-        net.add_input(PetriNetConstants.TOS_DONE_PLACE, PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
-        net.add_input(PetriNetConstants.TOS_WAIT_FOR_FINISH_PLACE,
+        net.add_input(PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE, PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
+        net.add_input(PetriNetConstants.TOS_WAIT_FOR_ACTION_PLACE,
                       PetriNetConstants.TOS_SECOND_TRANSITION, Value(1))
         net.add_output(PetriNetConstants.TOS_FINISHED_PLACE, PetriNetConstants.TOS_SECOND_TRANSITION, Value(1))
 
@@ -194,6 +196,29 @@ class PetriNetGenerator:
                                PetriNetConstants.TRIGGERED_BY_TRANSITION, Value(1))
         return triggered_by_event_names
 
+    def generate_triggered_by_for_tos(self, task, tos, net):
+        tb_statement = tos.triggered_by_statements
+        if tb_statement:
+            create_transition(PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION, "", net)
+            self.generate_places_from_expression(tb_statement, task.name,
+                                                PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION,
+                                                [],
+                                                False,
+                                                tb_event = True,
+                                                tos_net=net)
+            net.add_output(PetriNetConstants.TOS_STARTED_PLACE,
+                        PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION, Value(1))
+
+    def generate_finished_by_for_tos(self, task, tos, net):
+        fb_statement = tos.finished_by_statements
+        if fb_statement:
+            self.generate_places_from_expression(fb_statement, task.name,
+                                                PetriNetConstants.TOS_SECOND_TRANSITION,
+                                                [],
+                                                False,
+                                                tb_event = True,
+                                                tos_net=net)
+
     def generate_finished_by(self, task, net):
         """
             generates places and transition from the FinishedBy expression
@@ -210,9 +235,15 @@ class PetriNetGenerator:
                                       finished_by_event_names, False, tb_event=False)
         return finished_by_event_names
 
-    def generate_places_from_expression(self, expression, task_name, parent_transition, event_name_list, parent_is_not, tb_event, comparator="", value=None):
+    def generate_places_from_expression(self, expression, task_name, parent_transition, event_name_list, parent_is_not, tb_event, comparator="", value=None, tos_net=None):
         """ extracts the single events from the expression and creates a place for each """
-        net = self.net_task_dict[task_name]
+
+        net = None
+        if tos_net is not None:
+            net = tos_net
+        else:
+            net = self.net_task_dict[task_name]
+
         if isinstance(expression, str):
             # generate single node
             event_postfix = ""
@@ -245,38 +276,38 @@ class PetriNetGenerator:
                 self.generate_places_from_expression(expression["value"], task_name,
                                                      parent_transition,
                                                      event_name_list,
-                                                     new_parent_is_not, tb_event)
+                                                     new_parent_is_not, tb_event, tos)
             elif len(expression) == 3:
                 if expression["binOp"] == ".":
                     new_expression = str(expression["left"]) + "." + str(expression["right"])
                     self.generate_places_from_expression(new_expression, task_name, net,
                                                          parent_transition,
                                                          event_name_list,
-                                                         parent_is_not, tb_event)
+                                                         parent_is_not, tb_event, tos)
                 # case: expr == <True|False>
                 elif expression["right"] == "True":
                     if expression["binOp"] == "==":
                         self.generate_places_from_expression(expression["left"],
                                                              task_name, parent_transition,
-                                                             event_name_list, False, tb_event)
+                                                             event_name_list, False, tb_event, tos)
                     elif expression["binOp"] == "!=":
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              parent_transition,
-                                                             event_name_list, True, tb_event)
+                                                             event_name_list, True, tb_event, tos)
                 elif expression["right"] == "False":
                     if expression["binOp"] == "==":
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              parent_transition,
-                                                             event_name_list, True, tb_event)
+                                                             event_name_list, True, tb_event, tos)
                     elif expression["binOp"] == "!=":
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              parent_transition,
-                                                             event_name_list, False, tb_event)
+                                                             event_name_list, False, tb_event, tos)
                 elif expression["left"] == "(" and expression["right"] == ")":
                     return self.generate_places_from_expression(expression["binOp"], task_name,
                                                                 parent_transition,
                                                                 event_name_list, parent_is_not,
-                                                                tb_event)
+                                                                tb_event, tos)
                 elif expression["binOp"] == "and" or expression["binOp"] == "or":
                     composition = str(expression)
 
@@ -286,10 +317,10 @@ class PetriNetGenerator:
 
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              composition + "_t",
-                                                             event_name_list, False, tb_event)
+                                                             event_name_list, False, tb_event, tos)
                         self.generate_places_from_expression(expression["right"], task_name,
                                                              composition + "_t",
-                                                             event_name_list, False, tb_event)
+                                                             event_name_list, False, tb_event, tos)
 
                         net.add_output(composition + "_end", composition + "_t", Value(1))
 
@@ -304,10 +335,10 @@ class PetriNetGenerator:
 
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              composition + "_t1",
-                                                             event_name_list, False, tb_event)
+                                                             event_name_list, False, tb_event, tos)
                         self.generate_places_from_expression(expression["right"], task_name,
                                                              composition + "_t2",
-                                                             event_name_list, False, tb_event)
+                                                             event_name_list, False, tb_event, tos)
 
                     if parent_is_not is True:
                         net.add_input(composition + "_end", parent_transition, Inhibitor(Value(1)))
@@ -317,7 +348,7 @@ class PetriNetGenerator:
                     self.generate_places_from_expression(expression["left"], task_name,
                                                          parent_transition,
                                                          event_name_list, parent_is_not, tb_event,
-                                                         expression["binOp"], expression["right"])
+                                                         expression["binOp"], expression["right"], tos)
 
     def evaluate_petri_net(self, petri_net, task, cb=None):
         """ tries to fire every transition as long as all transitions

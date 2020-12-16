@@ -96,10 +96,9 @@ class PetriNetConstants:
     TASK_DONE_PLACE = "task_done"
 
     TOS_STARTED_PLACE = "tos_started"
-    TOS_DONE_PLACE = "tos_done"
-    TOS_WAIT_FOR_FINISH_PLACE = "wait_for_finish"
-    TOS_FINISHED_PLACE = "tos_finished"
     TOS_MOVED_TO_LOCATION_PLACE = "moved_to_location"
+    TOS_WAIT_FOR_ACTION_PLACE = "wait_for_action"
+    TOS_FINISHED_PLACE = "tos_finished"
     TOS_FIRST_TRANSITION = "tos_first"
     TOS_SECOND_TRANSITION = "tos_second"
     TOS_TRIGGERED_BY_TRANSITION = "triggered_by_t"
