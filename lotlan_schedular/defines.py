@@ -101,7 +101,7 @@ class PetriNetConstants:
     TOS_FINISHED_PLACE = "tos_finished"
     TOS_FIRST_TRANSITION = "tos_first"
     TOS_SECOND_TRANSITION = "tos_second"
-    TOS_TRIGGERED_BY_TRANSITION = "triggered_by_t"
+    TOS_TRIGGERED_BY_TRANSITION = "tos_triggered_by_t"
 
 
 class DrawConstants:
@@ -134,7 +134,9 @@ class DrawConstants:
 class LogicConstants:
     """ Constants that are used in the control logic of the schedular """
     TRIGGERED_BY_PASSED_MSG = "tb_by"
-    TOS_FINISHED_MSG = "pu_finished"
+    TOS_TB_PASSED_MSG = "tos_tb_by"
+    TOS_WAIT_FOR_ACTION = "tos_wait_for_action"
+    TOS_FINISHED_MSG = "tos_finished"
     TO_DONE_MSG = "to_done"
     TASK_FINISHED_MSG = "t_finished"
 

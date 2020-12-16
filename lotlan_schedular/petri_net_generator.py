@@ -216,7 +216,7 @@ class PetriNetGenerator:
                                                 PetriNetConstants.TOS_SECOND_TRANSITION,
                                                 [],
                                                 False,
-                                                tb_event = True,
+                                                tb_event = False,
                                                 tos_net=net)
 
     def generate_finished_by(self, task, net):
@@ -276,38 +276,38 @@ class PetriNetGenerator:
                 self.generate_places_from_expression(expression["value"], task_name,
                                                      parent_transition,
                                                      event_name_list,
-                                                     new_parent_is_not, tb_event, tos)
+                                                     new_parent_is_not, tb_event, tos_net)
             elif len(expression) == 3:
                 if expression["binOp"] == ".":
                     new_expression = str(expression["left"]) + "." + str(expression["right"])
                     self.generate_places_from_expression(new_expression, task_name, net,
                                                          parent_transition,
                                                          event_name_list,
-                                                         parent_is_not, tb_event, tos)
+                                                         parent_is_not, tb_event, tos_net)
                 # case: expr == <True|False>
                 elif expression["right"] == "True":
                     if expression["binOp"] == "==":
                         self.generate_places_from_expression(expression["left"],
                                                              task_name, parent_transition,
-                                                             event_name_list, False, tb_event, tos)
+                                                             event_name_list, False, tb_event, tos_net)
                     elif expression["binOp"] == "!=":
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              parent_transition,
-                                                             event_name_list, True, tb_event, tos)
+                                                             event_name_list, True, tb_event, tos_net)
                 elif expression["right"] == "False":
                     if expression["binOp"] == "==":
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              parent_transition,
-                                                             event_name_list, True, tb_event, tos)
+                                                             event_name_list, True, tb_event, tos_net)
                     elif expression["binOp"] == "!=":
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              parent_transition,
-                                                             event_name_list, False, tb_event, tos)
+                                                             event_name_list, False, tb_event, tos_net)
                 elif expression["left"] == "(" and expression["right"] == ")":
                     return self.generate_places_from_expression(expression["binOp"], task_name,
                                                                 parent_transition,
                                                                 event_name_list, parent_is_not,
-                                                                tb_event, tos)
+                                                                tb_event, tos_net)
                 elif expression["binOp"] == "and" or expression["binOp"] == "or":
                     composition = str(expression)
 
@@ -317,10 +317,10 @@ class PetriNetGenerator:
 
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              composition + "_t",
-                                                             event_name_list, False, tb_event, tos)
+                                                             event_name_list, False, tb_event, tos_net)
                         self.generate_places_from_expression(expression["right"], task_name,
                                                              composition + "_t",
-                                                             event_name_list, False, tb_event, tos)
+                                                             event_name_list, False, tb_event, tos_net)
 
                         net.add_output(composition + "_end", composition + "_t", Value(1))
 
@@ -335,10 +335,10 @@ class PetriNetGenerator:
 
                         self.generate_places_from_expression(expression["left"], task_name,
                                                              composition + "_t1",
-                                                             event_name_list, False, tb_event, tos)
+                                                             event_name_list, False, tb_event, tos_net)
                         self.generate_places_from_expression(expression["right"], task_name,
                                                              composition + "_t2",
-                                                             event_name_list, False, tb_event, tos)
+                                                             event_name_list, False, tb_event, tos_net)
 
                     if parent_is_not is True:
                         net.add_input(composition + "_end", parent_transition, Inhibitor(Value(1)))
@@ -348,7 +348,7 @@ class PetriNetGenerator:
                     self.generate_places_from_expression(expression["left"], task_name,
                                                          parent_transition,
                                                          event_name_list, parent_is_not, tb_event,
-                                                         expression["binOp"], expression["right"], tos)
+                                                         expression["binOp"], expression["right"], tos_net)
 
     def evaluate_petri_net(self, petri_net, task, cb=None):
         """ tries to fire every transition as long as all transitions
@@ -394,43 +394,63 @@ class PetriNetGenerator:
 
     def handle_current_state(self, task, petri_net, transition, cb):
         """
-            transition: the transition with was passed
+            transition: the transition which was passed
             checks which transition was passed and calls the given cb with the
             message of the corresponding state
             returns if evaulation is done so there is nothing more to do or if
             there is still work to do
         """
         work_to_do = False
+        msg = ""
 
         if transition == PetriNetConstants.TRIGGERED_BY_TRANSITION:
             remove_all_tokens(petri_net)
+            msg = LogicConstants.TRIGGERED_BY_PASSED_MSG
 
-            if cb is not None:
-                cb(LogicConstants.TRIGGERED_BY_PASSED_MSG, task)
-                self.triggered_by_passed[task.name] = True
+            self.triggered_by_passed[task.name] = True
             work_to_do = True
         elif transition == PetriNetConstants.TASK_FIRST_TRANSITION:
-            if cb is not None:
-                cb(LogicConstants.TO_DONE_MSG, task)
+            msg = LogicConstants.TO_DONE_MSG
             work_to_do = True
         elif transition == PetriNetConstants.TASK_SECOND_TRANSITION:
             remove_all_tokens(petri_net)
-
-            if cb is not None:
-                cb(LogicConstants.TASK_FINISHED_MSG, task)
+            msg = LogicConstants.TASK_FINISHED_MSG
+            
             # allow transition firing again to work with loops
             for trans in petri_net._trans:
                 self.transition_fired[task.name][trans] = False
+        elif transition == PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION:
+            msg = LogicConstants.TOS_TB_PASSED_MSG
+        elif transition == PetriNetConstants.TOS_FIRST_TRANSITION:
+            msg = LogicConstants.TOS_WAIT_FOR_ACTION
         elif transition == PetriNetConstants.TOS_SECOND_TRANSITION:
-            if cb is not None:
-                cb(LogicConstants.TOS_FINISHED_MSG, task)
-
+            msg = LogicConstants.TOS_FINISHED_MSG
             for trans in petri_net._trans:
                 self.transition_fired[task.name][trans] = False
         else:
             work_to_do = True
 
+        if cb is not None:
+            cb(msg, task)
+
         return work_to_do
+
+    def get_petri_net(self, task):
+        petri_net = None
+        current_state = task.transport_order.state
+
+        if current_state in [TransportOrder.TransportOrderState.PICKUP_STARTED,
+                             TransportOrder.TransportOrderState.PICKUP_WAIT_FOR_TRIGGERED_BY,
+                             TransportOrder.TransportOrderState.WAIT_FOR_LOADING]:
+            petri_net = self.tos_petri_nets[task.name][PICKUP_NET]
+        elif current_state in [TransportOrder.TransportOrderState.DELIVERY_STARTED,
+                               TransportOrder.TransportOrderState.DELIVERY_WAIT_FOR_TRIGGERED_BY,
+                               TransportOrder.TransportOrderState.WAIT_FOR_UNLOADING]:
+            petri_net = self.tos_petri_nets[task.name][DELIVERY_NET]
+        else:
+            petri_net = self.net_task_dict[task.name]
+
+        return petri_net
 
     def fire_event(self, task, event, cb=None):
         """
@@ -438,15 +458,7 @@ class PetriNetGenerator:
             checks before if event is expected and can be fired
         """
 
-        petri_net = self.net_task_dict[task.name]
-        current_state = task.transport_order.state
-
-        if current_state == TransportOrder.TransportOrderState.PICKUP_STARTED:
-            petri_net = self.tos_petri_nets[task.name][PICKUP_NET]
-        elif current_state == TransportOrder.TransportOrderState.PICKUP_FINISHED:
-            petri_net = self.tos_petri_nets[task.name][DELIVERY_NET]
-        else:
-            petri_net = self.net_task_dict[task.name]
+        petri_net = self.get_petri_net(task)
 
         is_awaited_event = False
         for evt in self.awaited_events[task.name]:
@@ -456,17 +468,10 @@ class PetriNetGenerator:
             if event.logical_name in self.event_dict[task.name]:
                 for event_uuid in self.event_dict[task.name][event.logical_name]:
                     if petri_net.has_place(event_uuid):
-                        tb_event = petri_net.place(event_uuid).label("tb_event")
+                        current_state = task.transport_order.state
+                        event_can_be_fired = can_be_fired(current_state, event_uuid, petri_net)
 
-                        can_be_fired = False
-
-                        tb_state = TransportOrder.TransportOrderState.WAIT_FOR_TRIGGERED_BY
-                        fb_state = TransportOrder.TransportOrderState.WAIT_FOR_FINISHED_BY
-
-                        if ((current_state == tb_state and tb_event) or
-                            (current_state == fb_state and not tb_event)):
-                            can_be_fired = True
-                        if can_be_fired:
+                        if event_can_be_fired:
                             petri_net.place(event_uuid).label(initialized=True)
                             if isinstance(event.value, bool):
                                 if event.value is True:
@@ -492,6 +497,35 @@ class PetriNetGenerator:
                         pass
             self.evaluate_petri_net(petri_net, task, cb)
 
+def can_be_fired(current_state, event_uuid, petri_net):
+    """
+        checks if the given event can be fired:
+        only works for tb and fb events
+        Prevents setting a mark in tb when fb event with the same name is fired
+    """
+    tb_event = petri_net.place(event_uuid).label("tb_event")
+
+    task_tb_state = TransportOrder.TransportOrderState.TASK_WAIT_FOR_TRIGGERED_BY
+    task_fb_state = TransportOrder.TransportOrderState.TASK_WAIT_FOR_FINISHED_BY
+
+    pickup_tb_state = TransportOrder.TransportOrderState.PICKUP_WAIT_FOR_TRIGGERED_BY
+    pickup_fb_state = TransportOrder.TransportOrderState.WAIT_FOR_LOADING
+
+    delivery_tb_state = TransportOrder.TransportOrderState.DELIVERY_WAIT_FOR_TRIGGERED_BY
+    delivery_fb_state = TransportOrder.TransportOrderState.WAIT_FOR_UNLOADING
+
+    if ((current_state == task_tb_state and tb_event) or
+        (current_state == task_fb_state and not tb_event)):
+        return True
+    if ((current_state == pickup_tb_state and tb_event) or
+        (current_state == pickup_fb_state and not tb_event)):
+        return True
+    if ((current_state == delivery_tb_state and tb_event) or
+        (current_state == delivery_fb_state and not tb_event)):
+        return True
+
+    return False
+
 def create_place(place_name, place_type, net, event = None, initialized = True):
     if net.has_place(place_name) is False:
         net.add_place(Place(place_name, []))
@@ -508,11 +542,17 @@ def remove_token(petri_net, place_name):
     except ValueError:
         pass
 
-def remove_all_tokens(net):
-    task_started_tokens = net.place(PetriNetConstants.TASK_STARTED_PLACE).tokens
-    task_finished_tokens = net.place("task_finished").tokens
-    net.set_marking(Marking(task_started = task_started_tokens,
-                            task_finished=task_finished_tokens))
+def remove_all_tokens(net, task=True):
+    if task:
+        task_started_tokens = net.place(PetriNetConstants.TASK_STARTED_PLACE).tokens
+        task_finished_tokens = net.place("task_finished").tokens
+        net.set_marking(Marking(task_started = task_started_tokens,
+                                task_finished=task_finished_tokens))
+    else:
+        tos_started_tokens = net.place(PetriNetConstants.TOS_STARTED_PLACE).tokens
+        tos_finished_tokens = net.place(PetriNetConstants.TOS_FINISHED_PLACE).tokens
+        net.set_marking(Marking(tos_started = tos_started_tokens,
+                                tos_finished=tos_finished_tokens))
 
 def parse_comparator_and_value(required_event, fired_event):
     """ If types of both events are the same execute

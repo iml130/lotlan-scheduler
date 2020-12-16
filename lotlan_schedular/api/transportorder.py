@@ -14,17 +14,19 @@ class TransportOrder:
     class TransportOrderState(IntEnum):
         """ Represents the current state of the Transport Order """
         TASK_STARTED = 0
-        WAIT_FOR_TRIGGERED_BY = 1
-        PICKUP_STARTED = 2
-        MOVED_TO_PICKUP = 3
-        WAIT_FOR_LOADING = 4
-        PICKUP_FINISHED = 5
-        DELIVERY_STARTED = 6
-        MOVED_TO_DELIVERY = 7
-        WAIT_FOR_UNLOADING = 8
-        DELIVERY_FINISHED = 9
-        WAIT_FOR_FINISHED_BY = 10
-        FINISHED = 11
+        TASK_WAIT_FOR_TRIGGERED_BY = 1
+        PICKUP_WAIT_FOR_TRIGGERED_BY = 2
+        PICKUP_STARTED = 3
+        MOVED_TO_PICKUP = 4
+        WAIT_FOR_LOADING = 5
+        PICKUP_FINISHED = 6
+        DELIVERY_WAIT_FOR_TRIGGERED_BY = 7
+        DELIVERY_STARTED = 8
+        MOVED_TO_DELIVERY = 9
+        WAIT_FOR_UNLOADING = 10
+        DELIVERY_FINISHED = 11
+        TASK_WAIT_FOR_FINISHED_BY = 12
+        FINISHED = 13
 
 
     def __init__(self):
