@@ -143,6 +143,9 @@ class TestMaterialflow(unittest.TestCase):
         material_flow.start()
         self.assertEqual(material_flow.all_tasks_done(), False)
 
+        material_flow.fire_event("0", Event("moved_to_location", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("moved_to_location", "", "Boolean", value=True))
+
         material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
         self.assertEqual(material_flow.all_tasks_done(), True)
 
