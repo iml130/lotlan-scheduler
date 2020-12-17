@@ -379,7 +379,8 @@ class PetriNetGenerator:
                         transition_fired = False
 
             if transition_fired:
-                work_to_do = self.handle_current_state(task, petri_net, transition, cb)
+                work_to_do, index = self.handle_current_state(task, petri_net,
+                                                              transition, cb, index)
 
             index = index + 1
 
@@ -392,7 +393,7 @@ class PetriNetGenerator:
         if self.test_flag:
             self.draw_petri_net(petri_net.name, petri_net)
 
-    def handle_current_state(self, task, petri_net, transition, cb):
+    def handle_current_state(self, task, petri_net, transition, cb, index):
         """
             transition: the transition which was passed
             checks which transition was passed and calls the given cb with the
@@ -400,7 +401,7 @@ class PetriNetGenerator:
             returns if evaulation is done so there is nothing more to do or if
             there is still work to do
         """
-        work_to_do = False
+        work_to_do = True
         msg = ""
 
         if transition == PetriNetConstants.TRIGGERED_BY_TRANSITION:
@@ -408,10 +409,8 @@ class PetriNetGenerator:
             msg = LogicConstants.TRIGGERED_BY_PASSED_MSG
 
             self.triggered_by_passed[task.name] = True
-            work_to_do = True
         elif transition == PetriNetConstants.TASK_FIRST_TRANSITION:
             msg = LogicConstants.TO_DONE_MSG
-            work_to_do = True
         elif transition == PetriNetConstants.TASK_SECOND_TRANSITION:
             remove_all_tokens(petri_net)
             msg = LogicConstants.TASK_FINISHED_MSG
@@ -419,6 +418,8 @@ class PetriNetGenerator:
             # allow transition firing again to work with loops
             for trans in petri_net._trans:
                 self.transition_fired[task.name][trans] = False
+            work_to_do = False
+            index = len(petri_net._trans)
         elif transition == PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION:
             msg = LogicConstants.TOS_TB_PASSED_MSG
         elif transition == PetriNetConstants.TOS_FIRST_TRANSITION:
@@ -427,13 +428,11 @@ class PetriNetGenerator:
             msg = LogicConstants.TOS_FINISHED_MSG
             for trans in petri_net._trans:
                 self.transition_fired[task.name][trans] = False
-        else:
-            work_to_do = True
 
         if cb is not None:
             cb(msg, task)
 
-        return work_to_do
+        return work_to_do, index
 
     def get_petri_net(self, task):
         petri_net = None
