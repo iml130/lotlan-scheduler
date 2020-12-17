@@ -68,8 +68,8 @@ class TestSQLLogger(unittest.TestCase):
         pickup = Location("pickup", "pickup_physical", "pickup_type")
         delivery = Location("delivery", "delivery_physical", "delivery_type")
 
-        state_1 = TransportOrder.TransportOrderState.WAIT_FOR_TRIGGERED_BY
-        state_2 = TransportOrder.TransportOrderState.WAIT_FOR_FINISHED_BY
+        state_1 = TransportOrder.TransportOrderState.TASK_WAIT_FOR_TRIGGERED_BY
+        state_2 = TransportOrder.TransportOrderState.TASK_WAIT_FOR_FINISHED_BY
 
         self.logger.insert_transport_order("mf_uuid", "to_uuid", state_1, pickup, delivery)
         self.logger.insert_transport_order("mf_uuid", "to_uuid", state_2, pickup, delivery)
