@@ -14,17 +14,24 @@ from lotlan_schedular.petri_net_generator import PetriNetGenerator
 # globals defines
 from lotlan_schedular.defines import PetriNetConstants, LogicConstants
 
-class MaterialFlow():
-    """ Represents an abstract materialflow """
-    def __init__(self, _uuid, lotlan_structure, tasks_in_mf, logger, test_flag=False):
-        self._uuid = _uuid
-        self.name = ""
-        self._is_running = True
+class MaterialFlowCallbacks(object):
+    def __init__(self):
         self.triggered_by_cb = []
+        self.pickup_finished_cb = []
+        self.delivery_finished_cb = []
         self.finished_by_cb = []
         self.next_to_cb = []
         self.task_finished_cb = []
         self.all_finished_cb = []
+
+class MaterialFlow():
+    """ Represents an abstract materialflow """
+
+    def __init__(self, _uuid, lotlan_structure, tasks_in_mf, logger, test_flag=False):
+        self._uuid = _uuid
+        self.name = ""
+        self._is_running = True
+        self.materialflow_callbacks = MaterialFlowCallbacks()
         self.tasks_in_mf = tasks_in_mf
         self.lotlan_structure = lotlan_structure
         self.tasks = {}
@@ -81,7 +88,7 @@ class MaterialFlow():
 
             transport_order.state = TransportOrder.TransportOrderState.TASK_STARTED
             state = transport_order.state
-            self.logger.insert_transport_order(self._uuid, uuid_, state, pickup, delivery)
+            #self.logger.insert_transport_order(self._uuid, uuid_, state, pickup, delivery)
 
             if self.triggered_by_events[task.name]:
                 tb_events_of_task = self.triggered_by_events[task.name]
@@ -91,7 +98,7 @@ class MaterialFlow():
 
                 transport_order.state = TransportOrder.TransportOrderState.TASK_WAIT_FOR_TRIGGERED_BY
                 state = transport_order.state
-                self.logger.insert_transport_order(self._uuid, uuid_, state, pickup, delivery)
+                #self.logger.insert_transport_order(self._uuid, uuid_, state, pickup, delivery)
             else:
                 task_started_event = Event(PetriNetConstants.TASK_STARTED_PLACE, "", "Boolean",
                                            comparator="", value=True)
@@ -213,7 +220,7 @@ class MaterialFlow():
                 pickup_location = transport_order.pickup_tos.location
                 delivery_location = transport_order.delivery_tos.location
 
-                self.logger.insert_transport_order(self._uuid, uid, transport_order.state, pickup_location, delivery_location)
+                #self.logger.insert_transport_order(self._uuid, uid, transport_order.state, pickup_location, delivery_location)
 
                 transport_orders[uid] = transport_order
 
@@ -225,7 +232,7 @@ class MaterialFlow():
 
                 self.start_tos(task, transport_order.pickup_tos)
 
-            for callback in self.next_to_cb:
+            for callback in self.materialflow_callbacks.next_to_cb:
                 callback(self._uuid, transport_orders)
 
     def start_tos(self, task, tos, pickup=True):
@@ -292,10 +299,14 @@ class MaterialFlow():
         # ToDo: start onDone tasks
 
     def on_pickup_finished(self, task, tos):
+        self.pickup_finished(self.ids[task.name])
+
         task.transport_order.state = TransportOrder.TransportOrderState.DELIVERY_STARTED
         self.start_tos(task, tos, False)
 
     def on_delivery_finished(self, task, tos):
+        self.delivery_finished(self.ids[task.name])
+
         task.transport_order.state = TransportOrder.TransportOrderState.TASK_WAIT_FOR_FINISHED_BY
         to_done_event = Event("to_done", "", "Boolean", value=True) 
         self.petri_net_generator.awaited_events[task.name] = [to_done_event]
@@ -314,7 +325,7 @@ class MaterialFlow():
             delivery = transport_order.delivery_tos.location
             transport_order.state = TransportOrder.TransportOrderState.TASK_WAIT_FOR_FINISHED_BY
             state = transport_order.state
-            self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
+            #self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
 
             finished_by_events = self.finished_by_events[task_info.name]
             self.petri_net_generator.awaited_events[task_info.name] = finished_by_events
@@ -336,7 +347,7 @@ class MaterialFlow():
         pickup = transport_order.pickup_tos.location
         delivery = transport_order.delivery_tos.location
         state = TransportOrder.TransportOrderState.FINISHED
-        self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
+        #self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
 
         if task_info.on_done:
             startable_tasks = []
@@ -366,37 +377,53 @@ class MaterialFlow():
         return False
 
     def wait_for_triggered_by(self, uuid_, event_information):
-        for callback in self.triggered_by_cb:
+        for callback in self.materialflow_callbacks.triggered_by_cb:
             callback(self._uuid, uuid_, event_information)
 
     def wait_for_finished_by(self, uuid_, event_information):
-        for callback in self.finished_by_cb:
+        for callback in self.materialflow_callbacks.finished_by_cb:
             callback(self._uuid, uuid_,  event_information)
 
     def task_finished(self, uuid_):
-        for callback in self.task_finished_cb:
+        for callback in self.materialflow_callbacks.task_finished_cb:
             callback(self._uuid, uuid_)
 
     def all_finished(self):
-        for callback in self.all_finished_cb:
+        for callback in self.materialflow_callbacks.all_finished_cb:
             callback(self._uuid)
 
+    def pickup_finished(self, uuid_):
+        for callback in self.materialflow_callbacks.pickup_finished_cb:
+            callback(self._uuid, uuid_)
+
+    def delivery_finished(self, uuid_):
+        for callback in self.materialflow_callbacks.delivery_finished_cb:
+            callback(self._uuid, uuid_)
+
     def register_callback_triggered_by(self, callback):
-        if callback not in self.triggered_by_cb:
-            self.triggered_by_cb.append(callback)
+        if callback not in self.materialflow_callbacks.triggered_by_cb:
+            self.materialflow_callbacks.triggered_by_cb.append(callback)
 
     def register_callback_next_to(self, callback):
-        if callback not in self.next_to_cb:
-            self.next_to_cb.append(callback)
+        if callback not in self.materialflow_callbacks.next_to_cb:
+            self.materialflow_callbacks.next_to_cb.append(callback)
 
     def register_callback_finished_by(self, callback):
-        if callback not in self.finished_by_cb:
-            self.finished_by_cb.append(callback)
+        if callback not in self.materialflow_callbacks.finished_by_cb:
+            self.materialflow_callbacks.finished_by_cb.append(callback)
 
     def register_callback_task_finished(self, callback):
-        if callback not in self.task_finished_cb:
-            self.task_finished_cb.append(callback)
+        if callback not in self.materialflow_callbacks.task_finished_cb:
+            self.materialflow_callbacks.task_finished_cb.append(callback)
 
     def register_callback_all_finished(self, callback):
-        if callback not in self.all_finished_cb:
-            self.all_finished_cb.append(callback)
+        if callback not in self.materialflow_callbacks.all_finished_cb:
+            self.materialflow_callbacks.all_finished_cb.append(callback)
+
+    def register_callback_pickup_finished(self, callback):
+        if callback not in self.materialflow_callbacks.pickup_finished_cb:
+            self.materialflow_callbacks.pickup_finished_cb.append(callback)
+    
+    def register_callback_delivery_finished(self, callback):
+        if callback not in self.materialflow_callbacks.delivery_finished_cb:
+            self.materialflow_callbacks.delivery_finished_cb.append(callback)
