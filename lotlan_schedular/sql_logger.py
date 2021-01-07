@@ -51,6 +51,7 @@ class SQLLogger():
         materialflow_table = Table("materialflow", self.metadata, autoload=True)
         lotlan_hash = hashlib.md5(lotlan_string.encode()).hexdigest()
 
+        mf_uuid = str(mf_uuid)
         materialflow_id = None
 
         with mf_lock:
@@ -82,6 +83,7 @@ class SQLLogger():
             pickup and delivery have to be Location objects
         """
         now = int(time.time()) # time in utc
+        mf_uuid = str(mf_uuid)
 
         # Get foreign keys in transport_order table
         transport_uuid = self.get_transport_uuid(to_uuid)
@@ -106,6 +108,8 @@ class SQLLogger():
         """
         transport_order_ids_table = Table("transport_order_ids", self.metadata, autoload=True)
         transport_uuid = None
+
+        to_uuid = str(to_uuid)
 
         with to_lock:
             select_stmt = transport_order_ids_table.select(transport_order_ids_table.c.uuid==to_uuid)
