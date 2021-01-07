@@ -6,14 +6,12 @@ from pathlib import Path
 
 # 3rd party packages
 import networkx as nx
-from sqlalchemy import create_engine, MetaData, Table 
 
 # local sources
 from lotlan_schedular.api.materialflow import MaterialFlow
 from lotlan_schedular.task_language_test import test_string
 from lotlan_schedular.defines import TEMPLATE_STRING
 
-from lotlan_schedular.sql_logger import SQLLogger
 # globals defines
 from lotlan_schedular.defines import SQLCommands
 
@@ -25,7 +23,6 @@ class LotlanSchedular:
         self.test_flag = test_flag
         self.material_flows = []
         self.database_engine = None
-        self.logger = SQLLogger()
         self.init(lotlan_string)
 
     # just validates lotlan string and returns
@@ -75,9 +72,8 @@ class LotlanSchedular:
                     tasks_reached.append(task_name)
 
                 materialflow_uuid = uuid.uuid4()
-                self.logger.insert_materialflow_in_sql(materialflow_uuid, self.lotlan_string)
                 materialflow = MaterialFlow(materialflow_uuid, self.lotlan_structure,
-                                            tasks_in_mf, self.logger, self.test_flag)
+                                            self.lotlan_string, tasks_in_mf, self.test_flag)
                 materialflows.append(materialflow)
         return materialflows
 

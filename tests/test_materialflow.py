@@ -46,8 +46,8 @@ class TestMaterialflow(unittest.TestCase):
         task.name = "Task"
         task.transport_order = transport_order
 
+        material_flow.start()
         material_flow.initialize_tasks([task])
-
         self.assertEqual(len(material_flow.tasks), 2) # 2 because one task is created from the file
         self.assertEqual(len(material_flow.ids), 2)
         self.assertEqual(len(material_flow.tasks_done), 2)
@@ -66,6 +66,7 @@ class TestMaterialflow(unittest.TestCase):
         schedular = LotlanSchedular(lotlan_string, True)
         material_flow = schedular.get_materialflows()[0]
 
+        material_flow.start()
         startable_tasks = material_flow.find_startable_tasks(material_flow.call_graph,
                                                              material_flow.tasks_in_mf)
         self.assertEqual(len(startable_tasks), 1)
@@ -79,6 +80,7 @@ class TestMaterialflow(unittest.TestCase):
         schedular = LotlanSchedular(lotlan_string, True)
         material_flow = schedular.get_materialflows()[1]
 
+        material_flow.start()
         startable_tasks = material_flow.find_startable_tasks(material_flow.call_graph,
                                                              material_flow.tasks_in_mf)
         self.assertEqual(len(startable_tasks), 1)
@@ -92,6 +94,7 @@ class TestMaterialflow(unittest.TestCase):
         schedular = LotlanSchedular(lotlan_string, True)
         material_flow = schedular.get_materialflows()[0]
 
+        material_flow.start()
         startable_tasks = material_flow.find_startable_tasks(material_flow.call_graph,
                                                              material_flow.tasks_in_mf)
         self.assertEqual(len(startable_tasks), 2)
