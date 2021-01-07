@@ -222,18 +222,11 @@ class MaterialFlow():
                 uid = self.ids[task.name]
 
                 transport_order = task.transport_order
-                transport_order.state = TransportOrder.TransportOrderState.PICKUP_STARTED
-
-                pickup_location = transport_order.pickup_tos.location
-                delivery_location = transport_order.delivery_tos.location
-
-                self.logger.insert_transport_order(self._uuid, uid, transport_order.state, pickup_location, delivery_location)
-
+                task.transport_order.state = TransportOrder.TransportOrderState.PICKUP_STARTED
                 transport_orders[uid] = transport_order
 
                 to_done_event = Event("to_done", "", "Boolean",
                                       comparator="", value=True)
-
 
                 self.petri_net_generator.awaited_events[task.name] = [to_done_event]
 
@@ -250,6 +243,9 @@ class MaterialFlow():
                 task.transport_order.state = TransportOrder.TransportOrderState.PICKUP_WAIT_FOR_TRIGGERED_BY
             else:
                 task.transport_order.state = TransportOrder.TransportOrderState.DELIVERY_WAIT_FOR_TRIGGERED_BY
+            
+            uid = self.ids[task.name]
+            self.log_transport_order(uid, task.transport_order)
         else:
             tos_started_event = Event(PetriNetConstants.TOS_STARTED_PLACE, "", "Boolean", value=True)
             tos_done_event = Event(PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE, "", "Boolean", True)
@@ -259,6 +255,8 @@ class MaterialFlow():
     def on_tos_tb_passed(self, task):
         current_state = task.transport_order.state
         tos = None
+        uid = self.ids[task.name]
+        transport_order = task.transport_order
 
         # check the current state and set the new one
         if current_state == TransportOrder.TransportOrderState.PICKUP_WAIT_FOR_TRIGGERED_BY:
@@ -268,12 +266,16 @@ class MaterialFlow():
             task.transport_order.state = TransportOrder.TransportOrderState.DELIVERY_STARTED
             tos = task.transport_order.delivery_tos
 
+        self.log_transport_order(uid, transport_order)
+
         moved_to_locaction_event = Event("moved_to_location", "", "Boolean", value=True)
         self.petri_net_generator.awaited_events[task.name] = [moved_to_locaction_event]
 
     def on_tos_wait_for_action(self, task):
         current_state = task.transport_order.state
         tos = None
+        uid = self.ids[task.name]
+        transport_order = task.transport_order
 
         # check the current state and set the new one
         if current_state == TransportOrder.TransportOrderState.PICKUP_STARTED:
@@ -285,25 +287,29 @@ class MaterialFlow():
         else:
             print("Something went wrong!")
 
+        self.log_transport_order(uid, transport_order)
+
         self.petri_net_generator.awaited_events[task.name] = tos.finished_by
 
     def on_tos_finished(self, task):
         current_state = task.transport_order.state
         tos = None
+        uid = self.ids[task.name]
+        transport_order = task.transport_order
 
         # check the current state and set the new one
         if current_state == TransportOrder.TransportOrderState.WAIT_FOR_LOADING:
             task.transport_order.state = TransportOrder.TransportOrderState.PICKUP_FINISHED
             tos = task.transport_order.delivery_tos
+            self.log_transport_order(uid, transport_order)
             self.on_pickup_finished(task, tos)
         elif current_state == TransportOrder.TransportOrderState.WAIT_FOR_UNLOADING:
             task.transport_order.state = TransportOrder.TransportOrderState.DELIVERY_FINISHED
             tos = task.transport_order.delivery_tos
+            self.log_transport_order(uid, transport_order)
             self.on_delivery_finished(task, tos)
         else:
             print("Something went wrong!")
-
-        # ToDo: start onDone tasks
 
     def on_pickup_finished(self, task, tos):
         self.pickup_finished(self.ids[task.name])
@@ -314,7 +320,6 @@ class MaterialFlow():
     def on_delivery_finished(self, task, tos):
         self.delivery_finished(self.ids[task.name])
 
-        task.transport_order.state = TransportOrder.TransportOrderState.TASK_WAIT_FOR_FINISHED_BY
         to_done_event = Event("to_done", "", "Boolean", value=True) 
         self.petri_net_generator.awaited_events[task.name] = [to_done_event]
         self.petri_net_generator.fire_event(task, to_done_event, self.on_petri_net_response)
@@ -328,11 +333,8 @@ class MaterialFlow():
         if self.finished_by_events[task_info.name]:
             # logger
             transport_order = task_info.transport_order
-            pickup = transport_order.pickup_tos.location
-            delivery = transport_order.delivery_tos.location
             transport_order.state = TransportOrder.TransportOrderState.TASK_WAIT_FOR_FINISHED_BY
-            state = transport_order.state
-            self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
+            self.log_transport_order(uid, transport_order)
 
             finished_by_events = self.finished_by_events[task_info.name]
             self.petri_net_generator.awaited_events[task_info.name] = finished_by_events
@@ -348,13 +350,8 @@ class MaterialFlow():
         self.tasks_done[task_info.name] = True
 
         self.petri_net_generator.awaited_events[task_info.name] = [None]
-
-        # logger
-        transport_order = task_info.transport_order
-        pickup = transport_order.pickup_tos.location
-        delivery = transport_order.delivery_tos.location
-        state = TransportOrder.TransportOrderState.FINISHED
-        self.logger.insert_transport_order(self._uuid, uid, state, pickup, delivery)
+        task_info.transport_order.state = TransportOrder.TransportOrderState.FINISHED
+        self.log_transport_order(uid, task_info.transport_order)
 
         if task_info.on_done:
             startable_tasks = []
@@ -382,6 +379,12 @@ class MaterialFlow():
                     return False
             return True
         return False
+
+    def log_transport_order(self, to_uuid, transport_order):
+        pickup_location = transport_order.pickup_tos.location
+        delivery_location = transport_order.delivery_tos.location
+        self.logger.insert_transport_order(self._uuid, to_uuid, transport_order.state,
+                                           pickup_location, delivery_location)
 
     def wait_for_triggered_by(self, uuid_, event_information):
         for callback in self.materialflow_callbacks.triggered_by_cb:
