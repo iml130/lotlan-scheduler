@@ -5,10 +5,10 @@ from enum import Enum
 import re
 
 # local sources
-from lotlan_schedular.transport.complete_program import CompleteProgram
-from lotlan_schedular.transport.template import Template
-from lotlan_schedular.transport.instance import Instance
-from lotlan_schedular.transport.task import Task
+from lotlan_schedular.model.transport.complete_program import CompleteProgram
+from lotlan_schedular.model.transport.template import Template
+from lotlan_schedular.model.transport.instance import Instance
+from lotlan_schedular.model.transport.task import Task
 
 from lotlan_schedular.api.transportorder_step import TransportOrderStep
 from lotlan_schedular.api.transportorder import TransportOrder

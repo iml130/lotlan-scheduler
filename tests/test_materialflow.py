@@ -20,7 +20,7 @@ from lotlan_schedular.api.event import Event
 
 from lotlan_schedular.schedular import LotlanSchedular
 from lotlan_schedular.defines import LogicConstants
-from lotlan_schedular.transport.task import Task
+from lotlan_schedular.model.transport.task import Task
 
 class TestMaterialflow(unittest.TestCase):
     """ Test Materialflow methods """
