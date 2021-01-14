@@ -9,7 +9,7 @@ import networkx as nx
 
 # local sources
 from lotlan_schedular.api.materialflow import MaterialFlow
-from lotlan_schedular.task_language_test import test_string
+from lotlan_schedular.validation.task_language_test import test_string
 from lotlan_schedular.defines import TEMPLATE_STRING
 
 # globals defines

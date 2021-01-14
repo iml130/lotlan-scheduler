@@ -19,8 +19,8 @@ sys.path.append("./")
 # local sources
 import lotlan_schedular.helpers as helpers
 from lotlan_schedular.parser.lotlan_tree_visitor import LotlanTreeVisitor
-from lotlan_schedular.semantic_validator import SemanticValidator
-from lotlan_schedular.syntax_error_listener import SyntaxErrorListener
+from lotlan_schedular.validation.semantic_validator import SemanticValidator
+from lotlan_schedular.validation.syntax_error_listener import SyntaxErrorListener
 from lotlan_schedular.parser.LoTLanLexer import LoTLanLexer
 from lotlan_schedular.parser.LoTLanParser import LoTLanParser
 
