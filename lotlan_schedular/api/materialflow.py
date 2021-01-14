@@ -11,8 +11,8 @@ from lotlan_schedular.api.transportorder import TransportOrder
 
 from lotlan_schedular.logger.sqlite_logger import SQLiteLogger
 
-from lotlan_schedular.petri_net_logic import PetriNetLogic
-from lotlan_schedular.petri_net_generator import PetriNetGenerator
+from lotlan_schedular.petri_net.logic import PetriNetLogic
+from lotlan_schedular.petri_net.generator import PetriNetGenerator
 
 # globals defines
 from lotlan_schedular.defines import PetriNetConstants, LogicConstants

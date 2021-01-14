@@ -9,7 +9,7 @@ import snakes.plugins as plugins
 # local sources
 import lotlan_schedular.helpers as helpers
 
-from lotlan_schedular.petri_net_drawer import PetriNetDrawer
+from lotlan_schedular.petri_net.drawer import PetriNetDrawer
 from lotlan_schedular.api.transportorder import TransportOrder
 from lotlan_schedular.api.event import Event
 
