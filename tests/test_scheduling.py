@@ -297,8 +297,77 @@ class TestScheduling(unittest.TestCase):
         marking_after_finished_by_2 = Marking(task_finished=MultiSet([1, 1]))
         self.assertEqual(petri_net.get_marking(), marking_after_finished_by_2)
 
+    def test_tos_triggered_by(self):
+        material_flows = self.get_material_flows(10)
+        self.assertEqual(len(material_flows), 1)
+
+        material_flow = material_flows[0]
+        pnet_generator = material_flow.petri_net_generator
+        petri_net = pnet_generator.petri_nets[0]
+
+        self.assertEqual(len(pnet_generator.tos_petri_nets["helloTask"]), 2)
+
+        pickup_net = pnet_generator.tos_petri_nets["helloTask"][PICKUP_NET]
+        delivery_net = pnet_generator.tos_petri_nets["helloTask"][DELIVERY_NET]
+
+        task_initial_marking = Marking(task_started=MultiSet([1]))
+        pickup_initial_marking = Marking()
+        delivery_initial_marking = pickup_initial_marking
+
+        self.assertEqual(petri_net.get_marking(), task_initial_marking)
+        self.assertEqual(pickup_net.get_marking(), pickup_initial_marking)
+        self.assertEqual(delivery_net.get_marking(), delivery_initial_marking)
+
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=True))
+
+        pickup_marking_after_tb = Marking(tos_started=MultiSet([1]))
+
+        self.assertEqual(petri_net.get_marking(), task_initial_marking)
+        self.assertEqual(pickup_net.get_marking(), pickup_marking_after_tb)
+        self.assertEqual(delivery_net.get_marking(), delivery_initial_marking)
+
+        self.run_transport_order_steps("0", material_flow)
+
+        task_finished_marking = Marking(task_finished=MultiSet([1]))
+        tos_finished_marking = Marking(tos_finished=MultiSet([1]))
+        self.assertEqual(petri_net.get_marking(), task_finished_marking)
+        self.assertEqual(pickup_net.get_marking(), tos_finished_marking)
+        self.assertEqual(delivery_net.get_marking(), tos_finished_marking)
+
+    def test_tos_finished_by(self):
+        material_flows = self.get_material_flows(11)
+        self.assertEqual(len(material_flows), 1)
+
+        material_flow = material_flows[0]
+        pnet_generator = material_flow.petri_net_generator
+        petri_net = pnet_generator.petri_nets[0]
+
+        self.assertEqual(len(pnet_generator.tos_petri_nets["helloTask"]), 2)
+
+        pickup_net = pnet_generator.tos_petri_nets["helloTask"][PICKUP_NET]
+        delivery_net = pnet_generator.tos_petri_nets["helloTask"][DELIVERY_NET]
+
+        task_initial_marking = Marking(task_started=MultiSet([1]))
+        pickup_initial_marking = Marking(tos_started=MultiSet([1]))
+        delivery_initial_marking = Marking()
+
+        self.assertEqual(petri_net.get_marking(), task_initial_marking)
+        self.assertEqual(pickup_net.get_marking(), pickup_initial_marking)
+        self.assertEqual(delivery_net.get_marking(), delivery_initial_marking)
+
+        material_flow.fire_event("0", Event("moved_to_location", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("moved_to_location", "", "Boolean", value=True))
+
+        task_finished_marking = Marking(task_finished=MultiSet([1]))
+        tos_finished_marking = Marking(tos_finished=MultiSet([1]))
+        self.assertEqual(petri_net.get_marking(), task_finished_marking)
+        self.assertEqual(pickup_net.get_marking(), tos_finished_marking)
+        self.assertEqual(delivery_net.get_marking(), tos_finished_marking)
+
     def test_on_done(self):
         material_flows = self.get_material_flows(12)
+        self.assertEqual(len(material_flows), 1)
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
