@@ -11,6 +11,7 @@ from lotlan_schedular.api.transportorder import TransportOrder
 
 from lotlan_schedular.logger.sqlite_logger import SQLiteLogger
 
+from lotlan_schedular.petri_net_logic import PetriNetLogic
 from lotlan_schedular.petri_net_generator import PetriNetGenerator
 
 # globals defines
@@ -53,6 +54,8 @@ class MaterialFlow():
         self.call_graph = None
         self.startable_tasks = None                                            
         self.cycle_in_call_graph = None
+        self.petri_net_logic = None
+
     def is_running(self):
         return self._is_running
 
@@ -75,7 +78,9 @@ class MaterialFlow():
         for instance in self.lotlan_structure.instances.values():
             if instance.template_name == "Event":
                 self.event_instances[instance.name] = instance
-        self.petri_net_generator.generate_task_nets()
+        task_representations = self.petri_net_generator.generate_task_nets()
+        self.petri_net_logic = PetriNetLogic(task_representations, self.test_flag)
+
         self.create_event_information_list()
         self.start_tasks(self.startable_tasks)
 
@@ -99,7 +104,7 @@ class MaterialFlow():
 
             if self.triggered_by_events[task.name]:
                 tb_events_of_task = self.triggered_by_events[task.name]
-                self.petri_net_generator.awaited_events[task.name] = tb_events_of_task
+                self.petri_net_logic.set_awaited_events(task, tb_events_of_task)
 
                 self.wait_for_triggered_by(uuid_, self.triggered_by_events[task.name])
 
@@ -109,7 +114,7 @@ class MaterialFlow():
             else:
                 task_started_event = Event(PetriNetConstants.TASK_STARTED_PLACE, "", "Boolean",
                                            comparator="", value=True)
-                self.petri_net_generator.awaited_events[task.name] = [task_started_event]
+                self.petri_net_logic.set_awaited_events(task, [task_started_event])
                 self.fire_event(uuid_, task_started_event)
                 next_tos.append(task)
 
@@ -152,7 +157,7 @@ class MaterialFlow():
     # fire event to petri net corresponding to task of uuid
     def fire_event(self, uuid_, event):
         task = self.tasks[str(uuid_)]
-        self.petri_net_generator.fire_event(task, event, self.on_petri_net_response)
+        self.petri_net_logic.fire_event(task, event, self.on_petri_net_response)
 
     def initialize_tasks(self, tasks):
         """ Adds information for api classes to tasks and init dicts """
@@ -228,7 +233,7 @@ class MaterialFlow():
                 to_done_event = Event("to_done", "", "Boolean",
                                       comparator="", value=True)
 
-                self.petri_net_generator.awaited_events[task.name] = [to_done_event]
+                self.petri_net_logic.set_awaited_events(task, [to_done_event])
 
                 self.start_tos(task, transport_order.pickup_tos)
 
@@ -237,7 +242,7 @@ class MaterialFlow():
 
     def start_tos(self, task, tos, pickup=True):
         if tos.triggered_by:
-            self.petri_net_generator.awaited_events[task.name] = tos.triggered_by
+            self.petri_net_logic.set_awaited_events(task, tos.triggered_by)
 
             if pickup:
                 task.transport_order.state = TransportOrder.TransportOrderState.PICKUP_WAIT_FOR_TRIGGERED_BY
@@ -249,8 +254,8 @@ class MaterialFlow():
         else:
             tos_started_event = Event(PetriNetConstants.TOS_STARTED_PLACE, "", "Boolean", value=True)
             tos_done_event = Event(PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE, "", "Boolean", True)
-            self.petri_net_generator.awaited_events[task.name] = [tos_started_event, tos_done_event]
-            self.petri_net_generator.fire_event(task, tos_started_event)
+            self.petri_net_logic.set_awaited_events(task, [tos_started_event, tos_done_event])
+            self.petri_net_logic.fire_event(task, tos_started_event)
 
     def on_tos_tb_passed(self, task):
         current_state = task.transport_order.state
@@ -269,7 +274,7 @@ class MaterialFlow():
         self.log_transport_order(uid, transport_order)
 
         moved_to_locaction_event = Event("moved_to_location", "", "Boolean", value=True)
-        self.petri_net_generator.awaited_events[task.name] = [moved_to_locaction_event]
+        self.petri_net_logic.set_awaited_events(task, [moved_to_locaction_event])
 
     def on_tos_wait_for_action(self, task):
         current_state = task.transport_order.state
@@ -289,7 +294,7 @@ class MaterialFlow():
 
         self.log_transport_order(uid, transport_order)
 
-        self.petri_net_generator.awaited_events[task.name] = tos.finished_by
+        self.petri_net_logic.set_awaited_events(task, tos.finished_by)
 
     def on_tos_finished(self, task):
         current_state = task.transport_order.state
@@ -321,8 +326,8 @@ class MaterialFlow():
         self.delivery_finished(self.ids[task.name])
 
         to_done_event = Event("to_done", "", "Boolean", value=True) 
-        self.petri_net_generator.awaited_events[task.name] = [to_done_event]
-        self.petri_net_generator.fire_event(task, to_done_event, self.on_petri_net_response)
+        self.petri_net_logic.set_awaited_events(task, [to_done_event])
+        self.petri_net_logic.fire_event(task, to_done_event, self.on_petri_net_response)
 
     def on_to_done(self, task_info):
         """
@@ -337,7 +342,7 @@ class MaterialFlow():
             self.log_transport_order(uid, transport_order)
 
             finished_by_events = self.finished_by_events[task_info.name]
-            self.petri_net_generator.awaited_events[task_info.name] = finished_by_events
+            self.petri_net_logic.set_awaited_events(task_info, finished_by_events)
             self.wait_for_finished_by(uid, self.finished_by_events[task_info.name])
 
     def on_task_finished(self, task_info):
@@ -349,7 +354,7 @@ class MaterialFlow():
         self.task_finished(uid)
         self.tasks_done[task_info.name] = True
 
-        self.petri_net_generator.awaited_events[task_info.name] = [None]
+        self.petri_net_logic.set_awaited_events(task_info, [None])
         task_info.transport_order.state = TransportOrder.TransportOrderState.FINISHED
         self.log_transport_order(uid, task_info.transport_order)
 

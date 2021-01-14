@@ -78,3 +78,6 @@ def get_lotlan_file_names(folder_path):
                 file_names.append(full_path)
 
     return file_names
+
+def is_value(x):
+    return isinstance(x, (float, int, str))

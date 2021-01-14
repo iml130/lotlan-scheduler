@@ -18,7 +18,6 @@ sys.path.append(os.path.abspath("../lotlan_schedular"))
 import lotlan_schedular.helpers as helpers
 from lotlan_schedular.api.event import Event
 from lotlan_schedular.schedular import LotlanSchedular
-from lotlan_schedular.petri_net_generator import PICKUP_NET, DELIVERY_NET
 
 # uninstall possible old lotlan_schedular packages
 # so current code is used not old one
@@ -54,13 +53,11 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        pnet_generator = material_flow.petri_net_generator
-        petri_net = pnet_generator.petri_nets[0]
-
-        self.assertEqual(len(pnet_generator.tos_petri_nets["helloTask"]), 2)
+        petri_net_logic = material_flow.petri_net_logic
+        petri_net = petri_net_logic.get_petri_nets()[0]
         
-        pickup_net = pnet_generator.tos_petri_nets["helloTask"][PICKUP_NET]
-        delivery_net = pnet_generator.tos_petri_nets["helloTask"][DELIVERY_NET]
+        pickup_net = petri_net_logic.get_pickup_nets()[0]
+        delivery_net = petri_net_logic.get_delivery_nets()[0]
 
         material_flow.fire_event("0",
                                  Event("task_finished", "",
@@ -94,7 +91,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -116,7 +113,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -136,7 +133,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -157,7 +154,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -181,8 +178,8 @@ class TestScheduling(unittest.TestCase):
         material_flow_1 = material_flows[0]
         material_flow_2 = material_flows[1]
 
-        petri_net_m1 = material_flow_1.petri_net_generator.petri_nets[0]
-        petri_net_m2 = material_flow_2.petri_net_generator.petri_nets[0]
+        petri_net_m1 = material_flow_1.petri_net_logic.get_petri_nets()[0]
+        petri_net_m2 = material_flow_2.petri_net_logic.get_petri_nets()[0]
 
         initial_marking_m1 = initial_marking_m2 = Marking(task_started=MultiSet([1]))
 
@@ -201,7 +198,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -227,7 +224,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -245,7 +242,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -267,7 +264,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -302,13 +299,11 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        pnet_generator = material_flow.petri_net_generator
-        petri_net = pnet_generator.petri_nets[0]
+        petri_net_logic = material_flow.petri_net_logic
+        petri_net = petri_net_logic.get_petri_nets()[0]
 
-        self.assertEqual(len(pnet_generator.tos_petri_nets["helloTask"]), 2)
-
-        pickup_net = pnet_generator.tos_petri_nets["helloTask"][PICKUP_NET]
-        delivery_net = pnet_generator.tos_petri_nets["helloTask"][DELIVERY_NET]
+        pickup_net = petri_net_logic.get_pickup_nets()[0]
+        delivery_net = petri_net_logic.get_delivery_nets()[0]
 
         task_initial_marking = Marking(task_started=MultiSet([1]))
         pickup_initial_marking = Marking()
@@ -339,13 +334,11 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        pnet_generator = material_flow.petri_net_generator
-        petri_net = pnet_generator.petri_nets[0]
+        petri_net_logic = material_flow.petri_net_logic
+        petri_net = petri_net_logic.get_petri_nets()[0]
 
-        self.assertEqual(len(pnet_generator.tos_petri_nets["helloTask"]), 2)
-
-        pickup_net = pnet_generator.tos_petri_nets["helloTask"][PICKUP_NET]
-        delivery_net = pnet_generator.tos_petri_nets["helloTask"][DELIVERY_NET]
+        pickup_net = petri_net_logic.get_pickup_nets()[0]
+        delivery_net = petri_net_logic.get_delivery_nets()[0]
 
         task_initial_marking = Marking(task_started=MultiSet([1]))
         pickup_initial_marking = Marking(tos_started=MultiSet([1]))
@@ -371,8 +364,8 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
-        petri_net_2 = material_flow.petri_net_generator.petri_nets[1]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
+        petri_net_2 = material_flow.petri_net_logic.get_petri_nets()[1]
 
         initial_marking = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -395,9 +388,9 @@ class TestScheduling(unittest.TestCase):
         material_flow_1 = material_flows[0]
         material_flow_2 = material_flows[1]
 
-        petri_net_m1_1 = material_flow_1.petri_net_generator.petri_nets[0]
-        petri_net_m1_2 = material_flow_1.petri_net_generator.petri_nets[1]
-        petri_net_m2_1 = material_flow_2.petri_net_generator.petri_nets[0]
+        petri_net_m1_1 = material_flow_1.petri_net_logic.get_petri_nets()[0]
+        petri_net_m1_2 = material_flow_1.petri_net_logic.get_petri_nets()[1]
+        petri_net_m2_1 = material_flow_2.petri_net_logic.get_petri_nets()[0]
 
         initial_marking_m1_1 = Marking(task_started=MultiSet([1]))
         initial_marking_m1_2 = Marking()
@@ -436,11 +429,11 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net_1 = material_flow.petri_net_generator.petri_nets[0]
-        petri_net_2 = material_flow.petri_net_generator.petri_nets[1]
-        petri_net_3 = material_flow.petri_net_generator.petri_nets[2]
-        petri_net_4 = material_flow.petri_net_generator.petri_nets[3]
-        petri_net_5 = material_flow.petri_net_generator.petri_nets[4]
+        petri_net_1 = material_flow.petri_net_logic.get_petri_nets()[0]
+        petri_net_2 = material_flow.petri_net_logic.get_petri_nets()[1]
+        petri_net_3 = material_flow.petri_net_logic.get_petri_nets()[2]
+        petri_net_4 = material_flow.petri_net_logic.get_petri_nets()[3]
+        petri_net_5 = material_flow.petri_net_logic.get_petri_nets()[4]
 
         started_marking = Marking(task_started=MultiSet([1]))
         finished_marking = Marking(task_finished=MultiSet([1]))
@@ -481,9 +474,9 @@ class TestScheduling(unittest.TestCase):
 
         material_flow = material_flows[0]
 
-        petri_net_1 = material_flow.petri_net_generator.petri_nets[0]
-        petri_net_2 = material_flow.petri_net_generator.petri_nets[1]
-        petri_net_3 = material_flow.petri_net_generator.petri_nets[2]
+        petri_net_1 = material_flow.petri_net_logic.get_petri_nets()[0]
+        petri_net_2 = material_flow.petri_net_logic.get_petri_nets()[1]
+        petri_net_3 = material_flow.petri_net_logic.get_petri_nets()[2]
 
         started_marking = Marking(task_started=MultiSet([1]))
         finished_marking = Marking(task_finished=MultiSet([1]))
@@ -513,7 +506,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         # check if triggeredby and finishedby event places are created
         self.assertEqual(10, len(petri_net._place))
@@ -549,7 +542,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -568,7 +561,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -593,7 +586,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
