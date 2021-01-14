@@ -17,7 +17,7 @@ mf_lock = threading.Lock()
 to_lock = threading.Lock()
 location_lock = threading.Lock()
 
-class SQLLogger():
+class SQLiteLogger():
     """
         Establishes a SQLite connection and inserts logging data
     """

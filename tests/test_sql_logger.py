@@ -11,7 +11,7 @@ import xmlrunner
 from sqlalchemy import create_engine, MetaData, Table
 
 # local sources
-from lotlan_schedular.sql_logger import SQLLogger
+from lotlan_schedular.logger.sqlite_logger import SQLiteLogger
 from lotlan_schedular.api.location import Location
 from lotlan_schedular.api.transportorder import TransportOrder
 
@@ -29,7 +29,7 @@ class TestSQLLogger(unittest.TestCase):
         if database_file.is_file():
             os.remove(test_database_path)
 
-        self.logger = SQLLogger(test_database_path)
+        self.logger = SQLiteLogger(test_database_path)
         self.database_engine = create_engine("sqlite:///" + test_database_path, echo=False)
         self.metadata = MetaData(bind=self.database_engine)
         self.con = self.database_engine.connect()

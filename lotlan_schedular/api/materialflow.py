@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from lotlan_schedular.api.event import Event
 from lotlan_schedular.api.transportorder import TransportOrder
 
-from lotlan_schedular.sql_logger import SQLLogger
+from lotlan_schedular.logger.sqlite_logger import SQLiteLogger
 
 from lotlan_schedular.petri_net_generator import PetriNetGenerator
 
@@ -57,7 +57,7 @@ class MaterialFlow():
         return self._is_running
 
     def start(self):
-        self.logger = SQLLogger()
+        self.logger = SQLiteLogger()
         self.logger.insert_materialflow_in_sql(self._uuid, self.lotlan_string)
 
         self.initialize_tasks(self.tasks_in_mf)
