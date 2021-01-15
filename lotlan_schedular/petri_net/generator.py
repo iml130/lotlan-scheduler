@@ -1,8 +1,5 @@
 """ Contains the PetriNetGenerator class """
 
-# standard libraries
-from enum import Enum
-
 # 3rd party packages
 import snakes.plugins as plugins
 
@@ -20,6 +17,10 @@ plugins.load(["labels", "gv"], "snakes.nets", "nets")
 from nets import PetriNet, Place, Transition, Inhibitor, Value, Marking
 
 class TaskRepresentation:
+    """
+        A representation of a LoTLan Task which contains
+        all nessessary data for scheduling
+    """
     def __init__(self):
         self.net = None
         self.pickup_net = None
@@ -27,7 +28,6 @@ class TaskRepresentation:
         self.awaited_events = []
         self.transition_fired = {}
         self.event_dict = {}
-        self.event_counter = 0
 
 class PetriNetGenerator:
     """
@@ -48,7 +48,7 @@ class PetriNetGenerator:
         self.task_representations = {}
 
     def generate_task_nets(self):
-        """ generates a petri net for each task in tasks """
+        """ Generates a petri net for each task in tasks """
 
         self.task_representations = {}
         for task in self.tasks:
@@ -74,8 +74,8 @@ class PetriNetGenerator:
         return self.task_representations
 
     def generate_task_net(self, task):
-        """ 
-            Generates a petri net the task and the TransportOrderSteps of the TransportOrders
+        """
+            Generates a petri net for the task and the TransportOrderSteps of the TransportOrders
             Returns generated nets (Task, Pickup, Delivery)
         """
         task_net = PetriNet(task.name)
@@ -99,6 +99,9 @@ class PetriNetGenerator:
         return (task_net, pickup_net, delivery_net)
 
     def generate_tos_net(self, task, tos, name):
+        """
+            Generates a petri net for the given TransportOrderStep
+        """
         tos_net = PetriNet(name)
         self.generate_advanced_tos_operation(tos_net)
         self.generate_triggered_by_for_tos(task, tos, tos_net)
@@ -116,7 +119,7 @@ class PetriNetGenerator:
 
     def generate_advanced_task_operation(self, net):
         """
-            generates a advanced representation for a Task
+            Generates a advanced representation for a Task
             contrary to the simple representation this one has
             more places for each state in a Task
         """
@@ -142,37 +145,44 @@ class PetriNetGenerator:
 
     def generate_advanced_tos_operation(self, net):
         """
-            generates a advanced representation for a TransportOrderStep
+            Generates a advanced representation for a TransportOrderStep
             contrary to the simple representation this one has
             more places for each state in a Task
         """
         create_place(PetriNetConstants.TOS_STARTED_PLACE,
                      PetriNetConstants.TOS_STARTED_PLACE, net)
-        create_place(PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE, PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE, net)
-        create_place(PetriNetConstants.TOS_WAIT_FOR_ACTION_PLACE, PetriNetConstants.TOS_WAIT_FOR_ACTION_PLACE, net)
-        create_place(PetriNetConstants.TOS_FINISHED_PLACE, PetriNetConstants.TOS_FINISHED_PLACE, net)
+        create_place(PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE,
+                     PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE, net)
+        create_place(PetriNetConstants.TOS_WAIT_FOR_ACTION_PLACE,
+                     PetriNetConstants.TOS_WAIT_FOR_ACTION_PLACE, net)
+        create_place(PetriNetConstants.TOS_FINISHED_PLACE,
+                     PetriNetConstants.TOS_FINISHED_PLACE, net)
 
         create_transition(PetriNetConstants.TOS_FIRST_TRANSITION,
-                               PetriNetConstants.TOS_FIRST_TRANSITION, net)
+                          PetriNetConstants.TOS_FIRST_TRANSITION, net)
         create_transition(PetriNetConstants.TOS_SECOND_TRANSITION,
-                               PetriNetConstants.TOS_SECOND_TRANSITION, net)
+                          PetriNetConstants.TOS_SECOND_TRANSITION, net)
 
         net.add_input(PetriNetConstants.TOS_STARTED_PLACE,
                       PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
         net.add_output(PetriNetConstants.TOS_WAIT_FOR_ACTION_PLACE,
                        PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
-        net.add_input(PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE, PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
+        net.add_input(PetriNetConstants.TOS_MOVED_TO_LOCATION_PLACE,
+                      PetriNetConstants.TOS_FIRST_TRANSITION, Value(1))
         net.add_input(PetriNetConstants.TOS_WAIT_FOR_ACTION_PLACE,
                       PetriNetConstants.TOS_SECOND_TRANSITION, Value(1))
-        net.add_output(PetriNetConstants.TOS_FINISHED_PLACE, PetriNetConstants.TOS_SECOND_TRANSITION, Value(1))
+        net.add_output(PetriNetConstants.TOS_FINISHED_PLACE,
+                       PetriNetConstants.TOS_SECOND_TRANSITION, Value(1))
 
     def draw_petri_net(self, name, petri_net):
+        """ Saves the given petri net as an image in the current working directory """
         file_path = "./" + name + PetriNetConstants.IMAGE_ENDING
         self.petri_net_drawer.draw_image(petri_net, file_path)
 
     def generate_triggered_by(self, task, net):
         """
-            generates places and transition from the TriggeredBy expression
+            Generates places and transitions for the TriggeredBy expression
+            of the given Task
         """
         triggered_by_event_names = []
         if task.triggered_by:
@@ -194,32 +204,10 @@ class PetriNetGenerator:
                                PetriNetConstants.TRIGGERED_BY_TRANSITION, Value(1))
         return triggered_by_event_names
 
-    def generate_triggered_by_for_tos(self, task, tos, net):
-        tb_statement = tos.triggered_by_statements
-        if tb_statement:
-            create_transition(PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION, "", net)
-            self.generate_places_from_expression(tb_statement, task.name,
-                                                PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION,
-                                                [],
-                                                False,
-                                                tb_event = True,
-                                                tos_net=net)
-            net.add_output(PetriNetConstants.TOS_STARTED_PLACE,
-                        PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION, Value(1))
-
-    def generate_finished_by_for_tos(self, task, tos, net):
-        fb_statement = tos.finished_by_statements
-        if fb_statement:
-            self.generate_places_from_expression(fb_statement, task.name,
-                                                PetriNetConstants.TOS_SECOND_TRANSITION,
-                                                [],
-                                                False,
-                                                tb_event = False,
-                                                tos_net=net)
-
     def generate_finished_by(self, task, net):
         """
-            generates places and transition from the FinishedBy expression
+            Generates places and transitions for the FinishedBy expression
+            of the given Task
         """
         finished_by_event_names = []
         if self.simple_representation is True:
@@ -233,8 +221,39 @@ class PetriNetGenerator:
                                       finished_by_event_names, False, tb_event=False)
         return finished_by_event_names
 
+    def generate_triggered_by_for_tos(self, task, tos, net):
+        """
+            Generates places and transitions for the TriggeredBy expression
+            of the given TransportOrderStep
+        """
+        tb_statement = tos.triggered_by_statements
+        if tb_statement:
+            create_transition(PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION, "", net)
+            self.generate_places_from_expression(tb_statement, task.name,
+                                                PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION,
+                                                [],
+                                                False,
+                                                tb_event = True,
+                                                tos_net=net)
+            net.add_output(PetriNetConstants.TOS_STARTED_PLACE,
+                        PetriNetConstants.TOS_TRIGGERED_BY_TRANSITION, Value(1))
+
+    def generate_finished_by_for_tos(self, task, tos, net):
+        """
+            Generates places and transitions for the FinishedBy expression
+            of the given TransportOrderStep
+        """
+        fb_statement = tos.finished_by_statements
+        if fb_statement:
+            self.generate_places_from_expression(fb_statement, task.name,
+                                                PetriNetConstants.TOS_SECOND_TRANSITION,
+                                                [],
+                                                False,
+                                                tb_event = False,
+                                                tos_net=net)
+
     def generate_places_from_expression(self, expression, task_name, parent_transition, event_name_list, parent_is_not, tb_event, comparator="", value=None, tos_net=None):
-        """ extracts the single events from the expression and creates a place for each """
+        """ Extracts the single events from the expression and creates a place for each """
 
         net = None
         if tos_net is not None:
@@ -350,10 +369,20 @@ class PetriNetGenerator:
                                                          expression["binOp"], expression["right"], tos_net=tos_net)
 
 def create_place(place_name, place_type, net, event = None, initialized = True):
+    """
+        Utility function for creating a place with the snakes module.
+        It is used to add a place with the given name and to add labels for
+        scheduling (for example if the place represents an event or if its initialized)
+    """
     if net.has_place(place_name) is False:
         net.add_place(Place(place_name, []))
         net.place(place_name).label(placeType=place_type, event=event, initialized=initialized)
 
 def create_transition(transition_name, transition_type, net):
+    """
+        Utility function for creating a transition with the snakes module.
+        It is used to add a transition with the given name and to add labels for
+        scheduling (currently only the type of the transition)
+    """
     net.add_transition(Transition(transition_name))
     net.transition(transition_name).label(transitionType=transition_type)

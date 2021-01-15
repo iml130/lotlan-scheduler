@@ -70,9 +70,9 @@ class SQLiteLogger():
             materialflow_instance_table = Table("materialflow_instance",
                                                 self.metadata, autoload=True)
             result = self.con.execute(materialflow_instance_table.insert(),
-                                materialflow_id=materialflow_id,
-                                uuid=str(mf_uuid),
-                                timestamp=now)
+                                      materialflow_id=materialflow_id,
+                                      uuid=str(mf_uuid),
+                                      timestamp=now)
             materialflow_instance_id = result.lastrowid
 
             self.mf_uuid_to_mf_instance_id[mf_uuid] = materialflow_instance_id

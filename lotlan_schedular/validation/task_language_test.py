@@ -1,4 +1,4 @@
-""" 
+"""
     Contains functions to test given lotlan files and strings
     as well as a test enviroment for validating lotlan grammar and semantic checks
 """

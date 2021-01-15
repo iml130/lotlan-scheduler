@@ -2,7 +2,6 @@
 
 # standard libraries
 import uuid
-from pathlib import Path
 
 # 3rd party packages
 import networkx as nx
@@ -11,9 +10,6 @@ import networkx as nx
 from lotlan_schedular.api.materialflow import MaterialFlow
 from lotlan_schedular.validation.task_language_test import test_string
 from lotlan_schedular.defines import TEMPLATE_STRING
-
-# globals defines
-from lotlan_schedular.defines import SQLCommands
 
 class LotlanSchedular:
     """ Scheduling class """
@@ -25,17 +21,22 @@ class LotlanSchedular:
         self.database_engine = None
         self.init(lotlan_string)
 
-    # just validates lotlan string and returns
-    # true if valid
     def validate(self, lotlan_string):
+        """ Validates given string and returns true if it is valid """
         lotlan_structure, error_information, error_list = test_string(lotlan_string,
                                                                       TEMPLATE_STRING, False)
-        if (error_information.syntax_error_count == 0 and 
+        if (error_information.syntax_error_count == 0 and
             error_information.semantic_error_count == 0):
             return True
         raise ValueError(error_list)
 
     def init(self, lotlan_string):
+        """
+            Initializes the schedular:
+                - validate test string
+                - create call graph
+                - find Materialflows
+        """
         lotlan_structure, error_information, error_list = test_string(lotlan_string,
                                                                       TEMPLATE_STRING, False)
         self.lotlan_structure = lotlan_structure
@@ -44,10 +45,14 @@ class LotlanSchedular:
             error_information.semantic_error_count != 0):
             raise ValueError(error_list)
 
-        graph = self.create_graph(lotlan_structure.tasks)
+        graph = self.create_call_graph(lotlan_structure.tasks)
         self.material_flows = self.find_materialflows(graph, lotlan_structure.tasks)
 
-    def create_graph(self, tasks):
+    def create_call_graph(self, tasks):
+        """
+            Creates a graph where every node is a task
+            and a directed edge represents an onDone
+        """
         call_graph = nx.Graph()
         for task in tasks.values():
             call_graph.add_node(task.name)
@@ -57,7 +62,7 @@ class LotlanSchedular:
 
     def find_materialflows(self, graph, tasks):
         """
-            With help of a call graph find all materialflows
+            With help of a call graph find all Materialflows
         """
         materialflows = []
         tasks_reached = []

@@ -12,6 +12,7 @@ from nets import Value, Marking
 
 class PetriNetLogic:
     """
+        Scheduling of the generated petri nets is done in this class
     """
     def __init__(self, task_representations, test_flag=False):
         self.task_representations = task_representations
@@ -22,29 +23,33 @@ class PetriNetLogic:
         self.task_representations[task.name].awaited_events = awaited_events
 
     def draw_petri_net(self, name, petri_net):
+        """ Saves the given petri net as an image in the current working directory """
         file_path = "./" + name + PetriNetConstants.IMAGE_ENDING
         self.petri_net_drawer.draw_image(petri_net, file_path)
 
     def get_petri_nets(self):
+        """ Returns a list of all task petri nets """
         task_petri_nets = []
         for task_repr in self.task_representations.values():
             task_petri_nets.append(task_repr.net)
         return task_petri_nets
 
     def get_pickup_nets(self):
+        """ Returns a list of all pickup petri nets """
         pickup_nets = []
         for task_repr in self.task_representations.values():
             pickup_nets.append(task_repr.pickup_net)
         return pickup_nets
 
     def get_delivery_nets(self):
+        """ Returns a list of all delivery petri nets """
         delivery_nets = []
         for task_repr in self.task_representations.values():
             delivery_nets.append(task_repr.delivery_net)
         return delivery_nets
 
     def evaluate_petri_net(self, petri_net, task, cb=None):
-        """ tries to fire every transition as long as all transitions
+        """ Tries to fire every transition as long as all transitions
             were tried and nothing can be done anymore
         """
         index = 0
@@ -89,11 +94,12 @@ class PetriNetLogic:
 
     def handle_current_state(self, task, petri_net, transition, cb, index):
         """
-            transition: the transition which was passed
-            checks which transition was passed and calls the given cb with the
-            message of the corresponding state
-            returns if evaulation is done so there is nothing more to do or if
+            Checks which transition was passed and calls the given cb with the
+            message of the corresponding state.
+            Returns if evaulation is done so there is nothing more to do or if
             there is still work to do
+
+            transition: the transition fired
         """
         work_to_do = True
         msg = ""
@@ -108,7 +114,7 @@ class PetriNetLogic:
         elif transition == PetriNetConstants.TASK_SECOND_TRANSITION:
             remove_all_tokens(petri_net)
             msg = LogicConstants.TASK_FINISHED_MSG
-            
+
             # allow transition firing again to work with loops
             for trans in petri_net._trans:
                 task_repr.transition_fired[trans] = False
@@ -129,6 +135,10 @@ class PetriNetLogic:
         return work_to_do, index
 
     def get_petri_net(self, task):
+        """
+            Returns the currently active petri net depending on
+            the current state of the TransportOrder
+        """
         petri_net = None
         task_repr = self.task_representations[task.name]
         current_state = task.transport_order.state
@@ -148,7 +158,7 @@ class PetriNetLogic:
 
     def fire_event(self, task, event, cb=None):
         """
-            adds a token to the corresponding place of the event in the petri net
+            Adds a token to the corresponding place of the event in the petri net
             checks before if event is expected and can be fired
         """
 
@@ -194,8 +204,8 @@ class PetriNetLogic:
 
 def can_be_fired(current_state, event_uuid, petri_net):
     """
-        checks if the given event can be fired:
-        only works for tb and fb events
+        Checks if the given event can be fired:
+        Only works for tb and fb events.
         Prevents setting a mark in tb when fb event with the same name is fired
     """
     tb_event = petri_net.place(event_uuid).label("tb_event")
@@ -222,7 +232,7 @@ def can_be_fired(current_state, event_uuid, petri_net):
     return False
 
 def cast_value(value, requested_type):
-    """Tries to cast the given value to the given type"""
+    """ Tries to cast the given value to the given type """
     try:
         if requested_type == "Boolean":
             return value == "True"
@@ -254,7 +264,8 @@ def remove_all_tokens(net, task=True):
                                 tos_finished=tos_finished_tokens))
 
 def parse_comparator_and_value(required_event, fired_event):
-    """ If types of both events are the same execute
+    """
+        If types of both events are the same execute
         given comparison with python operators
     """
     required_event_type = required_event.event_type

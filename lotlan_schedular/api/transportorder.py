@@ -26,7 +26,6 @@ class TransportOrder:
         TASK_WAIT_FOR_FINISHED_BY = 10
         FINISHED = 11
 
-
     def __init__(self):
         self.uuid = ""
         self.pickup_tos = TransportOrderStep()

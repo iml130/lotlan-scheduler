@@ -1,4 +1,4 @@
-""" Contains Materialflow class """
+""" Contains Materialflow and MaterialFlowCallbacks class """
 
 # standard libraries
 import uuid
@@ -12,12 +12,17 @@ from lotlan_schedular.api.transportorder import TransportOrder
 from lotlan_schedular.logger.sqlite_logger import SQLiteLogger
 
 from lotlan_schedular.petri_net.logic import PetriNetLogic
+
 from lotlan_schedular.petri_net.generator import PetriNetGenerator
 
 # globals defines
 from lotlan_schedular.defines import PetriNetConstants, LogicConstants
 
 class MaterialFlowCallbacks(object):
+    """
+        Contains lists of registered callback functions
+        for different states in the scheduling process
+    """
     def __init__(self):
         self.triggered_by_cb = []
         self.pickup_finished_cb = []
@@ -52,7 +57,7 @@ class MaterialFlow():
                                                      test_flag=test_flag)
         self.logger = None
         self.call_graph = None
-        self.startable_tasks = None                                            
+        self.startable_tasks = None
         self.cycle_in_call_graph = None
         self.petri_net_logic = None
 
@@ -60,6 +65,9 @@ class MaterialFlow():
         return self._is_running
 
     def start(self):
+        """
+            Starts the materialflow scheduling
+        """
         self.logger = SQLiteLogger()
         self.logger.insert_materialflow_in_sql(self._uuid, self.lotlan_string)
 
@@ -120,8 +128,11 @@ class MaterialFlow():
 
         self.next_to(next_tos)
 
-    # create call graph for the onDone statements
     def create_call_graph(self, tasks):
+        """
+            Creates a graph where every node is a task
+            and a directed edge represents an onDone
+        """
         call_graph = nx.DiGraph()
         for task in tasks:
             call_graph.add_node(task.name)
@@ -130,6 +141,7 @@ class MaterialFlow():
         return call_graph
 
     def save_call_graph_img(self, filename):
+        """ Saves the generated call graph of the materialflow as image """
         nx.draw(self.call_graph, with_labels=True)
         plt.savefig(filename, dpi=300, bbox_inches="tight")
 
@@ -154,8 +166,8 @@ class MaterialFlow():
 
         return startable_tasks
 
-    # fire event to petri net corresponding to task of uuid
     def fire_event(self, uuid_, event):
+        """ Fires event to petri net corresponding to task of uuid """
         task = self.tasks[str(uuid_)]
         self.petri_net_logic.fire_event(task, event, self.on_petri_net_response)
 
@@ -186,7 +198,7 @@ class MaterialFlow():
                         delivery_tos.location.location_type = instance.keyval["type"]
 
     def create_event_information_list(self):
-        """ Create a list of events objects out of the event names """
+        """ Creates a list of events objects out of the event names """
         for task in self.tasks_in_mf:
             triggered_by = []
             for event_name in task.triggered_by_events:
@@ -204,8 +216,11 @@ class MaterialFlow():
                 finished_by.append(Event(logical_name, physical_name, event_type, None, None))
             self.finished_by_events[task.name] = finished_by
 
-    # petri net response
     def on_petri_net_response(self, msg, task):
+        """
+            Handles incoming messages from the petri net logic and
+            calls corresponding methods
+        """
         if msg == LogicConstants.TRIGGERED_BY_PASSED_MSG:
             self.next_to([task])
         elif msg == LogicConstants.TOS_TB_PASSED_MSG:
@@ -241,6 +256,7 @@ class MaterialFlow():
                 callback(self._uuid, transport_orders)
 
     def start_tos(self, task, tos, pickup=True):
+        """ Starts scheduling of the given TransportOrderStep """
         if tos.triggered_by:
             self.petri_net_logic.set_awaited_events(task, tos.triggered_by)
 
@@ -258,18 +274,20 @@ class MaterialFlow():
             self.petri_net_logic.fire_event(task, tos_started_event)
 
     def on_tos_tb_passed(self, task):
+        """
+            Gets called when a TriggeredBy is passed in a TransportOrderStep net.
+            Set the petr net state and set new awaited event "moved_to_location" for
+            either the Pickup Net or the Delivery net depending on the current state
+        """
         current_state = task.transport_order.state
-        tos = None
         uid = self.ids[task.name]
         transport_order = task.transport_order
 
         # check the current state and set the new one
         if current_state == TransportOrder.TransportOrderState.PICKUP_WAIT_FOR_TRIGGERED_BY:
             task.transport_order.state = TransportOrder.TransportOrderState.PICKUP_STARTED
-            tos = task.transport_order.pickup_tos
         elif current_state == TransportOrder.TransportOrderState.DELIVERY_WAIT_FOR_TRIGGERED_BY:
             task.transport_order.state = TransportOrder.TransportOrderState.DELIVERY_STARTED
-            tos = task.transport_order.delivery_tos
 
         self.log_transport_order(uid, transport_order)
 
@@ -277,6 +295,10 @@ class MaterialFlow():
         self.petri_net_logic.set_awaited_events(task, [moved_to_locaction_event])
 
     def on_tos_wait_for_action(self, task):
+        """ 
+            Gets called when the AGV has moved to the Location.
+            Set the petri net state and set FinishedBy events as awaited events.
+        """
         current_state = task.transport_order.state
         tos = None
         uid = self.ids[task.name]
@@ -297,32 +319,42 @@ class MaterialFlow():
         self.petri_net_logic.set_awaited_events(task, tos.finished_by)
 
     def on_tos_finished(self, task):
+        """
+            Gets called when a TransportOrderStep is done.
+            Set the petri net state and either call on_pickup_finished method
+            or on_delivery_finished method depending on the current state
+        """
         current_state = task.transport_order.state
-        tos = None
         uid = self.ids[task.name]
         transport_order = task.transport_order
 
         # check the current state and set the new one
         if current_state == TransportOrder.TransportOrderState.WAIT_FOR_LOADING:
             task.transport_order.state = TransportOrder.TransportOrderState.PICKUP_FINISHED
-            tos = task.transport_order.delivery_tos
             self.log_transport_order(uid, transport_order)
-            self.on_pickup_finished(task, tos)
+            self.on_pickup_finished(task)
         elif current_state == TransportOrder.TransportOrderState.WAIT_FOR_UNLOADING:
             task.transport_order.state = TransportOrder.TransportOrderState.DELIVERY_FINISHED
-            tos = task.transport_order.delivery_tos
             self.log_transport_order(uid, transport_order)
-            self.on_delivery_finished(task, tos)
+            self.on_delivery_finished(task)
         else:
             print("Something went wrong!")
 
-    def on_pickup_finished(self, task, tos):
+    def on_pickup_finished(self, task):
+        """
+            Gets called when the Pickup TransportOrderStep is finished.
+            Set petri net state and start Delivery TransportOrderStep
+        """
         self.pickup_finished(self.ids[task.name])
 
         task.transport_order.state = TransportOrder.TransportOrderState.DELIVERY_STARTED
-        self.start_tos(task, tos, False)
+        self.start_tos(task, task.transport_order.delivery_tos, False)
 
-    def on_delivery_finished(self, task, tos):
+    def on_delivery_finished(self, task):
+        """
+            Gets called when the Delivery TransportOrderStep is finished.
+            Set petri net state and fire the to_done event to the task net
+        """
         self.delivery_finished(self.ids[task.name])
 
         to_done_event = Event("to_done", "", "Boolean", value=True) 
@@ -331,12 +363,11 @@ class MaterialFlow():
 
     def on_to_done(self, task_info):
         """
-            Gets called when transport order is done by agv 
-            set petri net state (wait for possible FinishedBy events)
+            Gets called when transport order is done by the AGV.
+            Set petri net state (wait for possible FinishedBy events)
         """
         uid = self.ids[task_info.name]
         if self.finished_by_events[task_info.name]:
-            # logger
             transport_order = task_info.transport_order
             transport_order.state = TransportOrder.TransportOrderState.TASK_WAIT_FOR_FINISHED_BY
             self.log_transport_order(uid, transport_order)
@@ -347,8 +378,8 @@ class MaterialFlow():
 
     def on_task_finished(self, task_info):
         """
-            Gets called when task is finished
-            starts possible onDone tasks and set petri net state
+            Gets called when task is finished.
+            Starts possible onDone tasks and set petri net state
         """
         uid = self.ids[task_info.name]
         self.task_finished(uid)
@@ -386,6 +417,10 @@ class MaterialFlow():
         return False
 
     def log_transport_order(self, to_uuid, transport_order):
+        """
+            Saves the given TransportOrder with its locations in the db 
+            by calling insert method of the logger
+        """
         pickup_location = transport_order.pickup_tos.location
         delivery_location = transport_order.delivery_tos.location
         self.logger.insert_transport_order(self._uuid, to_uuid, transport_order.state,
@@ -416,29 +451,55 @@ class MaterialFlow():
             callback(self._uuid, uuid_)
 
     def register_callback_triggered_by(self, callback):
+        """
+            If a Task can be started and has a TriggeredBy defined, all
+            registered callback functions will be called
+        """
         if callback not in self.materialflow_callbacks.triggered_by_cb:
             self.materialflow_callbacks.triggered_by_cb.append(callback)
 
     def register_callback_next_to(self, callback):
+        """
+            If a Task was started and the TriggeredBy condition is satisfied or there is
+            no TriggeredBy all callback functions registered here will be called
+        """
         if callback not in self.materialflow_callbacks.next_to_cb:
             self.materialflow_callbacks.next_to_cb.append(callback)
 
     def register_callback_finished_by(self, callback):
+        """
+            Functions passed in to this method will be called when the TransportOrder is done
+            which means a "to_done" event was sent and a FinishedBy was defined
+        """
         if callback not in self.materialflow_callbacks.finished_by_cb:
             self.materialflow_callbacks.finished_by_cb.append(callback)
 
     def register_callback_task_finished(self, callback):
+        """
+            If a Task is finished functions registered here are being called.
+        """
         if callback not in self.materialflow_callbacks.task_finished_cb:
             self.materialflow_callbacks.task_finished_cb.append(callback)
 
     def register_callback_all_finished(self, callback):
+        """
+            If all Tasks in a Materialflow are finished functions registered here are being called
+        """
         if callback not in self.materialflow_callbacks.all_finished_cb:
             self.materialflow_callbacks.all_finished_cb.append(callback)
 
     def register_callback_pickup_finished(self, callback):
+        """
+            Functions passed in to this method will be called when the Pickup TransportOrderStep
+            of a task is finished
+        """
         if callback not in self.materialflow_callbacks.pickup_finished_cb:
             self.materialflow_callbacks.pickup_finished_cb.append(callback)
-    
+
     def register_callback_delivery_finished(self, callback):
+        """
+            Functions passed in to this method will be called when the Delivery TransportOrderStep
+            of a task is finished
+        """
         if callback not in self.materialflow_callbacks.delivery_finished_cb:
             self.materialflow_callbacks.delivery_finished_cb.append(callback)
