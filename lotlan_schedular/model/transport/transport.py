@@ -1,8 +1,8 @@
-""" Contains CompleteProgram class """
+""" Contains Transport class """
 
-class CompleteProgram(object):
+class Transport(object):
     '''
-        Holds information about all building blocks of the TaskLanguage
+        Holds information about everything defined in a LoTLan file
     '''
     def __init__(self):
         self.templates = {}

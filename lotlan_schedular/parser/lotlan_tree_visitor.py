@@ -5,7 +5,7 @@ from enum import Enum
 import re
 
 # local sources
-from lotlan_schedular.model.transport.complete_program import CompleteProgram
+from lotlan_schedular.model.transport.transport import Transport
 from lotlan_schedular.model.transport.template import Template
 from lotlan_schedular.model.transport.instance import Instance
 from lotlan_schedular.model.transport.task import Task
@@ -33,7 +33,7 @@ class OptionaStatement(Enum):
 class LotlanTreeVisitor(LoTLanParserVisitor):
     '''
         Uses visitor pattern from antlr to traverse the parse tree
-        and store program information in a CompleteProgram object
+        and store program information in a Transport object
     '''
 
     def __init__(self, error_listener):
@@ -44,7 +44,7 @@ class LotlanTreeVisitor(LoTLanParserVisitor):
     # Visit a parse tree produced by TaskParser#program.
     def visitProgram(self, ctx):
         # Create Program
-        self.cp = CompleteProgram()
+        self.cp = Transport()
         self.cp.context_object = self.context_object
 
         if ctx.children:
