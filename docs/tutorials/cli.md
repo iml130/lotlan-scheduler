@@ -4,7 +4,7 @@ We would like to demonstrate the use of the LoTLan Schedular with a small CLI pr
 
 ## First steps
 
-At first import the schedular module
+Initially import the schedular module
 
 ```python
 from lotlan_schedular.schedular import LotlanSchedular

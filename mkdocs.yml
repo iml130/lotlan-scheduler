@@ -1,5 +1,5 @@
-site_name: LoTLan
-site_description: LoTLan
+site_name: LoTLan Schedular
+site_description: Documentation of the LoTLan Schedular
 docs_dir: docs/
 site_dir: html
 markdown_extensions: [toc, fenced_code]
@@ -18,3 +18,11 @@ nav:
         - Event: api/event.md
     - Tutorials:
         - CLI: tutorials/cli.md
+    - Transport Examples: 
+        - Hello Transport: tutorials/examples/hello-transport.md
+        - Manual Loading/Unloading: tutorials/examples/manual-loading-unloading.md
+        - Concatenation: tutorials/examples/concatenation.md
+        - Infinite Loop: tutorials/examples/infinite-loop.md
+        - TriggeredBy: tutorials/examples/triggered-by.md
+        - FinishedBy: tutorials/examples/finished-by.md
+        - Logical Operation: tutorials/examples/logical-operation.md
