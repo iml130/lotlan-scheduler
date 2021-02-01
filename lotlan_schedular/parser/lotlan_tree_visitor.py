@@ -5,10 +5,10 @@ from enum import Enum
 import re
 
 # local sources
-from lotlan_schedular.transport.complete_program import CompleteProgram
-from lotlan_schedular.transport.template import Template
-from lotlan_schedular.transport.instance import Instance
-from lotlan_schedular.transport.task import Task
+from lotlan_schedular.model.transport.transport import Transport
+from lotlan_schedular.model.transport.template import Template
+from lotlan_schedular.model.transport.instance import Instance
+from lotlan_schedular.model.transport.task import Task
 
 from lotlan_schedular.api.transportorder_step import TransportOrderStep
 from lotlan_schedular.api.transportorder import TransportOrder
@@ -33,7 +33,7 @@ class OptionaStatement(Enum):
 class LotlanTreeVisitor(LoTLanParserVisitor):
     '''
         Uses visitor pattern from antlr to traverse the parse tree
-        and store program information in a CompleteProgram object
+        and store program information in a Transport object
     '''
 
     def __init__(self, error_listener):
@@ -44,7 +44,7 @@ class LotlanTreeVisitor(LoTLanParserVisitor):
     # Visit a parse tree produced by TaskParser#program.
     def visitProgram(self, ctx):
         # Create Program
-        self.cp = CompleteProgram()
+        self.cp = Transport()
         self.cp.context_object = self.context_object
 
         if ctx.children:
@@ -82,8 +82,8 @@ class LotlanTreeVisitor(LoTLanParserVisitor):
             to = task.transport_order
             if to is not None:
                 try:
-                    to.to_step_from = self.cp.transport_order_steps[to.to_step_from.name]
-                    to.to_step_to = self.cp.transport_order_steps[to.to_step_to.name]
+                    to.pickup_tos = self.cp.transport_order_steps[to.pickup_tos.name]
+                    to.delivery_tos = self.cp.transport_order_steps[to.delivery_tos.name]
                 except KeyError:
                     pass
 
@@ -117,10 +117,10 @@ class LotlanTreeVisitor(LoTLanParserVisitor):
             elif len(expression) == 3:
                 if expression["binOp"] == ".":
                     self.get_events_from_tos(str(expression["left"] + "." + str(expression["right"])), events, event_list)
-                elif type(expression["right"]) == str:
-                    self.get_events_from_tos(str(expression["left"]), events, event_list, value=expression["right"], comparator=expression["binOp"])
                 elif expression["left"] == "(" and expression["right"] == ")":
                     self.get_events_from_tos(expression["binOp"], events, event_list)
+                elif type(expression["right"]) == str:
+                    self.get_events_from_tos(str(expression["left"]), events, event_list, value=expression["right"], comparator=expression["binOp"])
                 else:
                     self.get_events_from_tos(expression["left"], events, event_list)
                     self.get_events_from_tos(expression["right"], events, event_list)
@@ -362,7 +362,7 @@ class LotlanTreeVisitor(LoTLanParserVisitor):
         return transport_order
 
     def visitFromStatement(self, ctx, transport_order):
-        transport_order.to_step_from.name = ctx.STARTS_WITH_LOWER_C_STR().getText()
+        transport_order.pickup_tos.name = ctx.STARTS_WITH_LOWER_C_STR().getText()
         parameters = ctx.parameters()
         if parameters is not None:
             for parameter in parameters.children:
@@ -370,7 +370,7 @@ class LotlanTreeVisitor(LoTLanParserVisitor):
                     transport_order.from_parameters.append(parameter.getText())
 
     def visitToStatement(self, ctx, transport_order):
-        transport_order.to_step_to.name = ctx.STARTS_WITH_LOWER_C_STR().getText()
+        transport_order.delivery_tos.name = ctx.STARTS_WITH_LOWER_C_STR().getText()
         parameters = ctx.parameters()
         if parameters is not None:
             for parameter in parameters.children:

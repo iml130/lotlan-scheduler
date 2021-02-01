@@ -44,30 +44,54 @@ class TestScheduling(unittest.TestCase):
         cls.lotlan_logic = lotlan_logic
         cls.material_flows = material_flows
 
+    def run_transport_order_steps(self, task_uuid, material_flow):
+        material_flow.fire_event(task_uuid, Event("moved_to_location", "", "Boolean", value=True))
+        material_flow.fire_event(task_uuid, Event("moved_to_location", "", "Boolean", value=True))
+
     def test_simple_task(self):
         material_flows = self.get_material_flows(0)
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net_logic = material_flow.petri_net_logic
+        petri_net = petri_net_logic.get_petri_nets()[0]
+        
+        pickup_net = petri_net_logic.get_pickup_nets()[0]
+        delivery_net = petri_net_logic.get_delivery_nets()[0]
 
         material_flow.fire_event("0",
                                  Event("task_finished", "",
                                  "Boolean", value=True))  # should not be allowed
 
-        initial_marking = Marking(task_started=MultiSet([1]))
-        self.assertEqual(petri_net.get_marking(), initial_marking)
+        task_initial_marking = Marking(task_started=MultiSet([1]))
+        pickup_initial_marking = Marking(tos_started=MultiSet([1]))
+        delivery_initial_marking = Marking()
+
+        self.assertEqual(petri_net.get_marking(), task_initial_marking)
+        self.assertEqual(pickup_net.get_marking(), pickup_initial_marking)
+        self.assertEqual(delivery_net.get_marking(), delivery_initial_marking)
 
         material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
-        finished_marking = Marking(task_finished=MultiSet([1]))
-        self.assertEqual(petri_net.get_marking(), finished_marking)
+        self.assertEqual(petri_net.get_marking(), task_initial_marking)
+
+        material_flow.fire_event("0", Event("moved_to_location", "", "Boolean", value=True))
+        tos_finished_marking = Marking(tos_finished=MultiSet([1]))
+        self.assertEqual(petri_net.get_marking(), task_initial_marking)
+        self.assertEqual(pickup_net.get_marking(), tos_finished_marking)
+        self.assertEqual(delivery_net.get_marking(), pickup_initial_marking)
+
+        material_flow.fire_event("0", Event("moved_to_location", "", "Boolean", value=True))
+        task_finished_marking = Marking(task_finished=MultiSet([1]))
+        self.assertEqual(petri_net.get_marking(), task_finished_marking)
+        self.assertEqual(pickup_net.get_marking(), tos_finished_marking)
+        self.assertEqual(delivery_net.get_marking(), tos_finished_marking)
 
     def test_triggered_by(self):
         material_flows = self.get_material_flows(1)
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -77,11 +101,10 @@ class TestScheduling(unittest.TestCase):
 
         material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=True))
         marking_after_triggered_by_passed = Marking(task_started=MultiSet([1]))
-        self.assertEqual(petri_net.get_marking(),
-                         marking_after_triggered_by_passed)
+        self.assertEqual(petri_net.get_marking(), marking_after_triggered_by_passed)
 
-        material_flow.fire_event("0", Event(
-            "to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
+
         finished_marking = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), finished_marking)
 
@@ -90,21 +113,18 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), initial_marking)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
         marking_after_to_done = Marking(task_done=MultiSet([1]))
+        self.run_transport_order_steps("0", material_flow)
+
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=False))
         self.assertEqual(petri_net.get_marking(), marking_after_to_done)
 
-        material_flow.fire_event("0", Event(
-            "buttonPressed", "", "Boolean", value=False))
-        self.assertEqual(petri_net.get_marking(), marking_after_to_done)
-
-        material_flow.fire_event("0", Event(
-            "buttonPressed", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=True))
         marking_after_finished_by = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_finished_by)
 
@@ -113,26 +133,19 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
 
-        material_flow.fire_event("0", Event(
-            "buttonPressed", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=True))
         marking_after_triggered_by_passed = Marking(task_started=MultiSet([1]))
-        self.assertEqual(petri_net.get_marking(),
-                         marking_after_triggered_by_passed)
+        self.assertEqual(petri_net.get_marking(), marking_after_triggered_by_passed)
 
-        material_flow.fire_event("0", Event(
-            "to_done", "", "Boolean", value=True))
-        marking_after_to_done = Marking(task_done=MultiSet([1]))
-        self.assertEqual(petri_net.get_marking(), marking_after_to_done)
+        self.run_transport_order_steps("0", material_flow)
 
-        material_flow.fire_event("0", Event(
-            "buttonPressed", "", "Boolean", value=True))  # should not be allowed
-        material_flow.fire_event("0", Event(
-            "buttonPressed2", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=True))  # should not be allowed
+        material_flow.fire_event("0", Event("buttonPressed2", "", "Boolean", value=True))
         marking_after_finished_by = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_finished_by)
 
@@ -141,23 +154,21 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), initial_marking)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         finished_marking = Marking(task_finished=MultiSet([1]), task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), finished_marking)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
-        second_iteration_marking = Marking(
-            task_finished=MultiSet([1, 1]), task_started=MultiSet([1]))
+        self.run_transport_order_steps("0", material_flow)
+        second_iteration_marking = Marking(task_finished=MultiSet([1, 1]), task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), second_iteration_marking)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
-        third_iteration_marking = Marking(
-            task_finished=MultiSet([1, 1, 1]), task_started=MultiSet([1]))
+        self.run_transport_order_steps("0", material_flow)
+        third_iteration_marking = Marking(task_finished=MultiSet([1, 1, 1]), task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), third_iteration_marking)
 
     def test_two_tasks(self):
@@ -167,20 +178,18 @@ class TestScheduling(unittest.TestCase):
         material_flow_1 = material_flows[0]
         material_flow_2 = material_flows[1]
 
-        petri_net_m1 = material_flow_1.petri_net_generator.petri_nets[0]
-        petri_net_m2 = material_flow_2.petri_net_generator.petri_nets[0]
+        petri_net_m1 = material_flow_1.petri_net_logic.get_petri_nets()[0]
+        petri_net_m2 = material_flow_2.petri_net_logic.get_petri_nets()[0]
 
-        initial_marking_m1 = initial_marking_m2 = Marking(
-            task_started=MultiSet([1]))
+        initial_marking_m1 = initial_marking_m2 = Marking(task_started=MultiSet([1]))
 
         self.assertEqual(petri_net_m1.get_marking(), initial_marking_m1)
         self.assertEqual(petri_net_m2.get_marking(), initial_marking_m2)
 
-        material_flow_1.fire_event("0", Event("to_done", "", "Boolean", value=True))
-        material_flow_2.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow_1)
+        self.run_transport_order_steps("0", material_flow_2)
 
-        final_marking_m1 = final_marking_m2 = Marking(
-            task_finished=MultiSet([1]))
+        final_marking_m1 = final_marking_m2 = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net_m1.get_marking(), final_marking_m1)
         self.assertEqual(petri_net_m2.get_marking(), final_marking_m2)
 
@@ -189,29 +198,24 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
 
-        material_flow.fire_event("0", Event(
-            "buttonPressed", "", "Boolean", value=True))
-        material_flow.fire_event("0", Event(
-            "buttonPressed2", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("buttonPressed2", "", "Boolean", value=True))
 
-        marking_after_both_true = Marking(
-            buttonPressed_0=MultiSet([1]), buttonPressed2_1=MultiSet([1]))
+        marking_after_both_true = Marking(buttonPressed_0=MultiSet([1]), buttonPressed2_1=MultiSet([1]))
 
         # check if evaluation of negation works correctly
         self.assertEqual(petri_net.get_marking(), marking_after_both_true)
 
-        material_flow.fire_event("0", Event(
-            "buttonPressed", "", "Boolean", value=False))
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=False))
         marking_after_triggered_by_passed = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(),marking_after_triggered_by_passed)
 
-        material_flow.fire_event("0", Event(
-            "to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         finished_marking = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), finished_marking)
 
@@ -220,19 +224,16 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
 
-        material_flow.fire_event("0", Event(
-            "buttonPressed2", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("buttonPressed2", "", "Boolean", value=True))
         marking_after_triggered_by_passed = Marking(task_started=MultiSet([1]))
-        self.assertEqual(petri_net.get_marking(),
-                         marking_after_triggered_by_passed)
+        self.assertEqual(petri_net.get_marking(), marking_after_triggered_by_passed)
 
-        material_flow.fire_event("0", Event(
-            "to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         finished_marking = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), finished_marking)
 
@@ -241,24 +242,20 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
 
-        material_flow.fire_event("0", Event(
-            "buttonPressed", "", "Boolean", value=True))
-        marking_after_bp_true = Marking(
-            buttonPressed_0=MultiSet([1]), buttonPressed_2=MultiSet([1]))
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=True))
+        marking_after_bp_true = Marking(buttonPressed_0=MultiSet([1]), buttonPressed_2=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_bp_true)
 
-        material_flow.fire_event("0", Event(
-            "buttonPressed2", "", "Boolean", value=False))
+        material_flow.fire_event("0", Event("buttonPressed2", "", "Boolean", value=False))
         marking_after_tb_passed = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_tb_passed)
 
-        material_flow.fire_event("0", Event(
-            "to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         finished_marking = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), finished_marking)
 
@@ -267,7 +264,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -276,7 +273,7 @@ class TestScheduling(unittest.TestCase):
         marking_after_triggered_by_passed = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_triggered_by_passed)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         finished_marking = Marking(task_done=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), finished_marking)
 
@@ -289,7 +286,7 @@ class TestScheduling(unittest.TestCase):
                                                       task_finished=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(),marking_after_triggered_by_passed_2)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         second_iteration_marking = Marking(task_finished=MultiSet([1]), task_done=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), second_iteration_marking)
 
@@ -297,25 +294,90 @@ class TestScheduling(unittest.TestCase):
         marking_after_finished_by_2 = Marking(task_finished=MultiSet([1, 1]))
         self.assertEqual(petri_net.get_marking(), marking_after_finished_by_2)
 
-    def test_on_done(self):
-        material_flows = self.get_material_flows(12)
+    def test_tos_triggered_by(self):
+        material_flows = self.get_material_flows(10)
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
-        petri_net_2 = material_flow.petri_net_generator.petri_nets[1]
+        petri_net_logic = material_flow.petri_net_logic
+        petri_net = petri_net_logic.get_petri_nets()[0]
+
+        pickup_net = petri_net_logic.get_pickup_nets()[0]
+        delivery_net = petri_net_logic.get_delivery_nets()[0]
+
+        task_initial_marking = Marking(task_started=MultiSet([1]))
+        pickup_initial_marking = Marking()
+        delivery_initial_marking = pickup_initial_marking
+
+        self.assertEqual(petri_net.get_marking(), task_initial_marking)
+        self.assertEqual(pickup_net.get_marking(), pickup_initial_marking)
+        self.assertEqual(delivery_net.get_marking(), delivery_initial_marking)
+
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=True))
+
+        pickup_marking_after_tb = Marking(tos_started=MultiSet([1]))
+
+        self.assertEqual(petri_net.get_marking(), task_initial_marking)
+        self.assertEqual(pickup_net.get_marking(), pickup_marking_after_tb)
+        self.assertEqual(delivery_net.get_marking(), delivery_initial_marking)
+
+        self.run_transport_order_steps("0", material_flow)
+
+        task_finished_marking = Marking(task_finished=MultiSet([1]))
+        tos_finished_marking = Marking(tos_finished=MultiSet([1]))
+        self.assertEqual(petri_net.get_marking(), task_finished_marking)
+        self.assertEqual(pickup_net.get_marking(), tos_finished_marking)
+        self.assertEqual(delivery_net.get_marking(), tos_finished_marking)
+
+    def test_tos_finished_by(self):
+        material_flows = self.get_material_flows(11)
+        self.assertEqual(len(material_flows), 1)
+
+        material_flow = material_flows[0]
+        petri_net_logic = material_flow.petri_net_logic
+        petri_net = petri_net_logic.get_petri_nets()[0]
+
+        pickup_net = petri_net_logic.get_pickup_nets()[0]
+        delivery_net = petri_net_logic.get_delivery_nets()[0]
+
+        task_initial_marking = Marking(task_started=MultiSet([1]))
+        pickup_initial_marking = Marking(tos_started=MultiSet([1]))
+        delivery_initial_marking = Marking()
+
+        self.assertEqual(petri_net.get_marking(), task_initial_marking)
+        self.assertEqual(pickup_net.get_marking(), pickup_initial_marking)
+        self.assertEqual(delivery_net.get_marking(), delivery_initial_marking)
+
+        material_flow.fire_event("0", Event("moved_to_location", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("buttonPressed", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("moved_to_location", "", "Boolean", value=True))
+
+        task_finished_marking = Marking(task_finished=MultiSet([1]))
+        tos_finished_marking = Marking(tos_finished=MultiSet([1]))
+        self.assertEqual(petri_net.get_marking(), task_finished_marking)
+        self.assertEqual(pickup_net.get_marking(), tos_finished_marking)
+        self.assertEqual(delivery_net.get_marking(), tos_finished_marking)
+
+    def test_on_done(self):
+        material_flows = self.get_material_flows(12)
+        self.assertEqual(len(material_flows), 1)
+        self.assertEqual(len(material_flows), 1)
+
+        material_flow = material_flows[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
+        petri_net_2 = material_flow.petri_net_logic.get_petri_nets()[1]
 
         initial_marking = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), initial_marking)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         first_task_finished_marking = Marking(task_finished=MultiSet([1]))
         initial_marking_task2 = Marking(task_started=MultiSet([1]))
 
         self.assertEqual(petri_net.get_marking(), first_task_finished_marking)
         self.assertEqual(petri_net_2.get_marking(), initial_marking_task2)
 
-        material_flow.fire_event("1", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("1", material_flow)
         second_task_finished_marking = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net_2.get_marking(), second_task_finished_marking)
 
@@ -326,9 +388,9 @@ class TestScheduling(unittest.TestCase):
         material_flow_1 = material_flows[0]
         material_flow_2 = material_flows[1]
 
-        petri_net_m1_1 = material_flow_1.petri_net_generator.petri_nets[0]
-        petri_net_m1_2 = material_flow_1.petri_net_generator.petri_nets[1]
-        petri_net_m2_1 = material_flow_2.petri_net_generator.petri_nets[0]
+        petri_net_m1_1 = material_flow_1.petri_net_logic.get_petri_nets()[0]
+        petri_net_m1_2 = material_flow_1.petri_net_logic.get_petri_nets()[1]
+        petri_net_m2_1 = material_flow_2.petri_net_logic.get_petri_nets()[0]
 
         initial_marking_m1_1 = Marking(task_started=MultiSet([1]))
         initial_marking_m1_2 = Marking()
@@ -339,10 +401,10 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(petri_net_m2_1.get_marking(), initial_marking_m2_1)
 
         # should not be accepted
-        material_flow_1.fire_event("1", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("1", material_flow_1)
 
-        material_flow_1.fire_event("0", Event("to_done", "", "Boolean", value=True))
-        material_flow_2.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow_1)
+        self.run_transport_order_steps("0", material_flow_2)
 
         marking_after_to_done_m1_1 = Marking(task_finished=MultiSet([1]))
         marking_after_to_done_m1_2 = Marking(task_started=MultiSet([1]))
@@ -352,7 +414,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(petri_net_m1_2.get_marking(), marking_after_to_done_m1_2)
         self.assertEqual(petri_net_m2_1.get_marking(), marking_after_to_done_m2_1)
 
-        material_flow_1.fire_event("1", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("1", material_flow_1)
 
         # should not be accepted
         material_flow_1.fire_event("0", Event("task_started", "", "Boolean", value=True))
@@ -367,11 +429,11 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net_1 = material_flow.petri_net_generator.petri_nets[0]
-        petri_net_2 = material_flow.petri_net_generator.petri_nets[1]
-        petri_net_3 = material_flow.petri_net_generator.petri_nets[2]
-        petri_net_4 = material_flow.petri_net_generator.petri_nets[3]
-        petri_net_5 = material_flow.petri_net_generator.petri_nets[4]
+        petri_net_1 = material_flow.petri_net_logic.get_petri_nets()[0]
+        petri_net_2 = material_flow.petri_net_logic.get_petri_nets()[1]
+        petri_net_3 = material_flow.petri_net_logic.get_petri_nets()[2]
+        petri_net_4 = material_flow.petri_net_logic.get_petri_nets()[3]
+        petri_net_5 = material_flow.petri_net_logic.get_petri_nets()[4]
 
         started_marking = Marking(task_started=MultiSet([1]))
         finished_marking = Marking(task_finished=MultiSet([1]))
@@ -383,23 +445,23 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(petri_net_4.get_marking(), empty_marking)
         self.assertEqual(petri_net_5.get_marking(), empty_marking)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         self.assertEqual(petri_net_1.get_marking(), finished_marking)
         self.assertEqual(petri_net_2.get_marking(), started_marking)
         self.assertEqual(petri_net_3.get_marking(), started_marking)
         self.assertEqual(petri_net_4.get_marking(), empty_marking)
         self.assertEqual(petri_net_5.get_marking(), empty_marking)
 
-        material_flow.fire_event("1", Event("to_done", "", "Boolean", value=True))
-        material_flow.fire_event("2", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("1", material_flow)
+        self.run_transport_order_steps("2", material_flow)
         self.assertEqual(petri_net_1.get_marking(), finished_marking)
         self.assertEqual(petri_net_2.get_marking(), finished_marking)
         self.assertEqual(petri_net_3.get_marking(), finished_marking)
         self.assertEqual(petri_net_4.get_marking(), started_marking)
         self.assertEqual(petri_net_5.get_marking(), started_marking)
 
-        material_flow.fire_event("3", Event("to_done", "", "Boolean", value=True))
-        material_flow.fire_event("4", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("3", material_flow)
+        self.run_transport_order_steps("4", material_flow)
         self.assertEqual(petri_net_1.get_marking(), finished_marking)
         self.assertEqual(petri_net_2.get_marking(), finished_marking)
         self.assertEqual(petri_net_3.get_marking(), finished_marking)
@@ -412,9 +474,9 @@ class TestScheduling(unittest.TestCase):
 
         material_flow = material_flows[0]
 
-        petri_net_1 = material_flow.petri_net_generator.petri_nets[0]
-        petri_net_2 = material_flow.petri_net_generator.petri_nets[1]
-        petri_net_3 = material_flow.petri_net_generator.petri_nets[2]
+        petri_net_1 = material_flow.petri_net_logic.get_petri_nets()[0]
+        petri_net_2 = material_flow.petri_net_logic.get_petri_nets()[1]
+        petri_net_3 = material_flow.petri_net_logic.get_petri_nets()[2]
 
         started_marking = Marking(task_started=MultiSet([1]))
         finished_marking = Marking(task_finished=MultiSet([1]))
@@ -424,17 +486,17 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(petri_net_2.get_marking(), empty_marking)
         self.assertEqual(petri_net_3.get_marking(), started_marking)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         self.assertEqual(petri_net_1.get_marking(), finished_marking)
         self.assertEqual(petri_net_2.get_marking(), empty_marking)
         self.assertEqual(petri_net_3.get_marking(), started_marking)
 
-        material_flow.fire_event("2", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("2", material_flow)
         self.assertEqual(petri_net_1.get_marking(), finished_marking)
         self.assertEqual(petri_net_2.get_marking(), started_marking)
         self.assertEqual(petri_net_3.get_marking(), finished_marking)
 
-        material_flow.fire_event("1", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("1", material_flow)
         self.assertEqual(petri_net_1.get_marking(), finished_marking)
         self.assertEqual(petri_net_2.get_marking(), finished_marking)
         self.assertEqual(petri_net_3.get_marking(), finished_marking)
@@ -444,7 +506,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         # check if triggeredby and finishedby event places are created
         self.assertEqual(10, len(petri_net._place))
@@ -463,7 +525,7 @@ class TestScheduling(unittest.TestCase):
         marking_after_tb = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_tb)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         marking_after_to_done = Marking(task_done=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_to_done)
 
@@ -480,7 +542,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -490,7 +552,7 @@ class TestScheduling(unittest.TestCase):
         marking_after_tb = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_tb)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         marking_after_to_done = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_to_done)
 
@@ -499,7 +561,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -515,7 +577,7 @@ class TestScheduling(unittest.TestCase):
         marking_after_sensor2_is_5 = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_sensor2_is_5)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         finished_marking = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), finished_marking)
 
@@ -524,7 +586,7 @@ class TestScheduling(unittest.TestCase):
         self.assertEqual(len(material_flows), 1)
 
         material_flow = material_flows[0]
-        petri_net = material_flow.petri_net_generator.petri_nets[0]
+        petri_net = material_flow.petri_net_logic.get_petri_nets()[0]
 
         initial_marking = Marking()
         self.assertEqual(petri_net.get_marking(), initial_marking)
@@ -536,7 +598,7 @@ class TestScheduling(unittest.TestCase):
         marking_after_terminal_is_ab = Marking(task_started=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), marking_after_terminal_is_ab)
 
-        material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
+        self.run_transport_order_steps("0", material_flow)
         finished_marking = Marking(task_finished=MultiSet([1]))
         self.assertEqual(petri_net.get_marking(), finished_marking)
 

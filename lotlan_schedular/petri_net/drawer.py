@@ -1,5 +1,8 @@
 """ Functions defined here set attributes for drawing the petri net """
 
+# standard libraries
+import threading
+
 # 3rd party lib
 import snakes.plugins
 
@@ -8,6 +11,7 @@ from lotlan_schedular.defines import DrawConstants, PetriNetConstants
 
 snakes.plugins.load(["labels", "gv"], "snakes.nets", "nets")
 
+draw_lock = threading.Lock()
 
 class PetriNetDrawer:
     """
@@ -68,6 +72,7 @@ class PetriNetDrawer:
         attr["label"] = ""
 
     def draw_image(self, net, filename):
-        net.draw(filename, DrawConstants.LAYOUT_METHOD, graph_attr=self.draw_graph,
-                 arc_attr=self.draw_arcs, place_attr=self.draw_place,
-                 trans_attr=self.draw_transition)
+        with draw_lock:
+            net.draw(filename, DrawConstants.LAYOUT_METHOD, graph_attr=self.draw_graph,
+                     arc_attr=self.draw_arcs, place_attr=self.draw_place,
+                     trans_attr=self.draw_transition)

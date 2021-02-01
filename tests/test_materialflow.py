@@ -20,7 +20,7 @@ from lotlan_schedular.api.event import Event
 
 from lotlan_schedular.schedular import LotlanSchedular
 from lotlan_schedular.defines import LogicConstants
-from lotlan_schedular.transport.task import Task
+from lotlan_schedular.model.transport.task import Task
 
 class TestMaterialflow(unittest.TestCase):
     """ Test Materialflow methods """
@@ -33,29 +33,29 @@ class TestMaterialflow(unittest.TestCase):
         material_flow = schedular.get_materialflows()[0]
 
         transport_order = TransportOrder()
-        tos_from = TransportOrderStep()
-        tos_to = TransportOrderStep()
+        pickup_tos = TransportOrderStep()
+        delivery_tos = TransportOrderStep()
 
-        tos_from.location = Location("pickupItem", "", "")
-        tos_to.location = Location("dropoffItem", "", "")
+        pickup_tos.location = Location("pickupItem", "", "")
+        delivery_tos.location = Location("dropoffItem", "", "")
 
-        transport_order.to_step_from = tos_from
-        transport_order.to_step_to = tos_to
+        transport_order.pickup_tos = pickup_tos
+        transport_order.delivery_tos = delivery_tos
 
         task = Task()
         task.name = "Task"
         task.transport_order = transport_order
 
+        material_flow.start()
         material_flow.initialize_tasks([task])
-
         self.assertEqual(len(material_flow.tasks), 2) # 2 because one task is created from the file
         self.assertEqual(len(material_flow.ids), 2)
         self.assertEqual(len(material_flow.tasks_done), 2)
         self.assertEqual(len(material_flow.not_done_parents), 2)
-        self.assertEqual(tos_from.location.physical_name, "s1_pickup")
-        self.assertEqual(tos_from.location.location_type, "SmallLoadCarrier")
-        self.assertEqual(tos_to.location.physical_name, "ws1_dropoff")
-        self.assertEqual(tos_to.location.location_type, "SmallLoadCarrier")
+        self.assertEqual(pickup_tos.location.physical_name, "s1_pickup")
+        self.assertEqual(pickup_tos.location.location_type, "SmallLoadCarrier")
+        self.assertEqual(delivery_tos.location.physical_name, "ws1_dropoff")
+        self.assertEqual(delivery_tos.location.location_type, "SmallLoadCarrier")
 
         lotlan_file.close()
 
@@ -66,6 +66,7 @@ class TestMaterialflow(unittest.TestCase):
         schedular = LotlanSchedular(lotlan_string, True)
         material_flow = schedular.get_materialflows()[0]
 
+        material_flow.start()
         startable_tasks = material_flow.find_startable_tasks(material_flow.call_graph,
                                                              material_flow.tasks_in_mf)
         self.assertEqual(len(startable_tasks), 1)
@@ -79,6 +80,7 @@ class TestMaterialflow(unittest.TestCase):
         schedular = LotlanSchedular(lotlan_string, True)
         material_flow = schedular.get_materialflows()[1]
 
+        material_flow.start()
         startable_tasks = material_flow.find_startable_tasks(material_flow.call_graph,
                                                              material_flow.tasks_in_mf)
         self.assertEqual(len(startable_tasks), 1)
@@ -92,6 +94,7 @@ class TestMaterialflow(unittest.TestCase):
         schedular = LotlanSchedular(lotlan_string, True)
         material_flow = schedular.get_materialflows()[0]
 
+        material_flow.start()
         startable_tasks = material_flow.find_startable_tasks(material_flow.call_graph,
                                                              material_flow.tasks_in_mf)
         self.assertEqual(len(startable_tasks), 2)
@@ -142,6 +145,9 @@ class TestMaterialflow(unittest.TestCase):
         material_flow = schedular.get_materialflows()[0]
         material_flow.start()
         self.assertEqual(material_flow.all_tasks_done(), False)
+
+        material_flow.fire_event("0", Event("moved_to_location", "", "Boolean", value=True))
+        material_flow.fire_event("0", Event("moved_to_location", "", "Boolean", value=True))
 
         material_flow.fire_event("0", Event("to_done", "", "Boolean", value=True))
         self.assertEqual(material_flow.all_tasks_done(), True)

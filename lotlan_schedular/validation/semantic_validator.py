@@ -147,39 +147,39 @@ class SemanticValidator:
         """ Executes semantic checks for all TransportOrders """
         if task.transport_order is not None:
             # From check
-            if self.check_if_tos_is_present(task.transport_order.to_step_from.name) is False:
+            if self.check_if_tos_is_present(task.transport_order.pickup_tos.name) is False:
                 msg = "Task '{}' refers to an unknown TransportOrderStep in 'from': '{}' ".format(
-                    task.name, task.transport_order.to_step_from.name)
+                    task.name, task.transport_order.pickup_tos.name)
                 self.error_listener.print_error(msg, task.context.start.line,
                                                 task.context.start.column,
-                                                len(task.transport_order.to_step_from.name), False)
+                                                len(task.transport_order.pickup_tos.name), False)
                 return False
 
             tos = helpers.get_transport_order_step(self.tree.transport_order_steps,
-                                                   task.transport_order.to_step_from.name)
+                                                   task.transport_order.pickup_tos.name)
             if len(task.transport_order.from_parameters) != len(tos.parameters):
                 msg = "From has not the same amount of parameters as the transport order step!"
                 self.error_listener.print_error(msg, task.context.start.line,
                                                 task.context.start.column,
-                                                len(task.transport_order.to_step_from.name), False)
+                                                len(task.transport_order.pickup_tos.name), False)
                 return False
 
             # To check
-            if self.check_if_tos_is_present(task.transport_order.to_step_to.name) is False:
+            if self.check_if_tos_is_present(task.transport_order.delivery_tos.name) is False:
                 msg = "Task '{}' refers to an unknown TransportOrderStep in 'to' '{}'".format(
-                    task.name, task.transport_order.to_step_to.name)
+                    task.name, task.transport_order.delivery_tos.name)
                 self.error_listener.print_error(msg, task.context.start.line,
                                                 task.context.start.column,
-                                                len(task.transport_order.to_step_to.name), False)
+                                                len(task.transport_order.delivery_tos.name), False)
                 return False
 
             tos = helpers.get_transport_order_step(self.tree.transport_order_steps,
-                                                   task.transport_order.to_step_to.name)
+                                                   task.transport_order.delivery_tos.name)
             if len(task.transport_order.to_parameters) != len(tos.parameters):
                 msg = "To has not the same amount of parameters as the transport order step!"
                 self.error_listener.print_error(msg, task.context.start.line,
                                                 task.context.start.column,
-                                                len(task.transport_order.to_step_from.name), False)
+                                                len(task.transport_order.delivery_tos.name), False)
                 return False
         return True
 
