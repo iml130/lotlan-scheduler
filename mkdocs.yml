@@ -1,6 +1,6 @@
-site_name: LoTLan
-site_description: LoTLan
-docs_dir: doc/
+site_name: LoTLan Schedular
+site_description: Documentation of the LoTLan Schedular
+docs_dir: docs/
 site_dir: html
 markdown_extensions: [toc, fenced_code]
 use_directory_urls: true 
@@ -9,24 +9,20 @@ theme:
 
 nav:    
     - Home: index.md
-    - Getting Started: start.md
-    - User & Programmers Manual: 
-        - Introduction: user/introduction.md 
-        - Transport: user/transport.md
-        - Primitives: user/primitives.md
-        - Instances: user/instances.md
-        - TransportOrderSteps: user/transportordersteps.md
-        - Tasks: user/tasks.md
-        - Comments: user/comments.md
-        - Allowed Characters: user/allowedchars.md
-    - Installation & Administration:
-        - Introduction: install/introduction.md
-        - Installation: install/install.md
-        - Extension: install/extension.md
-        - Configuration: install/configuration-files.md 
-        - Deinstallation: install/deinstall.md
-        - Upgrading from previous versions: install/upgrade.md
-    - Usage: usage.md
-    - Deprecated Functionality: deprecated.md
-    - Removed Functionality: removed.md
-    - Roadmap: roadmap.md
+    - Installation: install.md
+    - API:
+        - Materialflow: api/materialflow.md
+        - TransportOrder: api/transportorder.md
+        - TransportOrderStep: api/transportorderstep.md
+        - Location: api/location.md
+        - Event: api/event.md
+    - Tutorials:
+        - CLI: tutorials/cli.md
+    - Transport Examples: 
+        - Hello Transport: tutorials/examples/hello-transport.md
+        - Manual Loading/Unloading: tutorials/examples/manual-loading-unloading.md
+        - Concatenation: tutorials/examples/concatenation.md
+        - Infinite Loop: tutorials/examples/infinite-loop.md
+        - TriggeredBy: tutorials/examples/triggered-by.md
+        - FinishedBy: tutorials/examples/finished-by.md
+        - Logical Operation: tutorials/examples/logical-operation.md

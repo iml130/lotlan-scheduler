@@ -1,10 +1,10 @@
-TEST_FOLDER_PATH = "etc/test/"
+""" Global defines """
+
+TEST_FOLDER_PATH = "etc/tests/"
 LOG_PATH = "logs/log.txt"
 TEMPLATES_PATH = "lotlan_schedular/templates"
 
 LOTLAN_FILE_ENDING = ".tl"
-
-ANTLR_COMMAND = "java -jar antlr-4.7.2-complete.jar -Dlanguage=Python3 -visitor TaskLexer.g4 TaskParser.g4"
 
 SYMBOLIC_NAMES = {
     "TEMPLATE": "a template",
@@ -69,7 +69,6 @@ Template Time
 End
 """
 
-
 TRIGGERED_BY_KEY = "TriggeredBy"
 FINISHED_BY_KEY = "FinishedBy"
 ON_DONE_KEY = "OnDone"
@@ -79,9 +78,8 @@ PARAMETER_KEY = "Parameter"
 LOCATION_KEY = "Location"
 
 # Petri Net Generation
-
-
 class PetriNetConstants:
+    """ Constants that are used in PetriNetGeneration """
     PETRI_NET_NAME = "Petri_Net"
     IMAGE_ENDING = ".png"
     TRIGGERED_BY = "triggered_by"
@@ -95,10 +93,19 @@ class PetriNetConstants:
     TASK_FIRST_TRANSITION = "finish_task"
     TASK_SECOND_TRANSITION = "exec_on_done"
     TASK_STARTED_PLACE = "task_started"
-    TO_DONE_PLACE = "task_done"
+    TASK_DONE_PLACE = "task_done"
+
+    TOS_STARTED_PLACE = "tos_started"
+    TOS_MOVED_TO_LOCATION_PLACE = "moved_to_location"
+    TOS_WAIT_FOR_ACTION_PLACE = "wait_for_action"
+    TOS_FINISHED_PLACE = "tos_finished"
+    TOS_FIRST_TRANSITION = "tos_first"
+    TOS_SECOND_TRANSITION = "tos_second"
+    TOS_TRIGGERED_BY_TRANSITION = "tos_triggered_by_t"
 
 
 class DrawConstants:
+    """ Constants that are used in PetriNetDrawing """
     NODE_SEP_VALUE = 3
 
     PLACE_SHAPE = "circle"
@@ -125,6 +132,69 @@ class DrawConstants:
 
 
 class LogicConstants:
-    TRIGGERED_BY_PASSED_MSG = "t_by"
-    TO_DONE_MSG = "t_done"
+    """ Constants that are used in the control logic of the schedular """
+    TRIGGERED_BY_PASSED_MSG = "tb_by"
+    TOS_TB_PASSED_MSG = "tos_tb_by"
+    TOS_WAIT_FOR_ACTION = "tos_wait_for_action"
+    TOS_FINISHED_MSG = "tos_finished"
+    TO_DONE_MSG = "to_done"
     TASK_FINISHED_MSG = "t_finished"
+
+class SQLCommands:
+    DATABASE_PATH = "transport_order_logger.db"
+
+    """ SQL Commands to create SQL tables for TransportOrder logger """
+    CREATE_MATERIALFLOW_TABLE = """
+    CREATE TABLE "materialflow" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "lotlan"	TEXT UNIQUE,
+        "hash"	TEXT UNIQUE,
+        PRIMARY KEY("id")
+    )
+    """
+
+    CREATE_MATERIALFLOW_INSTANCE_TABLE = """
+    CREATE TABLE "materialflow_instance" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "materialflow_id"	INTEGER,
+        "uuid"	TEXT,
+        "timestamp"	INTEGER,
+        PRIMARY KEY("id" AUTOINCREMENT),
+        FOREIGN KEY("materialflow_id") REFERENCES "materialflow"("id")
+    )
+    """
+
+    CREATE_TRANSPORT_ORDER_TABLE = """
+    CREATE TABLE "transport_order" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "materialflow_id"	INTEGER,
+        "timestamp"	INTEGER,
+        "transport_uuid" INTEGER,
+        "state"	INTEGER,
+        "location_id_pickup"	INTEGER,
+        "location_id_delivery"	INTEGER,
+        FOREIGN KEY("materialflow_id") REFERENCES "materialflow_instance"("id"),
+        FOREIGN KEY("transport_uuid") REFERENCES "transport_order_ids"("id"),
+        FOREIGN KEY("location_id_delivery") REFERENCES "location"("id"),
+        PRIMARY KEY("id" AUTOINCREMENT),
+        FOREIGN KEY("location_id_pickup") REFERENCES "location"("id")
+    )
+    """
+
+    CREATE_TRANSPORT_ORDER_IDS_TABLE = """
+    CREATE TABLE "transport_order_ids" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "uuid"	TEXT UNIQUE,
+        PRIMARY KEY("id" AUTOINCREMENT)
+    )
+    """
+
+    CREATE_LOCATION_TABLE = """
+    CREATE TABLE "location" (
+        "id"	INTEGER NOT NULL UNIQUE,
+        "logical_name"	TEXT UNIQUE,
+        "physical_name"	TEXT,
+        "location_type"	TEXT,
+        PRIMARY KEY("id" AUTOINCREMENT)
+    )
+    """
