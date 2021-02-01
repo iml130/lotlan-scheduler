@@ -1,7 +1,7 @@
 # Materialflow
 
 A *Materialflow* is a set of at least one *Task* which describes a materialflow in logistics.
-It is possible that there are are multiple *Materialflows* in a *LoTLan* file, for example two individual *Tasks* without any concatenation.
+It is possible that there are multiple *Materialflows* in a *LoTLan* file, for example two individual *Tasks* without any concatenation.
 
 ## Callback registration
 
@@ -45,6 +45,24 @@ def register_callback_all_finished(self, callback):
 If all *Tasks* in a *Materialflow* are finished functions registered here are being called.
 
 The signature of the callback function should be: *Materialflow* uuid
+
+```python
+def register_callback_pickup_finished(self, callback):
+```
+Functions passed in to this method will be called when the Pickup TransportOrderStep 
+of a task is finished
+
+The signature of the callback function should be: *Materialflow* uuid, *TransportOrder*/*Task* uuid
+
+
+```python
+def register_callback_delivery_finished(self, callback):
+```
+Functions passed in to this method will be called when the Delivery TransportOrderStep
+of a task is finished
+
+The signature of the callback function should be: *Materialflow* uuid, *TransportOrder*/*Task* uuid
+
 
 ## Methods for running
 
