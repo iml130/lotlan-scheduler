@@ -29,4 +29,4 @@ jobs:
           sudo touch tests/__init__.py
       - name: Test
         run: |
-            python -m xmlrunner discover -t tests -v -o ./tmp/build/junit-reports
+            python -m xmlrunner discover -s tests -v -o ./tmp/build/junit-reports
