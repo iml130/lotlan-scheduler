@@ -31,8 +31,7 @@ jobs:
         run: |
             python -m xmlrunner discover -s tests -v -o ./tmp/build/junit-reports
 
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1.7
-        if: always()
+      - uses: actions/upload-artifact@v2
         with:
-          files: tmp/build/junit-reports/*.xml
+          name: Test-Results
+          path: tmp/build/junit-reports/*.xml
