@@ -30,4 +30,4 @@ jobs:
 
       - name: Test
         run: |
-            python -m xmlrunner discover -s /lotlan_schedular/tests -v -o ./tmp/build/junit-reports
+            python -m xmlrunner discover -t /lotlan_schedular/tests -v -o ./tmp/build/junit-reports
