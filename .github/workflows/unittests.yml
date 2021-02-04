@@ -16,16 +16,22 @@ jobs:
 
       - uses: actions/setup-python@v2
         with:
-        python-version: '3.8'
+          python-version: '3.8'
 
       - name: Setup Testing
         run: |
-          apt -qq update
-          apt -qq install -y graphviz
-          ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
+          sudo apt -qq update
+          sudo apt -qq install -y graphviz
+          sudo ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+          sudo apt-get install python3-setuptools
           pip3 install antlr4-python3-runtime tabulate snakes networkx matplotlib pandas scipy unittest-xml-reporting sqlalchemy --upgrade
           export PYTHONIOENCODING=utf-8
-
+          sudo touch tests/__init__.py
       - name: Test
         run: |
-            python -m xmlrunner discover -s /lotlan_schedular/tests -v -o ./tmp/build/junit-reports
+            python -m xmlrunner discover -s tests -v -o ./tmp/build/junit-reports
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Test-Results
+          path: tmp/build/junit-reports/*.xml
