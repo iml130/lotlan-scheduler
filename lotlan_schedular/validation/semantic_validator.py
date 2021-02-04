@@ -25,7 +25,6 @@ class SemanticValidator:
 
     def check_instances(self):
         """ Executes semantic checks for all instances """
-        """
         error_found = False
         for instance in self.tree.instances.values():
             template_name = instance.template_name
@@ -45,8 +44,6 @@ class SemanticValidator:
                     not self.check_if_template_attribute_definied(template, instance)):
                     error_found = True
         return not error_found
-        """
-        return True
 
     def check_if_template_attribute_exists(self, template, instance):
         """ Check if all attributes in the given instance are definied in the template """
