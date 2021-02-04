@@ -26,8 +26,7 @@ jobs:
           sudo apt-get install python3-setuptools
           pip3 install antlr4-python3-runtime tabulate snakes networkx matplotlib pandas scipy unittest-xml-reporting sqlalchemy --upgrade
           export PYTHONIOENCODING=utf-8
-          sudo touch /tests/__init__.py
+          sudo touch tests/__init__.py
       - name: Test
         run: |
-            ls
-            python -m xmlrunner discover -t /tests -v -o ./tmp/build/junit-reports
+            python -m xmlrunner discover -t tests -v -o ./tmp/build/junit-reports
