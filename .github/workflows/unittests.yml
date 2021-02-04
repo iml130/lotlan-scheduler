@@ -24,7 +24,7 @@ jobs:
           sudo apt -qq install -y graphviz
           sudo ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime
           sudo apt-get install python3-setuptools
-          sudo pip3 install antlr4-python3-runtime tabulate snakes networkx matplotlib pandas scipy unittest-xml-reporting sqlalchemy --upgrade
+          pip3 install antlr4-python3-runtime tabulate snakes networkx matplotlib pandas scipy unittest-xml-reporting sqlalchemy --upgrade
           export PYTHONIOENCODING=utf-8
 
       - name: Test
