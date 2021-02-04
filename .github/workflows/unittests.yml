@@ -30,3 +30,8 @@ jobs:
       - name: Test
         run: |
             python -m xmlrunner discover -s tests -v -o ./tmp/build/junit-reports
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Test-Results
+          path: tmp/build/junit-reports/*.xml
