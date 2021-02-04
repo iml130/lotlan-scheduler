@@ -6,8 +6,7 @@ Schedular for LoTLan tasks. Parses LoTLan files and accepts events defined in th
 
 ## Task examples
 
-You can find many LoTLan files in the [examples folder](./etc/examples). For instance
-[a simple task](./etc/examples/Scheduling/001_simple_task.tl), [a task with a triggeredBy and finishedBy](./etc/examples/Scheduling/004_trb_fb.tl) and [a task with an onDone](./etc/examples/Scheduling/013_on_done.tl) and many more.
+You can find many LoTLan files / examples in the LoTLan Schedular [repository](https://github.com/iml130/lotlan-schedular) or in the official [Documentation](https://lotlan-schedular.readthedocs.io)
 
 ## Quickstart / Example
 

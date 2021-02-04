@@ -1,4 +1,4 @@
-![Example introduction](/img/LoTLan.svg)
+![Example introduction](img/LoTLan.jpg)
 
 This documentation contains information about the schedular for the **Lo**gistic **T**ask **Lan**guage (LoTLan).
 
