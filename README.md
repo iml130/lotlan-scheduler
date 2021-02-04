@@ -1,9 +1,8 @@
 # LoTLan Schedular
 
-Schedular for LoTLan tasks. Parses LoTLan files and accepts events defined in the files to schedule.
+Schedular for [LoTLan](https://lotlan.readthedocs.io/en/latest/) tasks. Parses LoTLan files and accepts events defined in the files to schedule.
 
-
-
+The repository for the LoTLan grammar can be found [here](https://github.com/iml130/LoTLan)
 ## Task examples
 
 You can find many LoTLan files / examples in the LoTLan Schedular [repository](https://github.com/iml130/lotlan-schedular) or in the official [Documentation](https://lotlan-schedular.readthedocs.io)
