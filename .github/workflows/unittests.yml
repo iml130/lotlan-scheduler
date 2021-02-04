@@ -20,8 +20,8 @@ jobs:
 
       - name: Setup Testing
         run: |
-          apt -qq update
-          apt -qq install -y graphviz
+          sudo apt -qq update
+          sudo apt -qq install -y graphviz
           ln -fs /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
           pip3 install antlr4-python3-runtime tabulate snakes networkx matplotlib pandas scipy unittest-xml-reporting sqlalchemy --upgrade
           export PYTHONIOENCODING=utf-8
