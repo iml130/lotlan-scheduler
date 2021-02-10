@@ -1,4 +1,5 @@
 # LoTLan Schedular
+![Unit-Tests](https://github.com/iml130/lotlan-schedular/workflows/Unit-Tests/badge.svg?branch=feature%2Fgithub-action-for-unittests)
 
 Schedular for [LoTLan](https://lotlan.readthedocs.io/en/latest/) tasks. Parses LoTLan files and accepts events defined in the files to schedule.
 
