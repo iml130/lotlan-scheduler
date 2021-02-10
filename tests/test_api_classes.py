@@ -8,14 +8,14 @@ import unittest
 # 3rd party packages
 import xmlrunner
 
-sys.path.append(os.path.abspath("../lotlan_schedular"))
+sys.path.append(os.path.abspath("../lotlan_scheduler"))
 
 # local sources
-from lotlan_schedular.schedular import LotlanSchedular
+from lotlan_scheduler.scheduler import LotlanScheduler
 
-# uninstall possible old lotlan_schedular packages
+# uninstall possible old lotlan_scheduler packages
 # so current code is used not old one
-os.system("pip3 uninstall lotlan_schedular")
+os.system("pip3 uninstall lotlan_scheduler")
 
 test_string = """
 Location pickupItem
@@ -56,7 +56,7 @@ class TestApiClasses(unittest.TestCase):
         while scheduling
     """
     def setUp(self):
-        lotlan_logic = LotlanSchedular(test_string, True)
+        lotlan_logic = LotlanScheduler(test_string, True)
         material_flow = lotlan_logic.get_materialflows()[0]
         self.lotlan_logic = lotlan_logic
         self.material_flow = material_flow

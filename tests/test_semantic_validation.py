@@ -10,16 +10,16 @@ import codecs
 from antlr4 import InputStream, CommonTokenStream
 import xmlrunner
 
-sys.path.append(os.path.abspath("../lotlan_schedular"))
+sys.path.append(os.path.abspath("../lotlan_scheduler"))
 
 # local sources
-from lotlan_schedular.validation.semantic_validator import SemanticValidator
-from lotlan_schedular.validation.syntax_error_listener import SyntaxErrorListener
-from lotlan_schedular.validation.task_language_test import load_templates
-from lotlan_schedular.defines import TEMPLATE_STRING, TRIGGERED_BY_KEY
-from lotlan_schedular.parser.LoTLanLexer import LoTLanLexer
-from lotlan_schedular.parser.LoTLanParser import LoTLanParser
-from lotlan_schedular.parser.lotlan_tree_visitor import LotlanTreeVisitor
+from lotlan_scheduler.validation.semantic_validator import SemanticValidator
+from lotlan_scheduler.validation.syntax_error_listener import SyntaxErrorListener
+from lotlan_scheduler.validation.task_language_test import load_templates
+from lotlan_scheduler.defines import TEMPLATE_STRING, TRIGGERED_BY_KEY
+from lotlan_scheduler.parser.LoTLanLexer import LoTLanLexer
+from lotlan_scheduler.parser.LoTLanParser import LoTLanParser
+from lotlan_scheduler.parser.lotlan_tree_visitor import LotlanTreeVisitor
 
 class TestSemanticValidation(unittest.TestCase):
     """

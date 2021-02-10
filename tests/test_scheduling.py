@@ -12,16 +12,16 @@ import unittest
 import xmlrunner
 from snakes.nets import Marking, MultiSet
 
-sys.path.append(os.path.abspath("../lotlan_schedular"))
+sys.path.append(os.path.abspath("../lotlan_scheduler"))
 
 # local sources
-import lotlan_schedular.helpers as helpers
-from lotlan_schedular.api.event import Event
-from lotlan_schedular.schedular import LotlanSchedular
+import lotlan_scheduler.helpers as helpers
+from lotlan_scheduler.api.event import Event
+from lotlan_scheduler.scheduler import LotlanScheduler
 
-# uninstall possible old lotlan_schedular packages
+# uninstall possible old lotlan_scheduler packages
 # so current code is used not old one
-os.system("pip3 uninstall lotlan_schedular")
+os.system("pip3 uninstall lotlan_scheduler")
 
 
 class TestScheduling(unittest.TestCase):
@@ -35,7 +35,7 @@ class TestScheduling(unittest.TestCase):
         file_names = sorted(helpers.get_lotlan_file_names("etc/examples/Scheduling/"))
         for i, file_name in enumerate(file_names):
             f = open(file_name, "r")
-            lotlan_logic[i] = LotlanSchedular(f.read(), True)
+            lotlan_logic[i] = LotlanScheduler(f.read(), True)
             material_flows[i] = lotlan_logic[i].get_materialflows()
 
             for material_flow in material_flows[i]:

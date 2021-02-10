@@ -5,7 +5,7 @@ from antlr4.error.Errors import NoViableAltException
 from antlr4.error.ErrorListener import ErrorListener
 
 # globals defines
-from lotlan_schedular.defines import SYMBOLIC_NAMES
+from lotlan_scheduler.defines import SYMBOLIC_NAMES
 
 
 class SyntaxErrorListener(ErrorListener):

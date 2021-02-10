@@ -1,17 +1,17 @@
 # CLI Example
 
-We would like to demonstrate the use of the LoTLan Schedular with a small CLI program. It can be used to simulate incoming events, e.g. from sensors.
+We would like to demonstrate the use of the LoTLan Scheduler with a small CLI program. It can be used to simulate incoming events, e.g. from sensors.
 
 ## First steps
 
-Initially import the schedular module
+Initially import the scheduler module
 
 ```python
-from lotlan_schedular.schedular import LotlanSchedular
+from lotlan_scheduler.scheduler import LotlanScheduler
 
 def main():
-    schedular = LotlanSchedular(lotlan_string, test_flag)
-    material_flows = schedular.get_materialflows()
+    scheduler = LotlanScheduler(lotlan_string, test_flag)
+    material_flows = scheduler.get_materialflows()
 ```
 
 We have to create functions which can be passed as callbacks. The *Materialflow* can call 5 different callbacks depending on the current state.
@@ -75,8 +75,8 @@ The finished program looks like this:
 import sys
 
 # local sources
-from lotlan_schedular.schedular import LotlanSchedular
-from lotlan_schedular.api.event import Event
+from lotlan_scheduler.scheduler import LotlanScheduler
+from lotlan_scheduler.api.event import Event
 
 
 def cb_triggered_by(mf_uuid, uuid_, event_information):
@@ -117,8 +117,8 @@ def main():
             with open(sys.argv[1], "r") as file:
                 lotlan_string = file.read()
 
-        schedular = LotlanSchedular(lotlan_string, test_flag)
-        material_flows = schedular.get_materialflows()
+        scheduler = LotlanScheduler(lotlan_string, test_flag)
+        material_flows = scheduler.get_materialflows()
 
         for material_flow in material_flows:
             material_flow.register_callback_triggered_by(cb_triggered_by)
@@ -165,5 +165,5 @@ if __name__ == "__main__":
     main()
 ```
 
-Notice the test flag. If it is set to true the *Schedular* will generate simple uuids for the *TransportOrders* in a *Materialflow* (will count from 0)
+Notice the test flag. If it is set to true the *Scheduler* will generate simple uuids for the *TransportOrders* in a *Materialflow* (will count from 0)
 Otherwise a real uuid is generated (you can see it in the output when callback is called)

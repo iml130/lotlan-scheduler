@@ -17,15 +17,15 @@ from tabulate import tabulate
 sys.path.append("./")
 
 # local sources
-import lotlan_schedular.helpers as helpers
-from lotlan_schedular.parser.lotlan_tree_visitor import LotlanTreeVisitor
-from lotlan_schedular.validation.semantic_validator import SemanticValidator
-from lotlan_schedular.validation.syntax_error_listener import SyntaxErrorListener
-from lotlan_schedular.parser.LoTLanLexer import LoTLanLexer
-from lotlan_schedular.parser.LoTLanParser import LoTLanParser
+import lotlan_scheduler.helpers as helpers
+from lotlan_scheduler.parser.lotlan_tree_visitor import LotlanTreeVisitor
+from lotlan_scheduler.validation.semantic_validator import SemanticValidator
+from lotlan_scheduler.validation.syntax_error_listener import SyntaxErrorListener
+from lotlan_scheduler.parser.LoTLanLexer import LoTLanLexer
+from lotlan_scheduler.parser.LoTLanParser import LoTLanParser
 
 # globals defines
-from lotlan_schedular.defines import (TEST_FOLDER_PATH, LOG_PATH, TEMPLATE_STRING)
+from lotlan_scheduler.defines import (TEST_FOLDER_PATH, LOG_PATH, TEMPLATE_STRING)
 
 class ErrorInformation():
     '''

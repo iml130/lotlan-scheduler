@@ -5,21 +5,21 @@ from enum import Enum
 import re
 
 # local sources
-from lotlan_schedular.model.transport.transport import Transport
-from lotlan_schedular.model.transport.template import Template
-from lotlan_schedular.model.transport.instance import Instance
-from lotlan_schedular.model.transport.task import Task
+from lotlan_scheduler.model.transport.transport import Transport
+from lotlan_scheduler.model.transport.template import Template
+from lotlan_scheduler.model.transport.instance import Instance
+from lotlan_scheduler.model.transport.task import Task
 
-from lotlan_schedular.api.transportorder_step import TransportOrderStep
-from lotlan_schedular.api.transportorder import TransportOrder
-from lotlan_schedular.api.location import Location
-from lotlan_schedular.api.event import Event
+from lotlan_scheduler.api.transportorder_step import TransportOrderStep
+from lotlan_scheduler.api.transportorder import TransportOrder
+from lotlan_scheduler.api.location import Location
+from lotlan_scheduler.api.event import Event
 
 # globals defines
-from lotlan_schedular.defines import (TRIGGERED_BY_KEY, FINISHED_BY_KEY, REPEAT_KEY,
+from lotlan_scheduler.defines import (TRIGGERED_BY_KEY, FINISHED_BY_KEY, REPEAT_KEY,
                      ON_DONE_KEY, TRANSPORT_ORDER_KEY, LOCATION_KEY)
 
-from lotlan_schedular.parser.LoTLanParserVisitor import LoTLanParserVisitor
+from lotlan_scheduler.parser.LoTLanParserVisitor import LoTLanParserVisitor
 
 class OptionaStatement(Enum):
     '''

@@ -1,12 +1,12 @@
 """ Contains PetriNetLogic class """
 
 # local sources
-import lotlan_schedular.helpers as helpers
-from lotlan_schedular.petri_net.drawer import PetriNetDrawer
-from lotlan_schedular.api.transportorder import TransportOrder
+import lotlan_scheduler.helpers as helpers
+from lotlan_scheduler.petri_net.drawer import PetriNetDrawer
+from lotlan_scheduler.api.transportorder import TransportOrder
 
 # global defines
-from lotlan_schedular.defines import PetriNetConstants, LogicConstants
+from lotlan_scheduler.defines import PetriNetConstants, LogicConstants
 
 from nets import Value, Marking
 

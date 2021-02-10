@@ -10,17 +10,17 @@ import codecs
 # 3rd party packages
 import xmlrunner
 
-sys.path.append(os.path.abspath("../lotlan_schedular"))
+sys.path.append(os.path.abspath("../lotlan_scheduler"))
 
 # local sources
-from lotlan_schedular.api.transportorder import TransportOrder
-from lotlan_schedular.api.transportorder_step import TransportOrderStep
-from lotlan_schedular.api.location import Location
-from lotlan_schedular.api.event import Event
+from lotlan_scheduler.api.transportorder import TransportOrder
+from lotlan_scheduler.api.transportorder_step import TransportOrderStep
+from lotlan_scheduler.api.location import Location
+from lotlan_scheduler.api.event import Event
 
-from lotlan_schedular.schedular import LotlanSchedular
-from lotlan_schedular.defines import LogicConstants
-from lotlan_schedular.model.transport.task import Task
+from lotlan_scheduler.scheduler import LotlanScheduler
+from lotlan_scheduler.defines import LogicConstants
+from lotlan_scheduler.model.transport.task import Task
 
 class TestMaterialflow(unittest.TestCase):
     """ Test Materialflow methods """
@@ -29,8 +29,8 @@ class TestMaterialflow(unittest.TestCase):
         lotlan_file = codecs.open("etc/examples/Scheduling/001_simple_task.tl", "r",
                                   encoding="utf8")
         lotlan_string = lotlan_file.read()
-        schedular = LotlanSchedular(lotlan_string)
-        material_flow = schedular.get_materialflows()[0]
+        scheduler = LotlanScheduler(lotlan_string)
+        material_flow = scheduler.get_materialflows()[0]
 
         transport_order = TransportOrder()
         pickup_tos = TransportOrderStep()
@@ -63,8 +63,8 @@ class TestMaterialflow(unittest.TestCase):
         lotlan_file = codecs.open("etc/examples/Scheduling/001_simple_task.tl", "r",
                                   encoding="utf8")
         lotlan_string = lotlan_file.read()
-        schedular = LotlanSchedular(lotlan_string, True)
-        material_flow = schedular.get_materialflows()[0]
+        scheduler = LotlanScheduler(lotlan_string, True)
+        material_flow = scheduler.get_materialflows()[0]
 
         material_flow.start()
         startable_tasks = material_flow.find_startable_tasks(material_flow.call_graph,
@@ -77,8 +77,8 @@ class TestMaterialflow(unittest.TestCase):
         lotlan_file = codecs.open("etc/examples/Scheduling/006_two_tasks.tl", "r",
                                   encoding="utf8")
         lotlan_string = lotlan_file.read()
-        schedular = LotlanSchedular(lotlan_string, True)
-        material_flow = schedular.get_materialflows()[1]
+        scheduler = LotlanScheduler(lotlan_string, True)
+        material_flow = scheduler.get_materialflows()[1]
 
         material_flow.start()
         startable_tasks = material_flow.find_startable_tasks(material_flow.call_graph,
@@ -91,8 +91,8 @@ class TestMaterialflow(unittest.TestCase):
         lotlan_file = codecs.open("etc/examples/Scheduling/016_task_sync.tl", "r",
                                   encoding="utf8")
         lotlan_string = lotlan_file.read()
-        schedular = LotlanSchedular(lotlan_string, True)
-        material_flow = schedular.get_materialflows()[0]
+        scheduler = LotlanScheduler(lotlan_string, True)
+        material_flow = scheduler.get_materialflows()[0]
 
         material_flow.start()
         startable_tasks = material_flow.find_startable_tasks(material_flow.call_graph,
@@ -107,8 +107,8 @@ class TestMaterialflow(unittest.TestCase):
         lotlan_file = codecs.open("etc/examples/Scheduling/001_simple_task.tl", "r",
                                   encoding="utf8")
         lotlan_string = lotlan_file.read()
-        schedular = LotlanSchedular(lotlan_string)
-        material_flow = schedular.get_materialflows()[0]
+        scheduler = LotlanScheduler(lotlan_string)
+        material_flow = scheduler.get_materialflows()[0]
 
         material_flow.next_to = MagicMock()
         material_flow.on_petri_net_response(LogicConstants.TRIGGERED_BY_PASSED_MSG, None)
@@ -128,9 +128,9 @@ class TestMaterialflow(unittest.TestCase):
         lotlan_file = codecs.open("etc/examples/Scheduling/005_self_loop.tl", "r",
                                   encoding="utf8")
         lotlan_string = lotlan_file.read()
-        schedular = LotlanSchedular(lotlan_string, True)
+        scheduler = LotlanScheduler(lotlan_string, True)
 
-        material_flow = schedular.get_materialflows()[0]
+        material_flow = scheduler.get_materialflows()[0]
         material_flow.start()
 
         self.assertEqual(material_flow.all_tasks_done(), False)
@@ -141,8 +141,8 @@ class TestMaterialflow(unittest.TestCase):
         lotlan_file = codecs.open("etc/examples/Scheduling/001_simple_task.tl", "r",
                                   encoding="utf8")
         lotlan_string = lotlan_file.read()
-        schedular = LotlanSchedular(lotlan_string, True)
-        material_flow = schedular.get_materialflows()[0]
+        scheduler = LotlanScheduler(lotlan_string, True)
+        material_flow = scheduler.get_materialflows()[0]
         material_flow.start()
         self.assertEqual(material_flow.all_tasks_done(), False)
 

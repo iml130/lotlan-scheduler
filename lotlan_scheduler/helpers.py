@@ -3,7 +3,7 @@
 from os import walk
 from os.path import splitext, join
 
-from lotlan_schedular.defines import LOTLAN_FILE_ENDING
+from lotlan_scheduler.defines import LOTLAN_FILE_ENDING
 
 def string_is_int(string):
     """

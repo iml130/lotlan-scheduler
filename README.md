@@ -1,21 +1,21 @@
-# LoTLan Schedular
-![Unit-Tests](https://github.com/iml130/lotlan-schedular/workflows/Unit-Tests/badge.svg?branch=feature%2Fgithub-action-for-unittests)
+# LoTLan Scheduler
+![Unit-Tests](https://github.com/iml130/lotlan-scheduler/workflows/Unit-Tests/badge.svg?branch=feature%2Fgithub-action-for-unittests)
 
-Schedular for [LoTLan](https://lotlan.readthedocs.io/en/latest/) tasks. Parses LoTLan files and accepts events defined in the files to schedule.
+Scheduler for [LoTLan](https://lotlan.readthedocs.io/en/latest/) tasks. Parses LoTLan files and accepts events defined in the files to schedule.
 
 The repository for the LoTLan grammar can be found [here](https://github.com/iml130/LoTLan)
 ## Task examples
 
-You can find many LoTLan files / examples in the LoTLan Schedular [repository](https://github.com/iml130/lotlan-schedular) or in the official [Documentation](https://lotlan-schedular.readthedocs.io)
+You can find many LoTLan files / examples in the LoTLan Scheduler [repository](https://github.com/iml130/lotlan-scheduler) or in the official [Documentation](https://lotlan-scheduler.readthedocs.io)
 
 ## Quickstart / Example
 
-Here is an example how the schedular can be used
+Here is an example how the scheduler can be used
 ```python
 import sys
 
-from lotlan_schedular.schedular import LotlanSchedular
-from lotlan_schedular.api.event import Event
+from lotlan_scheduler.scheduler import LotlanScheduler
+from lotlan_scheduler.api.event import Event
 
 # gets called for each materialflow that is waiting for
 # the triggeredBy condition to be satisfied
@@ -63,7 +63,7 @@ def main():
             with open(sys.argv[1], 'r') as file:
                 lotlan_string = file.read()
 
-        lotlan_logic = LotlanSchedular(lotlan_string, test_flag)
+        lotlan_logic = LotlanScheduler(lotlan_string, test_flag)
         material_flows = lotlan_logic.get_materialflows()
 
         for material_flow in material_flows:
@@ -103,7 +103,7 @@ if __name__ == '__main__':
 ```
 
 ## License
-LoTLan Schedular is licensed under the terms of the Apache license. See [LICENCSE](./LICENSE) for more information.
+LoTLan Scheduler is licensed under the terms of the Apache license. See [LICENCSE](./LICENSE) for more information.
 
 ## Contributors
 Peter Detzner, Maximilian Hoerstrup, Dominik Lux
