@@ -11,12 +11,12 @@ import xmlrunner
 from sqlalchemy import create_engine, MetaData, Table
 
 # local sources
-from lotlan_schedular.logger.sqlite_logger import SQLiteLogger
-from lotlan_schedular.api.location import Location
-from lotlan_schedular.api.transportorder import TransportOrder
+from lotlan_scheduler.logger.sqlite_logger import SQLiteLogger
+from lotlan_scheduler.api.location import Location
+from lotlan_scheduler.api.transportorder import TransportOrder
 
 # globals defines
-from lotlan_schedular.defines import SQLCommands
+from lotlan_scheduler.defines import SQLCommands
 
 class TestSQLLogger(unittest.TestCase):
     """ Tests SQLLogger methods """

@@ -1,4 +1,4 @@
-image: registry.gitlab.cc-asp.fraunhofer.de:4567/iml/oe130/software/sola/logistic-tasklanguage/lotlan_schedular:latest
+image: registry.gitlab.cc-asp.fraunhofer.de:4567/iml/oe130/software/sola/logistic-tasklanguage/lotlan_scheduler:latest
 stages:
   - test
 
@@ -6,7 +6,7 @@ unittest:
   stage: test
   script:
     - export PYTHONIOENCODING=utf-8
-    - python -m xmlrunner discover -s /builds/iml/oe130/software/sola/logistic-tasklanguage/lotlan_schedular/tests -v -o ./tmp/build/junit-reports
+    - python -m xmlrunner discover -s /builds/iml/oe130/software/sola/logistic-tasklanguage/lotlan_scheduler/tests -v -o ./tmp/build/junit-reports
   artifacts:
       when: always
       reports:

@@ -1,11 +1,11 @@
-""" Contains main program example for schedular """
+""" Contains main program example for scheduler """
 
 # standard libraries
 import sys
 
 # local sources
-from lotlan_schedular.schedular import LotlanSchedular
-from lotlan_schedular.api.event import Event
+from lotlan_scheduler.scheduler import LotlanScheduler
+from lotlan_scheduler.api.event import Event
 
 
 def cb_triggered_by(mf_uuid, uuid_, event_information):
@@ -46,7 +46,7 @@ def main():
             with open(sys.argv[1], "r") as file:
                 lotlan_string = file.read()
 
-        lotlan_logic = LotlanSchedular(lotlan_string, test_flag)
+        lotlan_logic = LotlanScheduler(lotlan_string, test_flag)
         material_flows = lotlan_logic.get_materialflows()
 
         for material_flow in material_flows:

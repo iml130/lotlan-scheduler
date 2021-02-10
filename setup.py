@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup( 
-    name='Lotlan_Schedular',
-    version='0.1.10', 
+    name='Lotlan_Scheduler',
+    version='1.1.0',
     author="Peter Detzner, Maximilian Hörstrup", 
     description="Scheduler for tasks generated from Lotlan files",
     long_description=long_description,

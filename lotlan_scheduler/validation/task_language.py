@@ -3,10 +3,10 @@
 import argparse
 
 # local sources
-from lotlan_schedular.task_language_test import test_file, test_string
+from lotlan_scheduler.task_language_test import test_file, test_string
 
 # globals defines
-from lotlan_schedular.defines import TEMPLATES_PATH
+from lotlan_scheduler.defines import TEMPLATES_PATH
 
 
 def main():

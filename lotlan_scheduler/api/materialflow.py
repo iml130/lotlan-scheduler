@@ -6,17 +6,17 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # local sources
-from lotlan_schedular.api.event import Event
-from lotlan_schedular.api.transportorder import TransportOrder
+from lotlan_scheduler.api.event import Event
+from lotlan_scheduler.api.transportorder import TransportOrder
 
-from lotlan_schedular.logger.sqlite_logger import SQLiteLogger
+from lotlan_scheduler.logger.sqlite_logger import SQLiteLogger
 
-from lotlan_schedular.petri_net.logic import PetriNetLogic
+from lotlan_scheduler.petri_net.logic import PetriNetLogic
 
-from lotlan_schedular.petri_net.generator import PetriNetGenerator
+from lotlan_scheduler.petri_net.generator import PetriNetGenerator
 
 # globals defines
-from lotlan_schedular.defines import PetriNetConstants, LogicConstants
+from lotlan_scheduler.defines import PetriNetConstants, LogicConstants
 
 class MaterialFlowCallbacks(object):
     """

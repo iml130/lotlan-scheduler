@@ -10,7 +10,7 @@ import threading
 from sqlalchemy import create_engine, MetaData, Table
 
 # globals defines
-from lotlan_schedular.defines import SQLCommands
+from lotlan_scheduler.defines import SQLCommands
 
 init_lock = threading.Lock()
 mf_lock = threading.Lock()

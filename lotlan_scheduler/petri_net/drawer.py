@@ -7,7 +7,7 @@ import threading
 import snakes.plugins
 
 # globals defines
-from lotlan_schedular.defines import DrawConstants, PetriNetConstants
+from lotlan_scheduler.defines import DrawConstants, PetriNetConstants
 
 snakes.plugins.load(["labels", "gv"], "snakes.nets", "nets")
 

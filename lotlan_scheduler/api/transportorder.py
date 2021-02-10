@@ -3,7 +3,7 @@
 from enum import IntEnum
 
 # local sources
-from lotlan_schedular.api.transportorder_step import TransportOrderStep
+from lotlan_scheduler.api.transportorder_step import TransportOrderStep
 
 class TransportOrder:
     """

@@ -3,12 +3,12 @@ import sys
 import os
 import threading
 
-sys.path.append(os.path.abspath("../lotlan_schedular"))
+sys.path.append(os.path.abspath("../lotlan_scheduler"))
 
 # local sources
-from lotlan_schedular.api.location import Location
-from lotlan_schedular.sql_logger import SQLLogger
-from lotlan_schedular.defines import SQLCommands
+from lotlan_scheduler.api.location import Location
+from lotlan_scheduler.sql_logger import SQLLogger
+from lotlan_scheduler.defines import SQLCommands
 
 def test_sqlite_connection(mf_uuid, lotlan_string, to_uuid, state, pickup, delivery):
     logger = SQLLogger(SQLCommands.DATABASE_PATH)

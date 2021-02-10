@@ -1,10 +1,10 @@
 """ This module contains the SemanticValidator class """
 
 # local sources
-import lotlan_schedular.helpers as helpers
+import lotlan_scheduler.helpers as helpers
 
 # globals defines
-from lotlan_schedular.defines import TRIGGERED_BY_KEY, FINISHED_BY_KEY, ON_DONE_KEY, LOCATION_KEY
+from lotlan_scheduler.defines import TRIGGERED_BY_KEY, FINISHED_BY_KEY, ON_DONE_KEY, LOCATION_KEY
 
 class SemanticValidator:
     '''

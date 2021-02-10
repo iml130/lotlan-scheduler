@@ -2,7 +2,7 @@
 
 TEST_FOLDER_PATH = "etc/tests/"
 LOG_PATH = "logs/log.txt"
-TEMPLATES_PATH = "lotlan_schedular/templates"
+TEMPLATES_PATH = "lotlan_scheduler/templates"
 
 LOTLAN_FILE_ENDING = ".tl"
 
@@ -132,7 +132,7 @@ class DrawConstants:
 
 
 class LogicConstants:
-    """ Constants that are used in the control logic of the schedular """
+    """ Constants that are used in the control logic of the scheduler """
     TRIGGERED_BY_PASSED_MSG = "tb_by"
     TOS_TB_PASSED_MSG = "tos_tb_by"
     TOS_WAIT_FOR_ACTION = "tos_wait_for_action"

@@ -1,4 +1,4 @@
-""" Contains LotlanSchedular class """
+""" Contains LotlanScheduler class """
 
 # standard libraries
 import uuid
@@ -7,11 +7,11 @@ import uuid
 import networkx as nx
 
 # local sources
-from lotlan_schedular.api.materialflow import MaterialFlow
-from lotlan_schedular.validation.task_language_test import test_string
-from lotlan_schedular.defines import TEMPLATE_STRING
+from lotlan_scheduler.api.materialflow import MaterialFlow
+from lotlan_scheduler.validation.task_language_test import test_string
+from lotlan_scheduler.defines import TEMPLATE_STRING
 
-class LotlanSchedular:
+class LotlanScheduler:
     """ Scheduling class """
     def __init__(self, lotlan_string, test_flag=False):
         self.lotlan_string = lotlan_string
@@ -32,7 +32,7 @@ class LotlanSchedular:
 
     def init(self, lotlan_string):
         """
-            Initializes the schedular:
+            Initializes the scheduler:
                 - validate test string
                 - create call graph
                 - find Materialflows

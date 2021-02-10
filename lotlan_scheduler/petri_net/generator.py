@@ -4,14 +4,14 @@
 import snakes.plugins as plugins
 
 # local sources
-import lotlan_schedular.helpers as helpers
+import lotlan_scheduler.helpers as helpers
 
-from lotlan_schedular.petri_net.drawer import PetriNetDrawer
-from lotlan_schedular.api.transportorder import TransportOrder
-from lotlan_schedular.api.event import Event
+from lotlan_scheduler.petri_net.drawer import PetriNetDrawer
+from lotlan_scheduler.api.transportorder import TransportOrder
+from lotlan_scheduler.api.event import Event
 
 # global defines
-from lotlan_schedular.defines import PetriNetConstants, LogicConstants
+from lotlan_scheduler.defines import PetriNetConstants, LogicConstants
 
 plugins.load(["labels", "gv"], "snakes.nets", "nets")
 from nets import PetriNet, Place, Transition, Inhibitor, Value, Marking
