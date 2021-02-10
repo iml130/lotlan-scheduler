@@ -1,5 +1,5 @@
-site_name: LoTLan Schedular
-site_description: Documentation of the LoTLan Schedular
+site_name: LoTLan Scheduler
+site_description: Documentation of the LoTLan Scheduler
 docs_dir: docs/
 site_dir: html
 markdown_extensions: [toc, fenced_code]
