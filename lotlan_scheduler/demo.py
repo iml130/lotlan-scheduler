@@ -2,6 +2,9 @@
 
 # standard libraries
 import sys
+import os
+
+sys.path.append(os.path.abspath("../lotlan_scheduler"))
 
 # local sources
 from lotlan_scheduler.scheduler import LotlanScheduler
