@@ -8,7 +8,7 @@ from pathlib import Path
 
 # 3rd party packages
 import xmlrunner
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import create_engine, MetaData, Table, select, func
 
 # local sources
 from lotlan_scheduler.logger.sqlite_logger import SQLiteLogger
@@ -43,16 +43,18 @@ class TestSQLLogger(unittest.TestCase):
         materialflow_table = Table("materialflow", self.metadata, autoload=True)
         materialflow_instance_table = Table("materialflow_instance", self.metadata, autoload=True)
 
-        query = materialflow_table.count()
-        self.assertEqual(self.database_engine.scalar(query), 1)
+        count = select([func.count()]).select_from(materialflow_table).execute().first()
+        self.assertGreaterEqual(len(count), 1)
+        self.assertEqual(count[0], 1)
 
         result = materialflow_table.select(materialflow_table.c.id==1).execute().first()
         self.assertIsNotNone(result, None)
         self.assertEqual(result.hash, test_hash)
         self.assertEqual(result.lotlan, "test")
 
-        query = materialflow_instance_table.count()
-        self.assertEqual(self.database_engine.scalar(query), 2)
+        count = select([func.count()]).select_from(materialflow_instance_table).execute().first()
+        self.assertGreaterEqual(len(count), 1)
+        self.assertEqual(count[0], 2)
 
         result = materialflow_instance_table.select().execute().fetchall()
         self.assertEqual(result[0].materialflow_id, 1)
